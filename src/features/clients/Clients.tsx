@@ -452,11 +452,18 @@ export default function Clients() {
                         <Input
                           type="datetime-local"
                           autoFocus
-                          value={cliente.fechaRecordatorio ? new Date(cliente.fechaRecordatorio).toISOString().slice(0, 16) : ""}
-                          onChange={(e) => handleQuickRecordatorioUpdate(cliente.id, e.target.value)}
-                          onBlur={() => setEditingRecordatorio(null)}
+                          defaultValue={cliente.fechaRecordatorio ? new Date(cliente.fechaRecordatorio).toISOString().slice(0, 16) : ""}
+                          onBlur={(e) => {
+                            if (e.target.value) {
+                              handleQuickRecordatorioUpdate(cliente.id, e.target.value);
+                            } else {
+                              setEditingRecordatorio(null);
+                            }
+                          }}
                           onKeyDown={(e) => {
-                            if (e.key === 'Escape') {
+                            if (e.key === 'Enter' && e.currentTarget.value) {
+                              handleQuickRecordatorioUpdate(cliente.id, e.currentTarget.value);
+                            } else if (e.key === 'Escape') {
                               setEditingRecordatorio(null);
                             }
                           }}
