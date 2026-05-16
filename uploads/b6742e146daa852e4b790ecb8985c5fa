@@ -1,0 +1,8 @@
+nombre,precio,stock_unidades,stock_kilos,unidades_por_caja,categoria,subcategoria,descripcion,long_description,codigo_barras,sku,serie
+Pizza Mozzarella,8500,50,0,1,Productos Finales,Pizzas,Pizza grande de mozzarella,Pizza artesanal de 8 porciones con mozzarella y aceitunas,8890001,PRO-PIZ-01,
+Pizza Napolitana,9800,30,0,1,Productos Finales,Pizzas,Pizza con tomate y ajo,Pizza de mozzarella con rodajas de tomate natural y ajo,8890002,PRO-PIZ-02,
+Docena de Empanadas Carne,12000,20,0,12,Productos Finales,Empanadas,Empanadas de carne cortada a cuchillo,Docena de empanadas de carne fritas o al horno,8890003,PRO-EMP-03,
+Docena de Empanadas J&Q,11000,25,0,12,Productos Finales,Empanadas,Empanadas de jamón y queso,Docena de empanadas de jamón y queso clásicas,8890004,PRO-EMP-04,
+Sándwich Milanesa Completo,7500,40,0,1,Productos Finales,Sándwiches,"Milanesa con lechuga, tomate y huevo",Sándwich de milanesa de ternera en pan francés,8890005,PRO-SAN-05,
+Tarta de Jamón y Queso,6200,15,0,1,Productos Finales,Tartas,Tarta individual,Tarta artesanal de jamón y queso,8890006,PRO-TAR-06,
+Pollo al Horno con Papas,13500,10,0,1,Productos Finales,Platos Calientes,Medio pollo con guarnición,Medio pollo al horno con papas rústicas,8890007,PRO-POL-07,

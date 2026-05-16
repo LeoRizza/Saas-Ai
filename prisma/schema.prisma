@@ -1,0 +1,297 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum RolUsuario {
+  SUPER_ADMIN
+  ADMIN
+  VENDEDOR
+  CAJA
+  OPERARIO
+}
+
+enum AccionAudit {
+  PRODUCCION
+  VENTA
+  AJUSTE_MANUAL
+  MODIFICACION_CLIENTE
+  IMPORTACION_CSV
+  ACTUALIZACION_MASIVA_CSV
+  CREACION_PEDIDO
+  ACTUALIZACION_PEDIDO
+  CREACION_ARTICULO
+  ACTUALIZACION_ARTICULO
+  CREACION_USUARIO
+  ACTUALIZACION_USUARIO
+  CREACION_EMPRESA
+  ACTUALIZACION_EMPRESA
+}
+
+enum TablaAudit {
+  ARTICULO
+  CLIENTE
+  EMPRESA
+  USUARIO
+  PEDIDO
+  INVENTARIO
+  VENTA
+}
+
+enum PedidoStatus {
+  PENDIENTE
+  EN_CONTACTO
+  COTIZADO
+  CONFIRMADO
+  CANCELADO
+}
+
+enum EstadoFiscal {
+  NO_ENVIADO
+  PENDIENTE
+  APROBADO
+  RECHAZADO
+}
+
+model Empresa {
+  id               String  @id @default(uuid())
+  nombre           String
+  activa           Boolean @default(true)
+  logoUrl          String?
+  razonSocial      String?
+  cuit             String?
+  condicionIva     String?
+  emailContacto    String?
+  telefonoContacto String?
+  smtpUser         String?
+  smtpPass         String?
+  apiKey           String? @unique
+  config           Json?
+  metadata         Json?
+  pedidos          Pedido[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  usuarios     Usuario[]
+  inventarios  Inventario[]
+  articulos    Articulo[]
+  producciones ProduccionLog[]
+  ventas       Venta[]
+  clientes     Cliente[]
+  auditLogs    AuditLog[]
+}
+
+model Inventario {
+  id        String  @id @default(uuid())
+  nombre    String
+  empresaId String
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  articulos           Articulo[]
+  ventasItems         VentaItem[]
+  produccionesOrigen  ProduccionLog[] @relation("InventarioOrigen")
+  produccionesDestino ProduccionLog[] @relation("InventarioDestino")
+}
+
+model Usuario {
+  id       String     @id @default(uuid())
+  nombre   String
+  email    String     @unique
+  password String
+  rol      RolUsuario @default(ADMIN)
+  activo   Boolean    @default(true)
+
+  empresaId String? // Opcional solo para el SUPER_ADMIN global
+  empresa   Empresa? @relation(fields: [empresaId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ventas    Venta[]
+  auditLogs AuditLog[]
+}
+
+model Articulo {
+  id              String  @id @default(uuid())
+  nombre          String
+  descripcion     String? @db.Text
+  longDescription String? @db.Text
+  categoria       String  @default("General")
+  subcategoria    String?
+  codigoBarras    String?
+  sku             String? @unique
+  serie           String?
+  videoUrl        String?
+  imagenes        Json?
+  costo           Float   @default(0)
+  precio          Float   @default(0)
+
+  inventarioId String
+  inventario   Inventario @relation(fields: [inventarioId], references: [id], onDelete: Restrict)
+
+  // Stock unificado
+  stockUnidades   Float @default(0)
+  stockKilos      Float @default(0)
+  unidadesPorCaja Int   @default(1)
+
+  empresaId String
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relaciones
+  insumosConsumidos InsumoConsumidoLog[]
+  ventasItems       VentaItem[]
+}
+
+model Cliente {
+  id                String    @id @default(uuid())
+  nombre            String
+  razonSocial       String
+  email             String?
+  telefono          String?
+  direccion         String?
+  cuit              String?
+  condicionIva      String?
+  comentarios       String?   @db.VarChar(500)
+  fechaRecordatorio DateTime?
+  tag               String?
+  metadata          Json?
+  empresaId         String
+  activo            Boolean @default(true)
+  empresa           Empresa   @relation(fields: [empresaId], references: [id])
+  pedidos           Pedido[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ventas Venta[]
+}
+
+model Venta {
+  id              String   @id @default(uuid())
+  numeroFactura   String?
+  montoFactura    Float?
+  puntoVenta      Int?
+  tipoComprobante String?
+  cae             String?
+  estadoFiscal    EstadoFiscal @default(NO_ENVIADO)
+  fiscalData      Json?
+  montoTotal      Float    @default(0)
+  descuento       Float    @default(0)
+  recargo         Float    @default(0)
+  facturada       Boolean  @default(false)
+  fecha           DateTime @default(now())
+
+  clienteId String
+  cliente   Cliente @relation(fields: [clienteId], references: [id])
+
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  empresaId String
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  items VentaItem[]
+}
+
+model VentaItem {
+  id      String @id @default(uuid())
+  ventaId String
+  venta   Venta  @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+
+  articuloId String
+  articulo   Articulo @relation(fields: [articuloId], references: [id])
+
+  cantidadUnidades Float @default(0)
+  cantidadKilos    Float @default(0)
+  precioUnitario   Float @default(0)
+  subtotal         Float @default(0)
+
+  inventarioId String
+  inventario   Inventario @relation(fields: [inventarioId], references: [id], onDelete: Restrict)
+}
+
+model ProduccionLog {
+  id    String   @id @default(uuid())
+  fecha DateTime @default(now())
+
+  // Producto resultante
+  productoNombre String
+  unidades       Float
+  peso           Float
+
+  usuarioNombre String
+
+  empresaId String
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  inventarioOrigenId String
+  inventarioOrigen   Inventario @relation("InventarioOrigen", fields: [inventarioOrigenId], references: [id], onDelete: Restrict)
+
+  inventarioDestinoId String
+  inventarioDestino   Inventario @relation("InventarioDestino", fields: [inventarioDestinoId], references: [id], onDelete: Restrict)
+
+  insumos InsumoConsumidoLog[]
+}
+
+model InsumoConsumidoLog {
+  id              String        @id @default(uuid())
+  produccionLogId String
+  produccionLog   ProduccionLog @relation(fields: [produccionLogId], references: [id], onDelete: Cascade)
+
+  articuloId String
+  articulo   Articulo @relation(fields: [articuloId], references: [id])
+
+  kilos    Float @default(0)
+  unidades Float @default(0)
+}
+
+model AuditLog {
+  id            String      @id @default(uuid())
+  accion        AccionAudit
+  tablaAfectada TablaAudit
+  registroId    String
+  motivo        String?
+
+  valorAnterior Json?
+  valorNuevo    Json?
+
+  usuarioId String
+  usuario   Usuario @relation(fields: [usuarioId], references: [id])
+
+  empresaId String
+  empresa   Empresa @relation(fields: [empresaId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Pedido {
+  id            String       @id @default(uuid())
+  nombre        String
+  razonSocial   String?
+  email         String?
+  telefono      String?
+  mensaje       String?      @db.Text
+  tag           String?
+  status        PedidoStatus @default(PENDIENTE)
+  cuit          String?
+  recordatorio  DateTime?
+  fechaCreacion DateTime     @default(now())
+  
+  empresaId     String
+  empresa       Empresa      @relation(fields: [empresaId], references: [id])
+
+  clienteId     String?
+  cliente       Cliente?     @relation(fields: [clienteId], references: [id])
+}

@@ -1,0 +1,598 @@
+nombre,costo,precio,stock_unidades,stock_kilos,unidades_por_caja,categoria,subcategoria,descripcion,long_description,codigo_barras,sku,serie,,,,,,,,,,,,,,
+"Calentador de Inmersion 11.5"" (CHILL CHASER)",,0,,,,"Radiografía Industrial",,"Calentador de inmersión fabricado en acero inoxidable con elemento calefactor de incoloy. Cuenta con protección térmica que evita el sobrecalentamiento en ausencia de agua.","El Immersion Heater 11.5” está diseñado para aplicaciones industriales que requieren un calentamiento seguro y confiable por inmersión. Está fabricado en acero inoxidable, lo que garantiza resistencia a la corrosión y una larga vida útil, incluso en entornos exigentes.
+
+Incorpora un elemento calefactor de incoloy, material reconocido por su excelente desempeño térmico y alta resistencia a la oxidación. El equipo cuenta con protección térmica integrada, que interrumpe automáticamente el funcionamiento si el calentador se activa sin estar sumergido en agua, evitando daños y aumentando la seguridad operativa.
+
+Una vez alcanzado un período de enfriamiento adecuado, el calentador se reactiva automáticamente, asegurando continuidad de uso y un funcionamiento eficiente. Es ideal para procesos de calentamiento en tanques utilizados en aplicaciones industriales y de ensayos no destructivos.",,,,,,,,,,,,,,,,,
+"AGFA Film Desnudo 70MM x 305M D3",,0,,,,"Radiografía Industrial",,"Film Desnudo 70MM x 305M D3","Film radiográfico AGFA D3 de 70 mm x 305 m, ideal para aplicaciones de radiografía industrial que requieren excelente nitidez y alto contraste. Su grano fino permite detectar discontinuidades con gran precisión en ensayos no destructivos.",,,,,,,,,,,,,,,,,
+"Termómetro de vidrio",,0,,,,"Radiografía Industrial",,"Termómetro sensible para aplicaciones con rayos X","Termómetro de alta sensibilidad especialmente diseñado para aplicaciones de procesamiento radiográfico con rayos X. Está encerrado en un resistente cuerpo de vidrio y correctamente lastrado para permitir que flote en posición vertical, asegurando una lectura precisa y estable durante su uso.
+
+Dispone de una escala clara y fácil de leer, con referencia marcada a 68 °F, facilitando el control de temperatura en procesos donde la precisión es fundamental. En la parte superior incorpora un ojo de suspensión, que permite colgar el termómetro cuando no está en uso o durante el monitoreo en tanques y recipientes.
+
+Es una herramienta confiable y práctica para el control de temperatura en entornos industriales y de ensayos no destructivos, contribuyendo a la correcta calidad del procesamiento radiográfico.",,,,,,,,,,,,,,,,,
+"Tubo Guia",,0,,,,"Radiografía Industrial",,,"Tuboss guia fabricados en acero inoxidable flexible, cuentan con un recubrimiento protector de polivinilo. Todos los tubos guía y extensiones tienen una longitud estándar de 7 pies (2,1 m). Se pueden suministrar longitudes especiales bajo pedido.",,,,,,,,,,,,,,,,,
+"Veo 3",,0,,,,Ultrasonido,,"Equipo avanzado de ultrasonido phased array diseñado para inspecciones críticas que requieren máxima precisión. Incorpora tecnología digital de última generación, TFM en vivo, pantalla táctil intuitiva y flujos de trabajo optimizados, permitiendo realizar inspecciones rápidas, confiables y con alta resolución en soldaduras y componentes metálicos.","El Veo3 es la nueva generación de instrumentos de ultrasonido phased array diseñados para inspecciones de alta exigencia en soldaduras y componentes industriales. Combina una arquitectura digital superior con procesamiento avanzado, ofreciendo TFM en tiempo real, visualización simultánea de PA, TOFD y TFM, y una interfaz táctil moderna que simplifica la configuración y operación.
+
+Su tecnología permite realizar inspecciones con mayor resolución, velocidad y confiabilidad, manteniendo los procedimientos actuales sin necesidad de modificar el flujo de trabajo aprobado del cliente. El sistema incorpora asistentes automáticos, plantillas de usuario y herramientas intuitivas que optimizan el ajuste del equipo, mientras que su memoria de alta capacidad asegura el registro completo de datos para trazabilidad y análisis avanzado.
+
+El Veo3 está diseñado para inspeccionar con confianza, brindando capacidad multitécnica en vivo, alto rendimiento en la caracterización de defectos y una visualización de indicaciones más precisa gracias al TFM Intermodal (TFMi™). Es la solución ideal para profesionales que requieren resultados claros, repetibles y de nivel superior en integridad estructural.",,,,,,,,,,,,,,,,,
+WAVE,,0,,,,Ultrasonido,,"Detector de fallas ultrasónico para inspecciones no destructivas","Integra las tecnologías más avanzadas del mercado para ofrecer inspecciones no destructivas más rápidas, precisas y eficientes. Su interfaz completamente personalizable permite adaptar el equipo a tus procesos y procedimientos, con todos los parámetros clave accesibles en menos de dos clics.
+
+Una de sus funciones más destacadas es el Interactive Scan Plan, capaz de reproducir geometrías complejas como superficies curvas y uniones en T. Combinado con un sistema de ray-tracing en tiempo real, el WAVE facilita la diferenciación entre una indicación real y una señal geométrica, reduciendo falsos llamados y evitando reparaciones innecesarias. Además, permite importar piezas personalizadas, expandiendo las posibilidades de visualización y optimizando aún más el diagnóstico.
+
+Gracias a su tecnología UTouch, el dispositivo funciona con la misma facilidad que un smartphone, incluso en entornos exigentes. Su potente conectividad Wi-Fi facilita la transferencia de datos, instalación de aplicaciones y gestión de calibraciones y versiones de software directamente desde el campo.
+
+El WAVE está diseñado para maximizar la productividad del operador, minimizar errores y ofrecer un rendimiento superior en cualquier inspección ultrasónica.",,,,,,,,,,,,,,,,,
+"Masterscan D-70",,0,,,,Ultrasonido,,"Detector de fallas ultrasónico para inspecciones no destructivas","El Masterscan D-70 de Sonatest es un detector de fallas ultrasónico reconocido por su durabilidad, precisión y rendimiento superior en una amplia variedad de aplicaciones industriales. Su diseño robusto, fabricado con materiales de grado automotriz resistentes a impactos y probado bajo estándares MIL810-G, garantiza un funcionamiento confiable en ambientes exigentes, incluso a temperaturas superiores a 55 °C. Con una batería que ofrece hasta 10.5 horas de autonomía, este equipo está pensado para inspecciones intensivas en campo.
+
+El Masterscan D-70 integra capacidades avanzadas como B-Scan codificado, Advanced Thickness Logging y Dryscan, lo que permite al inspector obtener mediciones precisas y registros completos en soldaduras, detección de corrosión, inspección de materiales compuestos, pruebas de adherencia, forjas, fundiciones y aplicaciones generales de UT. Su pulser de 450V con modos square y spike ofrece un excelente poder de penetración y una alta resolución en zonas cercanas a la superficie, acompañado de una relación señal-ruido excepcional.
+
+La pantalla VGA transflectiva a color garantiza máxima visibilidad tanto en interiores como a plena luz del sol, con 9 paletas de colores ajustables, incluyendo un modo que emula LCD blanco sobre negro para mejorar la lectura en condiciones cambiantes.
+
+Para inspecciones de soldaduras y tuberías, el Masterscan D-70 incorpora herramientas avanzadas de dimensionamiento de defectos, fundamentales para empresas que trabajan bajo diferentes normas internacionales. Entre las opciones de software disponibles se incluyen DAC, DGS/AVG, TCG, BEA, AWS, API, Interface Trigger, software de corrosión y Dryscan.
+
+El equipo se complementa con UT-Lity, el software gratuito de gestión de datos que permite visualizar, almacenar y administrar calibraciones, A-Scans, B-Scans y registros de espesores tanto en el dispositivo como en PC. UT-Lity facilita la creación de informes personalizados, exportación de datos y actualización del firmware del detector.
+
+El Masterscan D-70 es la solución ideal para quienes necesitan un detector ultrasónico confiable, portátil y preparado para los desafíos del trabajo diario en inspección no destructiva.",,,,,,,,,,,,,,,,,
+"Masterscan 700m",,0,,,,Ultrasonido,,"Detector de fallas ultrasónico de alta gama para inspecciones no destructivas","El Masterscan 700M de Sonatest es un detector de fallas ultrasónico de alto rendimiento, diseñado para ofrecer precisión y confiabilidad en las inspecciones más exigentes. Su construcción robusta con materiales resistentes a impactos de grado automotriz y certificaciones MIL810-G garantiza un funcionamiento confiable en entornos extremos, incluyendo temperaturas superiores a 55 °C y condiciones de humedad. Con una batería de hasta 13.5 horas, es perfecto para inspecciones prolongadas en campo.
+
+Este equipo de alta gama incluye un pulser de 450V en modos Spike y Square, salida y entrada sincronizadas, y una pantalla transflectiva VGA a color con 9 paletas ajustables, incluyendo modo LCD blanco sobre negro, para máxima visibilidad en cualquier condición de iluminación. La combinación de alta resolución cerca de la superficie, potencia de penetración y excelente relación señal-ruido lo hace ideal para aplicaciones industriales críticas.
+
+El Masterscan 700M incorpora herramientas avanzadas de dimensionamiento de defectos, esenciales para soldaduras, tuberías y otros componentes que requieren cumplimiento de estándares internacionales. Las técnicas de dimensionamiento y software opcionales incluyen DAC, Split DAC, DGS/AVG, TCG, BEA, AWS, API, Interface Trigger, software de corrosión y Dryscan.
+
+El equipo se complementa con UT-Lity, el software gratuito de gestión de datos que permite visualizar, almacenar y administrar calibraciones, A-Scans, B-Scans y registros de espesores tanto en el dispositivo como en PC. Con UT-Lity es posible crear informes personalizados, exportar datos a hojas de cálculo o sistemas de gestión de activos y actualizar el firmware del detector fácilmente.
+
+El Masterscan 700M combina durabilidad, versatilidad y precisión, ofreciendo una solución integral para inspecciones ultrasónicas en soldaduras, corrosión, composites, forjas, fundiciones y generación de energía.",,,,,,,,,,,,,,,,,
+"Sitescan D-50",,0,,,,Ultrasonido,,"Detector de fallas ultrasónico de nivel inicial para inspecciones no destructivas","El Sitescan D-50 de Sonatest es un detector de fallas ultrasónico confiable y fácil de usar, diseñado para ofrecer rendimiento y durabilidad en inspecciones industriales básicas y profesionales. Su carcasa resistente a impactos, construida con materiales de grado automotriz, y su capacidad para funcionar en temperaturas superiores a 55 °C, garantizan un uso confiable en entornos exigentes. Con una batería de hasta 10.5 horas, el Sitescan D-50 permite inspecciones prolongadas sin interrupciones.
+
+Este equipo de entrada cuenta con un pulser de 200V en modo Spike de 50ns, ganancia de 0.5 dB y una pantalla transflectiva VGA a color, con 9 paletas ajustables, incluyendo modo LCD blanco sobre negro para máxima visibilidad en cualquier condición de iluminación. Su diseño compacto y opcional funda de goma facilita su transporte y protección en campo.
+
+El Sitescan D-50 incluye herramientas avanzadas de dimensionamiento de defectos, esenciales para soldaduras, tuberías, forjas y fundiciones, permitiendo reducir los tiempos de análisis y agilizar las inspecciones. Las técnicas de dimensionamiento y software opcionales incluyen DAC, Split DAC, DGS/AVG, TCG, BEA, AWS, API e Interface Trigger, así como software de corrosión para aplicaciones especializadas.
+
+Además, viene con UT-Lity Lite, el software gratuito de gestión de datos que permite visualizar, almacenar y administrar calibraciones, A-Scans, B-Scans y registros de espesores tanto en el dispositivo como en PC. UT-Lity Lite facilita la creación de informes personalizados, exportación de datos y actualización del firmware, brindando una solución completa para inspecciones UT.
+
+El Sitescan D-50 es la opción ideal para técnicos que buscan un detector ultrasónico fiable, portátil y eficiente, con todas las funciones esenciales para inspecciones de soldaduras, corrosión y materiales básicos.",,,,,,,,,,,,,,,,,
+"Sitescan 500s",,0,,,,Ultrasonido,,"Detector de fallas ultrasónico de nivel inicial para inspecciones no destructivas","El Sitescan 500S de Sonatest es un detector de fallas ultrasónico confiable y eficiente, diseñado para ofrecer rendimiento y durabilidad en inspecciones industriales básicas y profesionales. Su carcasa resistente a impactos, fabricada con materiales de grado automotriz, y su capacidad para operar en temperaturas superiores a 55 °C garantizan un uso seguro en entornos exigentes. La pantalla transflectiva VGA a color proporciona máxima visibilidad en cualquier condición de iluminación, con 9 paletas de colores ajustables, incluyendo un modo LCD blanco sobre negro.
+
+Este detector de nivel inicial incluye un pulser de 200V en modo Spike de 50 ns, con salidas sincronizadas y proporcionales, ofreciendo un rendimiento confiable para inspecciones de soldaduras, corrosión, forjas, fundiciones y aplicaciones generales de UT. Su diseño robusto y portátil asegura comodidad y protección durante el uso en campo.
+
+El Sitescan 500S incorpora herramientas avanzadas de dimensionamiento de defectos, reduciendo el tiempo de análisis y acelerando la inspección. Las técnicas de dimensionamiento y software opcionales incluyen DAC, Split DAC, DGS/AVG, TCG, BEA, AWS, API e Interface Trigger, así como software de corrosión para aplicaciones especializadas.
+
+Además, viene con UT-Lity Lite, el software gratuito de gestión de datos que permite visualizar, almacenar y administrar calibraciones, A-Scans, B-Scans y registros de espesores tanto en el dispositivo como en PC. UT-Lity Lite permite crear informes personalizados, exportar datos a hojas de cálculo o sistemas de gestión de activos y actualizar el firmware del detector fácilmente.
+
+El Sitescan 500S es la solución ideal para técnicos que buscan un detector ultrasónico portátil, robusto y confiable, con todas las funciones esenciales para inspecciones de soldaduras, corrosión y materiales básicos.",,,,,,,,,,,,,,,,,
+"Railscan 125+",,0,,,,Ultrasonido,,"Detector de fallas ultrasónico portátil y robusto, diseñado para inspecciones ferroviarias de alta precisión","El Railscan 125+ de Sonatest es un detector de fallas ultrasónico líder en el mercado ferroviario, diseñado para ofrecer máxima resolución cerca de la superficie y excelente poder de penetración en inspecciones de rieles. Su construcción portátil y robusta, con carcasa de alta densidad y sellado IP67, garantiza confiabilidad y resistencia en los entornos más exigentes del sector ferroviario.
+
+Equipado con amplificadores Narrow Band de 2 MHz y 5 MHz, hasta 3 puertas de medición y encoder-driven auto-logging, el Railscan 125+ permite realizar inspecciones completas, incluyendo soluciones de rail walking stick, dimensionamiento manual de defectos y medición de profundidad del fondo del riel. Su excelente relación señal-ruido asegura que incluso defectos sutiles sean detectados con precisión.
+
+El Railscan 125+ ha sido aprobado por Network Rail, el principal gestor de infraestructura ferroviaria del Reino Unido, garantizando su eficacia en procedimientos de control de calidad y evaluación de la integridad de la red ferroviaria.
+
+Su pantalla transflectiva VGA a color proporciona máxima visibilidad, incluso a plena luz solar, con 9 paletas de colores ajustables y un modo de emulación LCD blanco sobre negro. El modo de pantalla completa maximiza el área del A-scan y la función de captura de picos asegura que cualquier indicación sea claramente visible, incluso a altas velocidades de inspección.
+
+El diseño del Railscan 125+ combina robustez y facilidad de uso, con un menú intuitivo que guía al operador en cada tarea, reduciendo errores y aumentando la productividad. Además, viene con UT-Lity, el software gratuito de gestión de datos que permite cargar, almacenar, analizar y exportar registros de inspección, configuraciones y actualizaciones de firmware, optimizando la administración de la información de inspección.
+
+El Railscan 125+ es la elección ideal para compañías ferroviarias y técnicos que buscan un detector ultrasónico confiable, preciso y duradero, con todas las funciones necesarias para garantizar la seguridad y calidad de la infraestructura ferroviaria.",,,,,,,,,,,,,,,,,
+RSflite,,0,,,,Ultrasonido,,"Equipo de inspección ultrasónica ideal para composites y mapeo de corrosión","El RSflite de Sonatest es un instrumento de inspección ultrasónica lineal diseñado para aplicaciones de inspección de composites y mapeo de corrosión en estructuras metálicas y laminados modernos, incluyendo aluminio, acero y composites de fibra de carbono. Este equipo proporciona resultados rápidos y precisos, generando mapas completos de inspección que muestran defectos, pérdidas de pared y ubicaciones de fijaciones, lo que facilita el análisis y la planificación de mantenimiento.
+
+Cuando se combina con UTmap y Wheelprobe, el RSflite ofrece una solución integrada que optimiza la eficiencia de inspección, garantizando informes detallados y repetibles, con exportación a CSV para una gestión de datos simple y profesional. Su capacidad para generar informes de integridad y de imagen permite a los ingenieros evaluar estructuras de manera confiable y uniforme.
+
+Con más de 60 años de experiencia en el sector, Sonatest asegura que el RSflite cumpla con los más altos estándares de calidad y confiabilidad, convirtiéndolo en la elección ideal para inspecciones industriales exigentes en composites y estructuras metálicas.",,,,,,,,,,,,,,,,,
+"Alphagage+",,0,,,,Ultrasonido,,"Medidor ultrasónico de alta precisión para corrosión y espesores, compatible con transductores de un solo o doble elemento.","El AlphaGage+ de Sonatest es un instrumento ultrasónico líder en mediciones de corrosión y espesores, diseñado para brindar precisión, confiabilidad y flexibilidad en múltiples industrias. Existen dos versiones:
+
+AlphaGage+ Corrosion (C):
+Ideal para estructuras de acero sujetas a corrosión, utiliza transductores de doble elemento para medir el espesor restante, incluso sobre recubrimientos mediante mediciones echo-to-echo. Permite un amplio rango de espesores, ajustes de temperatura, almacenamiento de hasta 2.700 configuraciones y funciones de seguridad como bloqueo por supervisor y contraseña. Alarmas visuales y vibración mejoran la seguridad en inspecciones críticas.
+
+AlphaGage+ Precision (P):
+Diseñado para mediciones de alta precisión con transductores de un solo elemento, ofreciendo resolución de 1 micrón y rango de 0.006 a 23” en acero. Compatible con transductores de contacto, delay line e inmersión (1–30 MHz), cuenta con Zoom Auto Tracking, Square Wave Pulser y detección automática de inversión de fase con alarma. Almacena hasta 2.700 configuraciones y ofrece modos múltiples para aplicaciones desafiantes, garantizando resultados confiables en entornos industriales exigentes.
+
+El AlphaGage+ combina facilidad de uso, robustez y avanzadas capacidades de medición, convirtiéndolo en la herramienta ideal para ingenieros y técnicos que requieren inspecciones precisas de corrosión y espesores en acero y otros materiales críticos.",,,,,,,,,,,,,,,,,
+"Microgage III",,0,,,,Ultrasonido,,"Medidor de espesor ultrasónico diseñado para mediciones precisas en campo, con funciones configurables según las necesidades de la inspección.","La serie Microgage III combina tecnología digital avanzada con un diseño robusto y portátil para ofrecer mediciones de espesor ultrasónicas rápidas, precisas y fáciles de realizar. Disponible en múltiples versiones (B, estándar, DL, W y DLW), permite elegir entre pantalla monocromática o color, con opciones de A-Scan y B-Scan según las necesidades de cada inspección.
+
+Todos los modelos son upgradeables en campo, evitando tiempos de inactividad o envíos a fábrica. Su función Echo-to-Echo permite medir materiales sin remover pintura o recubrimientos, mientras que su ancho de banda de 0.5 a 30 MHz y la ganancia ajustable facilitan el trabajo en piezas delgadas, materiales compuestos y superficies desafiantes.
+
+El Microgage III ofrece características avanzadas como datalogger de hasta 100.000 lecturas, almacenamiento de 30 configuraciones, pantalla legible a pleno sol, A-Scan en vivo (opcional) y ajustes en tiempo real de ganancia, rectificación, zoom y blankings. Es ideal para aplicaciones en fibra de vidrio, acero, titanio, neumáticos, componentes aeronáuticos y plásticos industriales.
+
+Compacto, liviano (230 g) e impulsado por dos baterías AA con excelente autonomía, es una herramienta confiable y versátil para inspecciones en campo y entornos industriales exigentes.",,,,,,,,,,,,,,,,,
+"Sonagage IV",,0,,,,Ultrasonido,,"Medidor de espesor por corrosión de alto rendimiento, ideal para inspecciones en tuberías, tanques, recipientes a presión y cascos de barcos","El Sonagage IV es el medidor de espesor ultrasónico especializado en corrosión más completo de su categoría. Diseñado para inspecciones industriales exigentes, ofrece un rango de medición extremadamente amplio (0.020” a 23”, según material y transductor) y compatibilidad con sondas de alta temperatura que permiten trabajar hasta 950 °F / 509 °C en uso intermitente.
+
+Este equipo permite almacenar hasta 2.700 configuraciones personalizadas, lo que lo convierte en una herramienta ideal para tareas repetitivas o inspecciones en múltiples puntos de control. Para versiones con datalogger, incorpora una función de File Compare, que muestra las lecturas antiguas junto con las nuevas, permitiendo evaluar la evolución de la corrosión en tiempo real.
+
+Incluye funciones avanzadas como corrección automática de temperatura, GridView para organización de mediciones, bloqueo por contraseña y alertas configurables que pueden cambiar de color o vibrar ante alarmas. Es la solución ideal para inspecciones en tubos, tanques, calderas, recipientes a presión, depósitos de almacenamiento, cascos de barcos, vidrio y plásticos.",,,,,,,,,,,,,,,,,
+"T-Gage V",,0,,,,Ultrasonido,,"Medidor de espesor ultrasónico diseñado para inspecciones en condiciones industriales exigentes","La serie T-Gage V combina tecnología avanzada con una construcción robusta para facilitar inspecciones de espesor en ambientes industriales difíciles. Todos los modelos incluyen pantalla monocromática, controles intuitivos y funciones esenciales como Scan Mode, Hold, Freeze y ganancia ajustable. Además, la serie permite agregar mejoras a lo largo de la vida útil del equipo, asegurando una solución flexible y escalable.
+
+El modelo básico T-Gage VB ofrece mediciones confiables y económicas, ideal para acero y estructuras con acceso por un solo lado. La versión intermedia T-Gage V incorpora funciones clave como Echo-to-Echo, ajuste de ganancia, alarmas con vibración e iluminación del teclado, además de opciones de actualización a A/B-Scan y al software de datalogging Data XLS.
+
+Para máxima capacidad, el T-Gage VDL integra todas las funciones avanzadas: datalogger para hasta 50.000 lecturas, B-Scan no codificado, Echo-to-Echo, alarmas visuales y vibratorias, indicador automático de desgaste del transductor y compatibilidad con Data XLS. También incluye accesorios como pouch personalizado, clip de cinturón y banda elástica.
+
+Gracias a su amplio rango de medición (0.20 mm – 508 mm), sondas para alta temperatura, carcasa IP54 de alto impacto y autonomía de hasta 50 horas, la serie T-Gage V es ideal para inspecciones en tuberías, tanques, calderas, recipientes a presión, cascos de barcos y aplicaciones en vidrio y plásticos.",,,,,,,,,,,,,,,,,
+"PFINDER 800",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"LÍQUIDO PENETRANTE CON CONTRASTE DE COLOR | ROJO + FLUORESCENTE Tipo II+III | Sensibilidad Nivel 2   lata-de-aerosol-500-ml 
+bidón-5-l tambor-200-l","para ofrecer un rendimiento óptimo manteniendo al mismo tiempo un fuerte compromiso con el cuidado del medio ambiente. Es fácilmente biodegradable y no requiere tratamiento de aguas residuales, lo que lo convierte en una opción ideal para procesos industriales que buscan reducir su impacto ecológico sin resignar calidad. Además, su formulación es casi inodora, lo que mejora notablemente las condiciones de trabajo, y está libre de aromáticos y compuestos azoicos, aportando mayor seguridad para el usuario y para el entorno.
+
+En cuanto a su desempeño técnico, proporciona indicaciones brillantes, nítidas y de alto contraste, permitiendo detectar con claridad cualquier defecto durante el proceso de inspección. Su facilidad de enjuague garantiza una baja fluorescencia de fondo, lo que mejora la visibilidad y la precisión de las evaluaciones. Gracias a su baja viscosidad, el consumo del producto se reduce considerablemente, ofreciendo un uso más eficiente y económico sin comprometer los resultados.",,,,,,,,,,,,,,,,,
+"PFINDER 860",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"LÍQUIDO PENETRANTE CON CONTRASTE DE COLOR | ROJO Tipo II | Sensibilidad Nivel 2 lata-de aerosol-500-ml
+ bidón-5-l
+ tambor-200-l","Este producto destaca por su formulación sustentable y segura, siendo fácilmente biodegradable y sin necesidad de tratamiento de aguas residuales, lo que reduce significativamente el impacto ambiental del proceso. Su composición es casi inodora y totalmente libre de aromáticos y compuestos azoicos, garantizando un entorno de trabajo más seguro y confortable.
+
+En términos de desempeño, ofrece indicaciones brillantes, nítidas y de alto contraste, permitiendo una detección clara y precisa. Su excelente facilidad de enjuague asegura baja fluorescencia de fondo, optimizando la visibilidad durante la inspección. Además, su baja viscosidad contribuye a un menor consumo, resultando en un uso más eficiente y económico del producto.",,,,,,,,,,,,,,,,,
+"PFINDER 871",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"""REVELADOR BASE SOLVENTE lata-de-aerosol-500-ml 
+bidón-10-l""","Este producto ha sido desarrollado para ofrecer un rendimiento superior con un enfoque responsable hacia el medio ambiente. Presentado en una lata de aerosol con huella de carbono minimizada, contribuye a reducir el impacto ambiental sin comprometer la eficacia del revelado. Su alta opacidad garantiza un bajo consumo, permitiendo obtener resultados óptimos utilizando menos producto.
+
+Es fácilmente biodegradable, lo que lo convierte en una opción más segura y sustentable para diferentes aplicaciones industriales. Posee excelentes propiedades de revelado, generando capas uniformes que facilitan la detección precisa de indicaciones. Además, su secado rápido mejora la eficiencia del proceso y permite avanzar con la inspección en menos tiempo.
+
+Al finalizar el trabajo, puede removerse fácilmente con agua o incluso con un trapo o papel, simplificando la limpieza y evitando el uso de productos adicionales.",,,,,,,,,,,,,,,,,
+"PFINDER 890",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"LIMPIADOR Y REMOVEDOR  lata-de-aerosol-500-ml
+ bidón-5-l","Este producto se presenta en una lata de aerosol con huella de carbono minimizada, lo que lo convierte en una alternativa más responsable y alineada con prácticas sustentables dentro de los procesos industriales. Actúa como un potente limpiador multiusos, capaz de eliminar de manera rápida y eficiente residuos, suciedad y contaminantes presentes en diversas superficies.
+
+Está aprobado como removedor para penetrantes PFINDER, garantizando compatibilidad total y un desempeño seguro durante las etapas de limpieza del proceso de inspección. Además, ha sido formulado especialmente para remover el contraste PFINDER 280, asegurando una limpieza profunda sin dejar residuos y permitiendo una preparación óptima de la superficie para los siguientes pasos del control no destructivo.",,,,,,,,,,,,,,,,,
+"PFINDER 895",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"REMOVEDOR lata-de-aerosol-500-ml","Limpiador especial a base de isopropanol desarrollado para ensayos con líquidos penetrantes y partículas magnéticas. Funciona tanto como pre limpiador, eliminando aceites, grasas y contaminantes de la superficie a inspeccionar, como removedor aprobado de penetrantes PFINDER, garantizando resultados confiables y seguros dentro del proceso de END.
+
+Su formulación ofrece un olor suave, una excelente capacidad de limpieza y una presentación en lata de aerosol con huella de carbono minimizada, lo que aporta un uso más sustentable sin comprometer el rendimiento. Es especialmente adecuado para la limpieza general y la eliminación eficiente de aceites y grasas. Se recomienda verificar previamente la compatibilidad del material, especialmente en superficies plásticas.
+Método de eliminación: C según EN ISO 3452-1.",,,,,,,,,,,,,,,,,
+"PFINDER 900",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"LÍQUIDO PENETRANTE | FLUORESCENTE Tipo I | Sensibilidad Nivel 0.5    tambor-200-l contenedor-1000-l","Líquido penetrante fluorescente de Tipo I y Nivel de Sensibilidad 0.5 formulado para brindar resultados confiables en inspecciones donde se requiere buena visibilidad de indicaciones sin la necesidad de procesos complejos ni productos agresivos. Su composición es fácilmente biodegradable, lo que no requiere tratamiento de aguas residuales, reduciendo el impacto ambiental en comparación con penetrantes convencionales.
+
+Posee un olor casi imperceptible y está completamente libre de aromáticos, hidrocarburos y metales pesados, lo que genera un entorno de trabajo más seguro y confortable. Su desempeño destaca por ofrecer indicaciones brillantes, nítidas y de alto contraste, facilitando la detección de defectos incluso en condiciones exigentes.
+
+La excelente facilidad de enjuague garantiza una baja fluorescencia de fondo, mejorando la claridad de la inspección y evitando interferencias visuales. Además, gracias a su baja viscosidad, el producto permite un consumo reducido, lo que se traduce en un uso más eficiente y económico sin comprometer la sensibilidad ni la calidad del ensayo.",,,,,,,,,,,,,,,,,
+"PFINDER 901",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"LÍQUIDO PENETRANTE | FLUORESCENTE Tipo I | Sensibilidad Nivel 1       tambor-200-l contenedor-1000-l","El PFINDER 901 es un penetrante fluorescente de Tipo I – Sensibilidad Nivel 1, diseñado para ofrecer un desempeño confiable y una interpretación clara en la detección de discontinuidades superficiales. Su formulación es altamente biodegradable, no requiere tratamiento de aguas residuales, es casi inodora y está completamente libre de aromáticos, hidrocarburos y metales pesados, lo que garantiza un uso más seguro y ambientalmente responsable.
+
+Este penetrante se lava directamente con agua y proporciona indicaciones brillantes, nítidas y de alto contraste, asegurando una detección precisa. Gracias a su excelente capacidad de enjuague, genera baja fluorescencia de fondo, lo que facilita la interpretación incluso en superficies rugosas. Su baja viscosidad contribuye a un consumo reducido, optimizando el uso del producto sin comprometer la calidad del ensayo.
+
+PFINDER 901 está calificado para pruebas de penetración en piezas a temperaturas de hasta +100 °C, conforme a EN ISO 3452-5 y EN ISO 3452-6. Cumple con la norma DIN EN ISO 3452-1, clasificado como penetrante Tipo I.
+Métodos de uso: Tipo I, Método A, C, E — Forma a, b, c, d.",,,,,,,,,,,,,,,,,
+"PFINDER 902",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"LÍQUIDO PENETRANTE | FLUORESCENTE Tipo I | Sensibilidad Nivel 2 lata-de-aerosol-500-ml
+ bidón-5-l tambor-200-l contenedor-1000-l","PFINDER 902 es un líquido penetrante fluorescente de Tipo I – Sensibilidad Nivel 2, formulado para ofrecer una excelente capacidad de detección con indicaciones de alto contraste y gran nitidez, incluso en inspecciones exigentes. Su composición es fácilmente biodegradable y no requiere tratamiento de aguas residuales, contribuyendo a procesos más sostenibles y respetuosos con el medio ambiente.
+
+El producto es casi inodoro y está completamente libre de aromáticos, hidrocarburos y metales pesados, lo que garantiza un entorno de trabajo más seguro y cómodo para el operador. Gracias a su formulación optimizada, PFINDER 902 proporciona indicaciones brillantes y nítidas, facilitando la identificación de grietas y discontinuidades.
+
+Su excelente facilidad de enjuague asegura una baja fluorescencia de fondo, mejorando la claridad en la interpretación. Además, su baja viscosidad permite un consumo reducido, haciendo el uso más eficiente sin comprometer la calidad del ensayo.
+
+PFINDER 902 es ideal para aplicaciones donde se requiere un penetrante de mayor sensibilidad sin complicar el proceso, ofreciendo un balance óptimo entre rendimiento, seguridad y sustentabilidad.",,,,,,,,,,,,,,,,,
+"PFINDER 900W",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"PENETRANTE | FLUORESCENTE Tipo I | Sensibilidad Nivel 0.5  tambor-200-l
+ contenedor-1000-l","Este penetrante fluorescente de Tipo I – Sensibilidad Nivel 0.5 ofrece un desempeño confiable en ensayos donde se requiere una sensibilidad moderada y una interpretación clara de las indicaciones. Su formulación presenta un excelente perfil de seguridad, ya que el producto no requiere clasificación ni etiquetado de peligro según el reglamento CE, lo que lo convierte en una alternativa más segura para los operadores y el entorno de trabajo.
+
+El producto es fácilmente biodegradable y no necesita tratamiento de aguas residuales, reduciendo significativamente el impacto ambiental del proceso. Además, está libre de aromáticos, hidrocarburos y metales pesados, contribuyendo a un uso más responsable y ecoamigable.
+
+En cuanto a su rendimiento, proporciona indicaciones brillantes, nítidas y de alto contraste, garantizando una detección precisa. Su excelente facilidad de enjuague genera una baja fluorescencia de fondo, permitiendo una interpretación clara y sin interferencias. Gracias a su baja viscosidad, el consumo de producto es reducido, optimizando su aplicación sin comprometer la calidad del ensayo.
+
+Este penetrante es ideal para procesos que requieren un producto sustentable, seguro y eficiente, manteniendo la confiabilidad característica de los ensayos con líquidos penetrantes fluorescentes.",,,,,,,,,,,,,,,,,
+"PFINDER 923",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"PENETRANTE | FLUORESCENTE Tipo I | Sensibilidad Nivel 3         tambor-200-l contenedor-1000-l","PFINDER 923 es un penetrante fluorescente de Tipo I – Sensibilidad Nivel 3, desarrollado para aplicaciones donde se requiere alta sensibilidad y una interpretación extremadamente precisa de indicaciones. Su formulación avanzada permite detectar discontinuidades muy finas, garantizando resultados confiables incluso en inspecciones críticas.
+
+Este producto es fácilmente biodegradable y no requiere tratamiento de aguas residuales, lo que reduce considerablemente el impacto ambiental del proceso. Además, es casi inodoro y está completamente libre de aromáticos, hidrocarburos y metales pesados, ofreciendo un entorno de trabajo más seguro, limpio y confortable.
+
+En términos de desempeño, PFINDER 923 proporciona indicaciones brillantes, nítidas y de alto contraste, permitiendo identificar defectos con gran precisión. Su excelente facilidad de enjuague asegura una baja fluorescencia de fondo, favoreciendo una interpretación clara sin interferencias. Gracias a su baja viscosidad, el consumo del producto es reducido, aumentando la eficiencia sin comprometer la calidad del ensayo.
+
+Ideal para industrias que requieren la máxima sensibilidad en métodos de inspección por líquidos penetrantes, combinando rendimiento superior con sostenibilidad y seguridad.",,,,,,,,,,,,,,,,,
+"PFINDER 871",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"REVELADOR BASE SOLVENTE  lata-de-aerosol-500-ml bidón-10-l","PFINDER 871 es un revelador de base solvente diseñado para ensayos con líquidos penetrantes, tanto en pruebas de contraste de color como en inspecciones con penetrantes fluorescentes. Su formulación ofrece un rendimiento superior con una aplicación eficiente y sustentable, gracias a su presentación en lata de aerosol con huella de carbono minimizada.
+
+El producto posee alta opacidad, lo que asegura un bajo consumo y la formación de una capa de revelado uniforme y efectiva. Además, es fácilmente biodegradable, lo que reduce su impacto ambiental sin comprometer su desempeño.
+
+PFINDER 871 destaca por sus excelentes propiedades de revelado, permitiendo que las indicaciones aparezcan de manera rápida, nítida y bien definida. Su secado rápido agiliza la secuencia de inspección, optimizando los tiempos de trabajo. Al finalizar el proceso, el revelador puede retirarse fácilmente con agua, trapo o papel, simplificando las tareas de limpieza.
+
+Es adecuado para ensayos a temperaturas de pieza comprendidas entre –2",,,,,,,,,,,,,,,,,
+"PFINDER 940",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"REVELADOR SECO CONCENTRADO SOLUBLE EN AGUA bidón-10-l","PFINDER 940 es un revelador seco concentrado a base de agua, diseñado para ensayos con líquidos penetrantes donde se busca una alternativa eficiente, limpia y ambientalmente responsable. Su formulación fácilmente biodegradable y sin necesidad de tratamiento de aguas residuales lo convierte en una opción ideal para procesos que requieren mayor sustentabilidad sin sacrificar rendimiento.
+
+El producto es inodoro, lo que mejora significativamente el confort del operador durante el uso. Ofrece muy buenas propiedades de revelado, asegurando una formación uniforme de la capa reveladora y permitiendo visualizar indicaciones de manera nítida y confiable.
+
+Al ser un concentrado altamente eficiente, PFINDER 940 permite preparar grandes volúmenes de solución reveladora a partir de pequeñas cantidades de producto, optimizando costos y almacenamiento. Además, es fácilmente soluble en agua sin necesidad de agitadores, lo que agiliza su preparación y reduce los tiempos operativos.
+
+Ideal para usuarios que buscan una solución de revelado económica, segura, de bajo impacto ambiental y con excelente desempeño en aplicaciones de líquidos penetrantes.",,,,,,,,,,,,,,,,,
+"PFINDER 945",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"REVELADOR EN POLVO SECO  cubeta-10-l","PFINDER 945 es un revelador en polvo seco diseñado para ensayos con líquidos penetrantes, ofreciendo un rendimiento confiable y una excelente capacidad para resaltar indicaciones en superficies de inspección. Su formulación presenta un perfil de seguridad optimizado, ya que no requiere clasificación ni etiquetado de peligro según el reglamento CE, haciéndolo más seguro para el operador y el entorno de trabajo.
+
+El producto es inodoro, lo que mejora notablemente la experiencia de uso, especialmente en aplicaciones prolongadas o en espacios reducidos. Proporciona excelentes propiedades de revelado, formando una capa fina, uniforme y altamente reactiva que permite visualizar indicaciones con gran claridad y nitidez.
+
+Su aplicación es práctica y eficiente: el revelador puede removerse fácilmente con aire comprimido o con agua, simplificando los procedimientos de limpieza y reduciendo el tiempo necesario entre inspecciones.
+
+Ideal para aplicaciones donde se requiere un revelador seco de máxima eficiencia, fácil manejo y alta confiabilidad, combinando seguridad, simplicidad y un desempeño técnico sobresaliente.",,,,,,,,,,,,,,,,,
+"PFINDER 150",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"SUSPENSIÓN DE PARTÍCULAS MAGNÉTICAS | FLUORESCENTE Base aceite | listo para usar  lata-de-aerosol-500-ml
+ bidón-5-l","PFINDER 150 es una suspensión fluorescente de partículas magnéticas en base aceite, lista para usar y diseñada para ofrecer una detección rápida, confiable y de alta sensibilidad en ensayos por Magnetic Particle Testing (MT). Su formulación optimizada genera indicaciones nítidas, brillantes y estables, facilitando la identificación precisa de discontinuidades superficiales y subsuperficiales.
+
+El producto es casi inodoro y libre de silicones, aminas secundarias, nitritos y halógenos, lo que garantiza un uso seguro y reduce riesgos de corrosión, contaminación o incompatibilidad con materiales sensibles. La presentación en lata de aerosol con huella de carbono minimizada aporta una opción más sostenible y eficiente para aplicaciones rápidas o en campo.
+
+Presenta baja fluorescencia de fondo, asegurando una excelente relación señal/ruido y permitiendo una interpretación clara incluso en superficies complejas. Además, es compatible con materiales no ferrosos, lo que amplía su versatilidad en diferentes entornos industriales.
+
+Su formulación estable y su facilidad de aplicación lo convierten en una solución ideal para inspecciones exigentes en mantenimiento, fabricación y control de calidad.",,,,,,,,,,,,,,,,,
+"PFINDER 115",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"CONCENTRADO DE PARTÍCULAS MAGNÉTICAS | FLUORESCENTE Para mezclar con agua                  bote-1-l bidón-5-l","PFINDER 115 es un concentrado fluorescente de partículas magnéticas formulado para mezclarse con agua y obtener una suspensión altamente eficiente para ensayos por partículas magnéticas (MT). Su diseño permite un rendimiento confiable en la detección de discontinuidades superficiales y subsuperficiales, proporcionando resultados definidos y repetibles.
+
+El producto es inodoro, lo que mejora la experiencia de uso, especialmente en aplicaciones prolongadas o en ambientes cerrados. Está libre de aminas secundarias, nitritos y halógenos, reduciendo riesgos de corrosión y asegurando la compatibilidad con equipos y materiales sensibles.
+
+Gracias a su formulación optimizada, PFINDER 115 genera indicaciones brillantes, rápidas y estables, facilitando la identificación precisa de defectos bajo luz UV. Presenta además baja fluorescencia de fondo, garantizando una excelente relación señal/ruido y una interpretación clara incluso en condiciones exigentes.
+
+Este concentrado incorpora protección eficaz contra la corrosión, preservando tanto la superficie inspeccionada como los equipos utilizados en el proceso. La mezcla con agua se realiza fácilmente y permite obtener una suspensión homogénea y estable con un consumo eficiente del producto.
+
+Solución ideal para usuarios que buscan un concentrado fluorescente confiable, seguro, económico y con excelente desempeño para inspecciones magnéticas con partículas en suspensión acuosa.",,,,,,,,,,,,,,,,,
+"PFINDER 130",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"CONCENTRADO DE PARTÍCULAS MAGNÉTICAS | FLUORESCENTE Para mezclar con agua | con base en partículas negras  bote-1-l bidón-5-l","El PFINDER 130 es un concentrado de partículas magnéticas fluorescentes de alta calidad, diseñado para aplicaciones de Ensayos No Destructivos (END) bajo el método de Magnetic Particle Testing (MT). Su formulación avanzada a base de partículas negras fluorescentes permite obtener indicaciones altamente visibles, incluso en superficies de difícil inspección o en condiciones exigentes de iluminación UV.
+
+Este producto está desarrollado para mezclarse con agua, generando una suspensión estable y homogénea que asegura una distribución uniforme de las partículas durante la inspección. Gracias a esta estabilidad, las indicaciones se forman de manera rápida, nítida y confiable, facilitando la detección de discontinuidades superficiales y subsuperficiales en materiales ferromagnéticos.
+
+Es inodoro y está completamente libre de aminas secundarias, nitritos y halógenos, lo que lo convierte en un producto seguro para el operador y compatible con una amplia variedad de materiales. La baja fluorescencia de fondo garantiza una lectura clara de las indicaciones bajo luz UV, mejorando la sensibilidad del ensayo.
+
+Además, incluye protección eficaz contra la corrosión, lo que permite su uso sin comprometer la integridad del material ensayado ni los equipos utilizados. Es ideal para aplicaciones industriales donde se requieren resultados precisos, repetibles y de alta sensibilidad, como mantenimiento aeronáutico, automotriz, metalmecánica, energía y fabricación en general.
+
+En sus presentaciones de 1 litro y 5 litros, ofrece una solución versátil y eficiente, adaptándose tanto a laboratorios como a líneas de producción de alto volumen.",,,,,,,,,,,,,,,,,
+"PFINDER 251",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"SUSPENSIÓN DE PARTÍCULAS MAGNÉTICAS | NEGRO Base aceite  lata-de-aerosol-500-ml","El PFINDER 251 es una suspensión de partículas magnéticas negras de alta performance, especialmente formulada en base aceite y lista para usar en aplicaciones de ensayos por partículas magnéticas (MT). Su diseño avanzado garantiza un rendimiento superior en la detección de discontinuidades superficiales y subsuperficiales en materiales ferromagnéticos, ofreciendo resultados confiables incluso en inspecciones exigentes.
+
+Gracias a su formulación optimizada, proporciona indicaciones nítidas, rápidas y altamente estables, permitiendo una evaluación precisa bajo luz blanca. Esto lo convierte en una herramienta ideal para procesos de control de calidad, mantenimiento preventivo e inspecciones en campo.
+
+La fórmula es casi inodora y está completamente libre de silicones, aminas secundarias, nitritos y halógenos, garantizando seguridad para el operador y compatibilidad con distintos sustratos. Además, su presentación en aerosol con huella de carbono minimizada refuerza el compromiso ambiental de PFINDER, proporcionando una solución eficiente y responsable para la industria.
+
+Ofrece cumplimiento con las especificaciones técnicas más comunes del sector, asegurando resultados reproducibles y alta sensibilidad. Su excelente comportamiento lo hace apto no solo para componentes ferromagnéticos, sino también compatible con materiales no ferrosos, lo que amplía su versatilidad en diversas aplicaciones industriales.
+
+La combinación de estabilidad, facilidad de aplicación y alta sensibilidad convierte al PFINDER 251 en una opción confiable para industrias como la metalmecánica, automotriz, ferroviaria, energía, petróleo y gas, entre otras.",,,,,,,,,,,,,,,,,
+"PFINDER 240",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"SUSPENSIÓN DE PARTÍCULAS MAGNÉTICAS | NEGRO Base agua  lata-de-aerosol-400-ml","El PFINDER 240 es una suspensión de partículas magnéticas negras de alto rendimiento, formulada en base agua y desarrollada para ofrecer resultados superiores en ensayos por partículas magnéticas (MT) bajo luz blanca. Su composición avanzada garantiza una excelente sensibilidad para la detección de discontinuidades superficiales y subsuperficiales, proporcionando indicaciones claras, nítidas y rápidamente visibles, incluso en aplicaciones donde se requiere precisión en tiempos de inspección reducidos.
+
+Una de sus principales ventajas es que el producto no requiere clasificación ni etiquetado de peligro según el reglamento CE, lo que lo convierte en una alternativa segura y altamente conveniente para el operador y el ambiente de trabajo. Además, su presentación en aerosol con propelente no inflamable aumenta significativamente la seguridad en almacenamiento, manipulación y uso, evitando riesgos asociados a solventes o gases presurizados tradicionales.
+
+Incorpora una lata de aerosol con huella de carbono minimizada, reflejando el compromiso ambiental de PFINDER, al tiempo que mantiene un desempeño técnico superior. Gracias a su formulación eficiente, cada envase ofrece un alto contenido de producto útil, lo que se traduce en un consumo reducido y mayor productividad por lata.
+
+Asimismo, el producto es compatible con materiales no ferrosos, lo que facilita su uso en piezas o entornos mixtos sin riesgo de efectos adversos. Su rendimiento estable, la excelente dispersión de partículas y la uniformidad de aplicación lo convierten en una herramienta confiable para industrias como metalmecánica, automotriz, ferroviaria, petróleo y gas, energías y mantenimiento industrial.
+
+Combina seguridad, eficiencia y precisión, posicionándose como una solución moderna, sustentable y de máxima confiabilidad para inspecciones mediante partículas magnéticas en base agua.",,,,,,,,,,,,,,,,,
+"PFINDER 280",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"PINTURA BLANCA DE CONTRASTE Secado rápido  lata-de-aerosol-500-ml","El PFINDER 280 es una pintura blanca de contraste especialmente formulada para ensayos de partículas magnéticas (MT) bajo luz blanca. Su función principal es generar un fondo altamente opaco y uniforme, permitiendo que las indicaciones producidas por las partículas magnéticas negras se destaquen con máxima claridad, lo que facilita la detección rápida y precisa de discontinuidades superficiales.
+
+Gracias a su alta opacidad y a la calidad de sus pigmentos, ofrece un bajo consumo por capa aplicada, optimizando el rendimiento por lata y garantizando un recubrimiento eficiente incluso en superficies amplias o irregulares. Su formulación presenta un secado rápido, lo que permite agilizar significativamente los tiempos de inspección y mejorar el flujo de trabajo en ambientes industriales exigentes.
+
+El producto está fabricado libre de silicones, aminas secundarias, nitritos y halógenos, reduciendo riesgos de contaminación y cumpliendo con altos estándares de seguridad. Además, su presentación en aerosol con huella de carbono minimizada refleja el compromiso de PFINDER con la sostenibilidad y la reducción del impacto ambiental, sin sacrificar desempeño técnico.
+
+Una característica destacada del PFINDER 280 es su excelente adherencia sobre una amplia variedad de materiales y superficies, incluyendo acero, hierro, aleaciones y componentes rugosos o tratados. Esta adherencia superior garantiza un fondo estable y continuo durante toda la inspección.
+
+Incluso en condiciones adversas, mantiene su integridad: la pintura no presenta agrietamiento a bajas temperaturas, asegurando estabilidad en entornos fríos o durante inspecciones de campo.
+
+Diseñada para precisión, eficiencia y confiabilidad, se posiciona como una herramienta esencial en inspecciones mediante partículas magnéticas, brindando un desempeño constante y profesional en cualquier entorno industrial.",,,,,,,,,,,,,,,,,
+"PFINDER 73 ProLight",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"LAMPARA UV LED PORTATIL FUNCIONA CON BATERÍAS","La PFINDER 73 ProLight es una lámpara UV LED portátil de última generación diseñada especialmente para aplicaciones de ensayos no destructivos (END), en particular para líquidos penetrantes fluorescentes (PT) y partículas magnéticas fluorescentes (MT). Ofrece un rendimiento superior, máxima confiabilidad y libertad total de movimiento gracias a su funcionamiento con baterías estándar del sistema CAS (Cordless Alliance System), disponibles en todo el mundo.
+
+Esta lámpara combina ligereza, ergonomía y una potencia excepcional, permitiendo al inspector trabajar durante largos períodos sin fatiga. Su diseño con peso balanceado y su empuñadura cómoda facilitan el uso continuo incluso en entornos industriales exigentes o en inspecciones sobre áreas de difícil acceso.
+
+Uno de los aspectos más destacados es su área de radiación UV extremadamente grande y perfectamente uniforme, lo que garantiza una iluminación constante en toda la superficie inspeccionada. Esta uniformidad es esencial para obtener indicaciones claras, precisas y de alto contraste en pruebas fluorescentes, reduciendo la posibilidad de interpretaciones erróneas.
+
+La lámpara está clasificada como Riesgo Clase 2 según DGZfP EM6, cumpliendo con normas estrictas de seguridad y radiación UV. Además, su batería estándar de carga rápida permite ciclos de trabajo prolongados, garantizando eficiencia incluso en jornadas intensivas. Al utilizar la plataforma CAS, las baterías y cargadores son intercambiables con múltiples herramientas industriales de las principales marcas, facilitando disponibilidad, reemplazos y continuidad operativa en cualquier país.
+
+La PFINDER 73 ProLight es ligera, manejable y extremadamente potente, posicionándose como una de las opciones más robustas y versátiles para inspecciones profesionales en campo, mantenimiento industrial, plantas de energía, aeronáutica, oil & gas y más.",,,,,,,,,,,,,,,,,
+"PFINDER 70",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"LAMPARA UV LED ESTACIONARIA","La PFINDER 70 es una lámpara UV LED estacionaria diseñada para aplicaciones profesionales de ensayos no destructivos (END), especialmente para métodos de líquidos penetrantes fluorescentes (PT) y partículas magnéticas fluorescentes (MT). Fabricada con un diseño robusto, estable y confiable, está pensada para ser utilizada en laboratorios, líneas de inspección, bancos de magnetización y estaciones de trabajo dedicadas donde se requiere una iluminación UV continua y de alta calidad.
+
+Gracias a su arquitectura optimizada, ofrece una zona de radiación extremadamente uniforme, lo que garantiza que toda la superficie de inspección reciba una intensidad constante. Esta uniformidad es esencial para obtener indicaciones claras, nítidas y reproducibles, evitando zonas más oscuras o saturadas que puedan afectar la interpretación de la prueba.
+
+Su tecnología UV LED de larga duración reduce significativamente los costos de mantenimiento y elimina la necesidad de reemplazos frecuentes, a diferencia de las lámparas UV tradicionales. Esto también asegura un rendimiento estable durante toda la vida útil del equipo, manteniendo la intensidad y calidad de luz sin degradación notable.
+
+El diseño estacionario proporciona seguridad, comodidad operativa y eficiencia en entornos industriales exigentes. La PFINDER 70 está construida para soportar el uso continuo, ofreciendo estabilidad y durabilidad incluso en jornadas de trabajo intensivas.",,,,,,,,,,,,,,,,,
+"PFINDER UVLuxCHECK",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"MEDIDOR DUAL DE LUZ BLANCA Y UV","El PFINDER UVLuxCHECK es un medidor profesional diseñado específicamente para el control preciso de intensidad de luz UV y nivel de luz blanca en aplicaciones de ensayos no destructivos (END), especialmente en métodos como partículas magnéticas fluorescentes (MT) y líquidos penetrantes fluorescentes (PT). Su tecnología con cabezal de sensor dual permite realizar ambas mediciones con un solo instrumento, optimizando tiempos, reduciendo errores y facilitando el trabajo del inspector.
+
+El equipo incorpora un diseño compacto, ergonómico y extremadamente robusto, ideal para uso tanto en campo como en laboratorio. Su carcasa resistente absorbe impactos y protege los componentes internos durante inspecciones en entornos industriales difíciles, plantas energéticas, talleres aeronáuticos y áreas de mantenimiento donde las condiciones pueden variar constantemente.
+
+Cuenta con un menú de navegación multilingüe, es intuitivo y fácil de usar, permitiendo que cualquier técnico realice mediciones precisas sin necesidad de configuraciones complejas. Su pantalla clara y de alta visibilidad asegura una lectura rápida y confiable incluso en zonas con poca iluminación o durante inspecciones de turno nocturno.
+
+El PFINDER UVLuxCHECK ofrece una alta estabilidad de medición, respuesta rápida y trazabilidad confiable, cumpliendo con los requisitos de normas y procedimientos de END que exigen valores precisos de luz UV-A y luz ambiente blanca para garantizar condiciones adecuadas de inspección.
+
+Este instrumento es una herramienta indispensable para cualquier estación de trabajo que utilice métodos fluorescentes, asegurando que las condiciones de iluminación estén siempre dentro de los parámetros requeridos para obtener indicaciones claras, reproducibles y seguras.",,,,,,,,,,,,,,,,,
+"PFINDER 15-0",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"YUGO DE MANO 230 V","El PFINDER 15-0 es un yugo de mano electromagnético diseñado para inspecciones por partículas magnéticas (MT) en superficies ferromagnéticas. Su construcción combina ligereza y potencia, ofreciendo una excelente relación entre ergonomía y rendimiento, ideal para trabajos prolongados en campo o en líneas de inspección industrial.
+
+El equipo destaca por su uso altamente flexible gracias a su diseño compacto y a la movilidad de sus patas, que permiten una excelente adaptación a superficies planas, curvas o irregulares. Las patas articuladas reemplazables facilitan el posicionamiento del campo magnético en diferentes orientaciones, asegurando que el inspector pueda alcanzar zonas difíciles o configuraciones complejas sin esfuerzo adicional. Esta versatilidad permite detectar discontinuidades tanto longitudinales como transversales dependiendo del posicionamiento del yugo.
+
+A pesar de ser un equipo ligero, proporciona una fuerza de elevación robusta y confiable, cumpliendo con los requisitos exigidos para ensayos de partículas magnéticas bajo normas técnicas internacionales. Su construcción resistente está pensada para el uso intensivo en entornos industriales como mantenimiento, fabricación, soldadura, energía, petróleo y gas, minería y aplicaciones aeronáuticas.
+
+El funcionamiento a 230 V garantiza estabilidad operativa y una alimentación segura, lo que lo convierte en una herramienta confiable para talleres, laboratorios y estaciones de inspección fijas. Su diseño ergonómico reduce la fatiga del operador, permitiendo inspecciones repetitivas con mayor comodidad y precisión.
+
+El PFINDER 15-0 es una solución profesional para quienes buscan un yugo duradero, versátil y capaz de ofrecer resultados precisos en todo tipo de inspecciones ferromagnéticas.",,,,,,,,,,,,,,,,,
+"BLOQUE DE PRUEBA DE REFERENCIA NO. 1",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"Bloque estándar para verificación diaria en inspecciones por partículas magnéticas.","El Bloque de Prueba de Referencia No. 1 es una herramienta fundamental en cualquier línea de inspección mediante partículas magnéticas (MT), ya sea en entornos industriales, laboratorios de END o estaciones de control de calidad. Su función principal es asegurar que los materiales utilizados en el proceso, así como las condiciones de iluminación y los equipos, mantengan un nivel de sensibilidad adecuado para la detección confiable de discontinuidades.
+
+Este bloque de referencia utiliza un campo magnético residual, generado mediante un proceso controlado, para revelar grietas pequeñas y medianas inducidas artificialmente en su superficie. Posteriormente, la pieza es cuidadosamente mecanizada, rectificada y recubierta, garantizando estabilidad, repetibilidad y larga vida útil. Gracias a este tratamiento especializado, el bloque reproduce condiciones de inspección consistentes, permitiendo al operador verificar si el sistema está detectando indicaciones de forma correcta.
+
+Permite comprobar diariamente:
+
+La sensibilidad de los materiales magnéticos (partículas fluorescentes o visibles).
+
+La posible degradación del baño, contaminación o sedimentación excesiva.
+
+La correcta iluminación, tanto UV-A como luz blanca, según el método utilizado.
+
+El desempeño general del equipo, asegurando resultados confiables antes de inspeccionar componentes reales.
+
+Cumple plenamente con los requisitos establecidos en EN ISO 9934-2, Apéndice B, lo que garantiza su trazabilidad y validez para auditorías, procedimientos de calidad y sistemas certificados.
+
+Es una herramienta imprescindible para mantener la integridad del proceso MT y asegurar que cada inspección realizada cumpla con los estándares técnicos exigidos.",,,,,,,,,,,,,,,,,
+"BLOQUE DE PRUEBA DE REFERENCIA NO. 2",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"Bloque estándar para la verificación diaria de sistemas de líquidos penetrantes","El Bloque de Prueba de Referencia No. 2 es un elemento indispensable para la verificación diaria y periódica de los sistemas utilizados en ensayos por líquidos penetrantes (PT). Este bloque permite evaluar de manera rápida, sencilla y confiable la sensibilidad del penetrante, la eficiencia del proceso de limpieza, la correcta aplicación del revelador y el desempeño general del procedimiento.
+
+Diseñado según las especificaciones de EN ISO 3452-3, el bloque contiene discontinuidades artificiales estandarizadas que permiten comprobar la capacidad del sistema para revelar indicaciones finas, evaluar la uniformidad del proceso y detectar cualquier degradación o contaminación del penetrante o del revelador. Su uso regular garantiza que el inspector trabaje bajo condiciones verificadas, manteniendo la reproducibilidad y confiabilidad del método.
+
+El bloque se presenta con una superficie preparada y tratada para asegurar estabilidad y durabilidad, permitiendo realizar comparaciones consistentes a lo largo del tiempo. Es ideal para laboratorios, estaciones de mantenimiento, plantas industriales y cualquier entorno en el que se utilicen métodos de líquidos penetrantes de acuerdo con las normas internacionales.
+
+Cumple totalmente con EN ISO 3452-3, lo que asegura su validez para auditorías, procesos certificados y sistemas de calidad.",,,,,,,,,,,,,,,,,
+"PFINDER 550",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"ACEITE PORTADOR   bidón-30-l tambor-200-l","PFINDER 550 es un aceite portador de alta calidad, especialmente formulado para la preparación de suspensiones utilizadas en ensayos por partículas magnéticas. Su composición equilibrada garantiza un comportamiento estable en la mezcla, una humectación uniforme de la superficie y una movilidad óptima de las partículas, favoreciendo indicaciones claras y precisas durante la inspección.
+
+Desarrollado para cumplir con los estándares más exigentes del sector, posee un alto punto de inflamación (>100 °C), lo que aporta mayor seguridad en el manejo y en los procesos donde se requiere control térmico. Su baja viscosidad asegura una circulación fluida y homogénea en equipos de agitación o circulación, permitiendo que las partículas se distribuyan correctamente en el baño.
+
+Además, es casi inodoro, lo que mejora notablemente las condiciones de trabajo del operador, y está libre de fluorescencia, garantizando que no interfiera con las inspecciones realizadas con partículas fluorescentes bajo luz UV. Su formulación estable evita la formación de precipitados no deseados y ofrece excelente compatibilidad con partículas magnéticas negras o fluorescentes certificadas.
+
+PFINDER 550 es una opción confiable y eficiente para plantas industriales, talleres, laboratorios y cualquier entorno de END donde se requiera un aceite portador seguro y de desempeño constante.",,,,,,,,,,,,,,,,,
+"PFINDER 555",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"ACEITE PORTADOR COMPOSICIÓN NO PELIGROSA   bidón-30-l tambor-200-l","PFINDER 555 es un aceite portador de última generación, formulado con materias primas naturales y desarrollado especialmente para la preparación de suspensiones utilizadas en ensayos por partículas magnéticas (MT). Su composición no peligrosa, sin clasificación ni etiquetado de riesgo según la normativa CE, lo convierte en una opción más segura y amigable tanto para el operador como para el entorno de trabajo.
+
+Es completamente inodoro, lo que mejora significativamente las condiciones laborales en áreas de inspección cerradas o con baja ventilación. Su baja viscosidad asegura una dispersión uniforme de las partículas magnéticas, favoreciendo un flujo estable en equipos de circulación y una aplicación homogénea sobre la superficie ensayada. Esta fluidez optimizada contribuye a generar indicaciones más nítidas, rápidas y estables, especialmente en inspecciones de alta sensibilidad.
+
+PFINDER 555 es también libre de fluorescencia, lo que garantiza que no interfiera con ensayos realizados bajo iluminación UV cuando se utilizan partículas fluorescentes. Su formulación basada en materias primas naturales ofrece un perfil más sustentable, manteniendo al mismo tiempo un rendimiento excelente y confiable en todo tipo de aplicaciones de END.
+
+Ideal para talleres, laboratorios, líneas de producción y cualquier entorno industrial donde se requiera un aceite portador seguro, eficiente y con desempeño constante.",,,,,,,,,,,,,,,,,
+"PFINDER 890",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"PRE LIMPIADOR Y REMOVEDOR   lata-de-aerosol-500-ml bidón-5-l","Aerosol 500 ml / Bidón 5 L. Limpiador multiuso de alta eficacia con fórmula de baja huella de carbono. Ideal para preparar superficies, remover pintura PFINDER y utilizar junto a penetrantes de la marca. Potente, seguro y aprobado para aplicaciones en END.",,,,,,,,,,,,,,,,,
+"PFINDER 500",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"ADITIVO DE PROTECCIÓN CONTRA LA CORROSIÓN PARA MEDIOS A BASE DE AGUA              bidón-5-l tambor-200-l","PFINDER 500 es un aditivo diseñado específicamente para optimizar la protección contra la corrosión en sistemas y medios a base de agua utilizados en ensayos no destructivos y procesos industriales. Su formulación avanzada permite ajustar de manera precisa el nivel de protección requerido, adaptándose a diversos entornos, materiales y condiciones de operación.
+
+Este producto se destaca por su composición segura, sin clasificación ni requisitos de etiquetado de peligro según el Reglamento CE, lo que facilita su manejo y almacenamiento. Es completamente inodoro y está formulado sin aminas secundarias, nitritos ni compuestos halogenados, garantizando compatibilidad con una amplia gama de superficies y reduciendo riesgos de contaminación o reacciones indeseadas.
+
+Actúa formando una capa protectora uniforme y estable que previene la oxidación y el deterioro del material, incluso en ambientes de alta humedad. Su capacidad de mezcla con medios acuosos permite integrarlo fácilmente en procesos de inspección por líquidos penetrantes o aplicaciones industriales donde se requiera protección temporal o prolongada.
+
+Ideal para laboratorios, industrias metalúrgicas, talleres y operaciones donde la protección anticorrosiva sea fundamental, PFINDER 500 ofrece un rendimiento confiable, seguro y adaptable a las necesidades específicas de cada usuario.",,,,,,,,,,,,,,,,,
+"PFINDER 520",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"AGENTE ANTIESPUMA CONCENTRADO  bote-1-l","PFINDER 520 es un agente antiespuma de alta eficiencia, diseñado para garantizar el control óptimo de espuma en procesos industriales y aplicaciones de ensayos no destructivos a base de agua. Su fórmula concentrada permite obtener resultados rápidos y efectivos incluso con dosis mínimas, reduciendo el consumo de producto y aumentando la estabilidad del proceso.
+
+Se caracteriza por su composición segura, sin clasificación ni requerimientos de etiquetado de peligro según el Reglamento CE, lo que simplifica su manipulación y almacenamiento. Además, es totalmente inodoro y está formulado sin aminas secundarias, nitritos ni compuestos halogenados, garantizando compatibilidad con equipos, materiales y otros productos del sistema.
+
+Actúa rompiendo y previniendo la formación de espuma de manera inmediata, asegurando un desempeño estable en baños acuosos, sistemas de recirculación, procesos de limpieza y otras aplicaciones donde la aparición de espuma pueda afectar la eficacia, la visibilidad o el funcionamiento del equipo.
+
+Gracias a su alta concentración, el producto ofrece una gran eficiencia operativa, permitiendo su uso económico y prolongado. Es ideal para laboratorios, plantas industriales y cualquier proceso en el que sea esencial mantener el control total de la espuma sin comprometer la calidad, la seguridad o el rendimiento.",,,,,,,,,,,,,,,,,
+"PFINDER 530",,0,,,,"Liquidos Penetrantes/Partículas Magnéticas",,"ADITIVO CONCENTRADO SOLUBLE EN AGUA   bidón-5-l","PFINDER 530 es un aditivo concentrado diseñado para optimizar y adaptar las propiedades de los sistemas acuosos utilizados en ensayos no destructivos y procesos industriales. Su formulación soluble en agua permite una integración rápida y homogénea en el baño, asegurando un desempeño estable y reproducible.
+
+Totalmente inodoro y libre de aminas secundarias, nitritos y compuestos halogenados, garantiza un uso seguro y compatible con diferentes materiales y equipos. Debido a esta composición limpia y moderna, el producto contribuye a minimizar riesgos y a facilitar su manipulación tanto en entornos de laboratorio como industriales.
+
+La función principal del PFINDER 530 es permitir el ajuste individual de las propiedades de protección contra la corrosión, adaptando el comportamiento del baño a las necesidades específicas de cada proceso o material. Este control preciso ayuda a prolongar la vida útil de piezas y componentes que entran en contacto con el medio, manteniendo la integridad superficial y reduciendo riesgos en aplicaciones críticas.
+
+Además, el aditivo mejora las propiedades humectantes, favoreciendo una distribución uniforme del producto sobre las superficies y asegurando resultados coherentes y de alta sensibilidad en inspecciones. Su formulación también incorpora propiedades espumantes optimizadas, lo que contribuye a mantener la estabilidad del baño, mejorar la manejabilidad y facilitar el trabajo del operador.
+
+Gracias a su alta concentración, PFINDER 530 ofrece un uso eficiente y económico, permitiendo ajustar pequeñas dosis para lograr cambios significativos en el rendimiento del sistema. Es una solución versátil para plantas, laboratorios y equipos de inspección que buscan fiabilidad, control y un comportamiento predecible del medio acuoso.",,,,,,,,,,,,,,,,,
+"Videoscopio X750 HD",,0,,,,"Videoscopia / Boroscopía Industrial",,"Videoscopio con sondas articuladas 360° y accesorios completos (espejo lateral, cables HDMI/USB Type-C, baterías con cargador, funda rígida, tarjeta SD, set de limpieza, correa para el cuello y manual).","Las Consolas X750 ofrecen una amplia variedad de configuraciones para adaptarse a distintas necesidades de inspección. Todas las variantes incluyen accesorios esenciales: espejo lateral dual (cuando corresponde), cable HDMI/USB Type-C, baterías con cargador, funda rígida, tarjeta SD, set de limpieza, correa para el cuello y manual de usuario.
+
+Opciones de sonda para X750:
+
+- Φ6.0 mm HD digital vista frontal, articulación 360°: 2 m, 3 m, 5 m, 7 m (con opción Far Focus para todas las longitudes)
+
+- Φ6.0 mm HD digital doble vista, articulación 360°: 2 m, 3 m, 5 m, 7 m, 10 m
+
+- Φ3.9 mm HD digital vista frontal, articulación 360°: 1,5 m, 3 m
+
+- Φ3.9 mm HD digital doble vista, articulación 360°: 1,5 m, 3 m
+
+Además, la consola X750 también está disponible sin sonda incluida, ofreciendo flexibilidad para quienes ya cuentan con probes o desean adquirirlos por separado.",,,,,,,,,,,,,,,,,
+"Videoscopio X600 PLUS",,0,,,,"Videoscopia / Boroscopía Industrial",,"Videoscopio industrial con pantalla táctil de 5”, protección IP54, transmisión de imagen por Wi-Fi y conexión USB-C. Compatible con sondas intercambiables de 4.2 mm (4 vías), 3.9 mm (4 y 2 vías) y 4.9 mm (doble cámara). Funciona con baterías recargables y ofrece más de 4 horas de uso continuo.","El X600 PLUS es la versión mejorada del modelo X600, incorporando módulo Wi-Fi para transmisión de imagen en tiempo real a dispositivos móviles y compatibilidad ampliada con nuevas sondas HD digitales. Mantiene la misma calidad de imagen, gestión de archivos y procesamiento avanzado de la serie original X600.
+
+Características principales:
+
+Pantalla táctil TFT LCD de 5”.
+
+Imágenes nítidas, claras y brillantes.
+
+Resistencia a caídas de 1 metro.
+
+Protección IP54 del cuerpo de la consola.
+
+Transmisión de imagen vía Wi-Fi y carga/transferencia mediante USB Type-C.
+
+Más de 4 horas de autonomía con baterías recargables.
+
+Opciones de sonda para X600 PLUS:
+
+- Sondas de 4.2 mm con articulación 4 vías en longitudes de 3 m y 5 m.
+
+- Sondas de 3.9 mm con articulación 4 vías y 2 vías.
+
+- Sondas de 4.9 mm con doble cámara (dual-view).
+
+- Probes con certificación IP67, resistentes a aceite de motor, fluido de frenos, nafta sin plomo y diésel.
+
+- Compatible con accesorios para inspección de tuberías PRSL300T y PRM2830",,,,,,,,,,,,,,,,,
+"Videoscopio X2000 HD",,0,,,,"Videoscopia / Boroscopía Industrial",,"Consola X2000 con sonda articulada 360° de alta definición, disponible en múltiples diámetros (2.8 mm / 3.9 mm / 6 mm) y longitudes (1 m – 10 m). Incluye accesorios: espejo lateral/dual, cable HDMI/USB Type-C, cargador, funda rígida, tarjeta SD, set de limpieza, correa de mano y correa para el cuello. Compatible con conexión Wi-Fi, app VideoscopeNow y software Insight para reportes.","El X2000 es el compañero ideal para inspecciones en transporte, generación de energía o seguridad, ofreciendo imágenes S-HD y videos HD con calidad profesional. Su consola cuenta con pantalla táctil LCD de 7”, protección IP54, conectividad HDMI/USB Type-C/Wi-Fi y control remoto vía app VideoscopeNow. Permite gestión de archivos, anotaciones y comentarios, y es compatible con el software de asistencia de reportes Insight.
+
+Las sondas de inserción están disponibles en varios diámetros y longitudes, con articulación 360° de 4 vías, alta resistencia al agua (IP67), al calor (100 °C) y a arañazos gracias a su recubrimiento de tungsteno. Se incluyen versiones dual camera y Far Focus para inspecciones versátiles.
+
+Accesorios incluidos en todas las variantes:
+Espejo lateral/dual, cable HDMI/USB Type-C, cargador, funda rígida, tarjeta SD, set de limpieza, correa de mano, correa para el cuello, parasol y manual.
+
+Opciones de sonda para X2000:
+
+- Φ6.0 mm HD digital frontal 360° articulación: 2 m, 3 m, 5 m, 7 m
+
+- Φ6.0 mm HD digital frontal 360° articulación Far Focus: 2 m, 3 m, 5 m, 7 m
+
+- Φ6.0 mm HD digital dual view 360° articulación: 2 m, 3 m, 5 m, 7 m, 10 m
+
+- Φ3.9 mm HD digital frontal 360° articulación: 1 m (semi-rígida), 1.5 m, 3 m
+
+- Φ3.9 mm HD digital frontal 360° articulación Far Focus: 1 m (casting)
+
+- Φ3.9 mm HD digital dual view 360° articulación: 1.5 m, 3 m
+
+- Φ2.8 mm HD digital frontal 360° articulación: 1.5 m
+
+Consolas disponibles:
+
+X2000 con almacenamiento de carretes (para sondas de 2–5 m)
+
+X2000 sin almacenamiento de carretes (para sondas de 7 m)
+
+X2000 para servicio técnico",,,,,,,,,,,,,,,,,
+"Videoscopio X3000",,0,,,,"Videoscopia / Boroscopía Industrial",,"Videoscopio Industrial con Medición 3D Doble Vista.
+Medición 3D en vista frontal y lateral gracias a dos cámaras integradas en la punta. Permite capturar, reconstruir y medir en menos de 10 segundos con funciones avanzadas como longitud, profundidad, área, punto-a-línea y proyector angular. Diseñado para inspecciones críticas que requieren precisión dimensional real.","El Mitcorp X3000 es el primer videoscopio industrial del mundo con medición 3D de doble vista (Dual-View), desarrollado mediante tecnología patentada que integra dos cámaras en la punta de la sonda para capturar imágenes en vista frontal y lateral simultáneamente. Esta innovación permite obtener reconstrucciones tridimensionales precisas y confiables, ideales para aplicaciones de inspección donde es fundamental medir defectos con exactitud real.
+
+Su sistema de medición 3D utiliza algoritmos avanzados de geometría que generan una reconstrucción completa del área inspeccionada en tan solo tres pasos: Capturar, reconstruir y medir, sin necesidad de configuraciones complejas ni procedimientos extensos. El X3000 permite capturar, procesar y medir en menos de 10 segundos, ofreciendo una solución rápida, intuitiva y extremadamente precisa para tareas críticas de mantenimiento e inspección.
+
+El equipo incorpora múltiples funciones de medición para análisis dimensional avanzado. La función Longitud mide la distancia entre dos puntos seleccionados, útil para evaluar el tamaño de grietas, rayaduras o discontinuidades en soldaduras. La función Punto a Línea calcula la distancia entre un punto específico y una línea de referencia, permitiendo analizar la ubicación relativa de un defecto respecto de bordes o elementos estructurales. Con la función Profundidad, mide la diferencia de altura entre un punto y un plano definido por tres puntos base, lo que resulta esencial para evaluar corrosión, picaduras, cavidades o desgaste. La función Área determina la superficie total de una región seleccionada, permitiendo cuantificar corrosión, delaminaciones o fallas de recubrimiento. Finalmente, el modo Protractor mide el ángulo entre dos líneas, útil para identificar deformaciones, desalineaciones o dobleces en componentes estructurales.
+
+El Mitcorp X3000 está diseñado para industrias que requieren precisión de medición y trazabilidad, siendo ideal para los sectores aeroespacial, Oil & Gas, petroquímico, energético, automotriz, metalmecánico y para la inspección avanzada de soldaduras y mantenimiento predictivo. Su combinación de velocidad, facilidad de uso y desempeño metrológico lo convierte en una herramienta clave para inspecciones críticas donde cada milímetro importa.",,,,,,,,,,,,,,,,,
+"Videoscopio PRSL300T",,0,,,,"Videoscopia / Boroscopía Industrial",,"Videoscopio industrial para inspección de tuberías y ductos, ideal para plomería, drenajes y ventilación. Incorpora pantalla táctil de 5”, cámara auto-nivelante de 28.8 mm con 12 LEDs, medidor de distancia en pantalla, inclinómetro, transmisión Wi-Fi y emisor sonde de 512 Hz. Su sonda de fibra de vidrio flexible supera curvas de 90° con facilidad y permite visualización remota en tiempo real mediante la app VideoscopeNow.","El PRSL300T Pipe Inspection Videoscope es una solución completa y portátil para inspecciones profesionales en tuberías, sistemas de drenaje, ductos de ventilación y aplicaciones de plomería. Diseñado con un enfoque ergonómico y orientado al usuario, incorpora una pantalla táctil de 5”, interfaz intuitiva y funciones avanzadas que optimizan el trabajo en campo.
+
+Su cámara auto-nivelante de 28.8 mm, equipada con 12 potentes LEDs, mantiene siempre una orientación estable y paralela al suelo, facilitando la navegación dentro de tuberías y permitiendo una visualización panorámica clara y precisa. La sonda de inserción de fibra de vidrio, a la vez resistente y flexible, puede superar sin esfuerzo dos curvas consecutivas de 90°, garantizando inspecciones fluidas incluso en geometrías complejas.
+
+El equipo integra funciones clave como medidor de longitud en pantalla, inclinómetro, anotaciones de imagen, funciones de comparación y herramientas avanzadas para análisis. Su transmisor interno sonde de 512 Hz permite localizar la posición exacta de la cámara bajo tierra mediante cualquier receptor compatible, y opcionalmente puede utilizarse con el LT100 Locator para determinar ubicación y profundidad en tiempo real.
+
+El PRSL300T también ofrece conectividad Wi-Fi, permitiendo el control remoto del equipo y la visualización simultánea desde smartphones u otras pantallas mediante la aplicación VideoscopeNow. Esto facilita el trabajo colaborativo y la rápida revisión de hallazgos en el lugar de la inspección.
+
+Con certificación IP54 en el sistema e IP67 en la cámara, el PRSL300T garantiza resistencia y confiabilidad en entornos industriales exigentes.",,,,,,,,,,,,,,,,,
+"Videoscopio PRM2830",,0,,,,"Videoscopia / Boroscopía Industrial",,"Sistema portátil de inspección de cañerías PRM2830 con monitor táctil de 5”, cámara robusta de 28 mm, imagen HD y tubo flexible de 30 m capaz de superar curvas de 90°. Ligero, compacto y resistente (sistema IP54 / cámara IPx7), viene con iluminación LED potente y accesorios (anillos centradores, cepillos, SD, cables HDMI/USB y maletín). Ideal para inspecciones rápidas y profesionales en drenajes, tuberías, ductos y obras civiles.","El PRM2830 es un videoscopio industrial compacto y portátil, diseñado para inspecciones en tuberías y ductos donde se requiere movilidad, resistencia y excelente calidad de imagen. Equipado con un monitor táctil de 5”, cámara de 28 mm ultra resistente (IPx7) y iluminación LED de alta potencia, ofrece imágenes HD nítidas con un ángulo de visión amplio de 150°, ideales para detectar obstrucciones, daños o anomalías con rapidez.
+
+Su sonda de 30 metros, flexible y duradera, está diseñada para atravesar fácilmente curvas de 90°, permitiendo inspecciones profundas sin interrupciones. El sistema completo cuenta con certificación IP54 contra agua y polvo, y su estructura con bisagra permite uso vertical u horizontal, adaptándose a cualquier situación en campo.
+
+Incluye medidor digital en pantalla, que registra la distancia tanto en fotos como en videos para facilitar la localización de puntos de inspección. Se entrega con accesorios esenciales para mejorar la navegación y el centrado dentro de la tubería: aro centrador metálico, cepillos, tarjeta SD, cables USB y HDMI, además de un maletín rígido para transporte seguro.
+
+Ligero, resistente y fácil de usar, el PRM2830 es una solución confiable para inspecciones en plomería, drenajes, ventilación y mantenimiento industrial, incluso en condiciones exigentes.",,,,,,,,,,,,,,,,,
+"Videoscopio PS10HD",,0,,,,"Videoscopia / Boroscopía Industrial",,"Videoscopio compacto para inspección doméstica de tuberías, con diseño delgado y liviano, cámara IPX7 resistente al agua, LED súper brillante y cable flexible de 10 m que facilita la visualización en tuberías estrechas y de difícil acceso.","El PS10HD es un videoscopio compacto y ligero diseñado específicamente para la inspección de tuberías en entornos domésticos. Su cuerpo delgado facilita el acceso a espacios reducidos, permitiendo detectar obstrucciones, filtraciones y defectos en cañerías con total comodidad.
+
+Cuenta con una cámara IPX7 resistente al agua y un sistema de iluminación LED súper brillante, lo que garantiza una visualización clara incluso en tuberías oscuras o con suciedad acumulada. Su cable flexible de 10 metros permite avanzar fácilmente en tramos largos y curvas frecuentes.
+
+Pensado para tareas rápidas y movilidad, combina portabilidad, simplicidad de uso y buen rendimiento visual, convirtiéndose en la herramienta ideal para inspecciones básicas en hogares, mantenimiento preventivo o trabajos de plomería donde se requiere una solución práctica y confiable.",,,,,,,,,,,,,,,,,
+"Videoscopio PRM280",,0,,,,"Videoscopia / Boroscopía Industrial",,"Videoscopio versátil y liviano para inspección de tuberías en entornos exigentes. Con diseño robusto, resistencia química, cámara de 28 mm con resorte, sondas de 30 m y operación bajo el agua hasta 10 m, ofrece imágenes claras, navegación fluida en curvas y alta durabilidad para trabajos industriales y de mantenimiento.","El PRM280 es una solución versátil y liviana diseñada para inspecciones de tuberías en una amplia variedad de aplicaciones. Su construcción robusta, alta resistencia química y protección contra polvo y agua lo convierten en un equipo confiable incluso en entornos exigentes.
+
+Su cabezal de cámara de 28 mm, con resorte y cuerpo de acero inoxidable, incorpora ocho LEDs de alta luminosidad, proporcionando una visualización nítida y clara en espacios de baja iluminación. La sonda de inserción de 30 metros, extremadamente flexible, permite atravesar con facilidad dos curvas consecutivas de 90°, y puede operar de forma segura sumergida hasta 10 metros durante 30 minutos. Además, es resistente a combustibles y fluidos industriales como nafta sin plomo, diésel, aceites y fluidos automotrices.
+
+Es compatible con un transmisor de 512 Hz, permitiendo ubicar con precisión la posición del cabezal mediante un localizador compatible, ideal para trabajos donde es necesario detectar puntos críticos bajo tierra o detrás de estructuras.
+
+Su uso es práctico y adaptable, pudiendo operar en múltiples posiciones, lo que facilita las inspecciones en espacios confinados. Incluye una amplia gama de accesorios como bola centradora, cepillo de limpieza y, opcionalmente, un carro (“wagon”) ajustable para ductos de mayor diámetro (hasta 30 cm).
+
+El sistema se complementa con un monitor con pantalla táctil de 7”, nivel de protección IP57 y funciones avanzadas de anotación, registro y gestión de archivos, ofreciendo una experiencia de trabajo profesional, precisa y eficiente.",,,,,,,,,,,,,,,,,
+"Escáner GP8000 Lite",,0,,,,"Inspección de Infraestructura Civil",,"Escáner de hormigón GP8000 compacto y de alta precisión para detección rápida de armaduras, cables en tensión y objetos embebidos. Con tecnología radar SFCW de última generación, gran manejabilidad y visualización en iPad, ofrece datos claros y profundos para trabajos seguros en obra.","El GP8000 Lite es un escáner de hormigón diseñado para inspecciones rápidas, precisas y seguras. Con tecnología GPR de onda continua y frecuencia modulada (SFCW), desarrollada en Suiza, ofrece una combinación excepcional de profundidad de penetración, claridad de imagen y facilidad de uso.
+
+Su diseño compacto, ergonómico e inalámbrico permite operar con total comodidad en paredes, pisos, columnas y grandes superficies sin fatiga. La visualización se realiza directamente en un iPad, donde los datos se muestran con excelente claridad y en varios modos de revisión: A-scan, vistas migradas/no migradas y Time-Slice.
+
+El GP8000 Lite facilita la localización precisa de barras de refuerzo, cables en tensión, ductos, caños y objetos poco profundos, reduciendo riesgos antes de perforar, cortar o extraer material. Sus modos Line Scan y Area Scan (hasta 60×60 cm) permiten adaptarse tanto a inspecciones puntuales como a mapeos extendidos.
+
+Con tracción total, guiado por láser, batería intercambiable y protección robusta, el GP8000 Lite está preparado para un uso intensivo en obra. Es compatible con accesorios como soportes para tabletas, varilla telescópica y arnés de pecho para operación manos libres.
+
+Ideal para profesionales que buscan máxima confiabilidad, velocidad y simplicidad en la detección de objetos dentro del hormigón.",,,,,,,,,,,,,,,,,
+"Escáner GP8800",,0,,,,"Inspección de Infraestructura Civil",,"Georradar portátil de alto rendimiento para inspección de hormigón. Con tecnología SFCW Swiss Made, ofrece profundidad y claridad de datos incomparables en un equipo ultracompacto. Ideal para detectar armaduras congestionadas, evaluar calidad estructural y trabajar en espacios estrechos con máxima precisión y productividad.","El Proceq GP8800 es el georradar portátil más avanzado de su clase, diseñado para ofrecer imágenes estructurales de máxima precisión en un formato ultracompacto que cabe en la palma de la mano. Gracias a la exclusiva tecnología SFCW (onda continua de frecuencia modulada) Swiss Made, proporciona una profundidad de penetración y claridad de datos inigualables, incluso en configuraciones de armaduras densas o superficies irregulares.
+
+Pensado para inspecciones de hormigón exigentes, permite trabajar cómodamente en espacios estrechos, cercanos a paredes, bajo tuberías o en superficies curvas, manteniendo siempre una lectura estable y confiable. Su ergonomía sin cables, unida a su peso liviano, ofrece una experiencia de inspección fluida y eficiente, tanto en muros altos como en grandes extensiones horizontales.
+
+Integra un potente ecosistema digital con herramientas avanzadas como visualización 3D, realidad aumentada, captura de mediciones con voz, fotos y comentarios, y un flujo de trabajo completamente digital que permite generar y compartir reportes al instante desde la aplicación móvil. Los datos quedan accesibles desde cualquier dispositivo, en cualquier momento, impulsando una productividad superior en obra.
+
+Ideal para:
+
+Detección de armaduras congestionadas
+
+Evaluación de calidad del hormigón
+
+Inspecciones en zonas difíciles y espacios estrechos
+
+Imágenes estructurales rápidas y de alta resolución
+
+El GP8800 combina claridad gigante en un equipo diminuto, ofreciendo a profesionales de inspección una herramienta confiable, inteligente y lista para los desafíos cotidianos en obra.",,,,,,,,,,,,,,,,,
+"Escáner GP8100",,0,,,,"Inspección de Infraestructura Civil",,"Georradar portátil de alta productividad diseñado para inspecciones de hormigón a gran escala. Ofrece una anchura de escaneo de 25 cm, profundidad de penetración de 80 cm y tecnología SFCW Swiss Made que garantiza datos densos, precisos y listos para análisis estructurales avanzados. Ideal para detectar objetos antes de perforar y para evaluaciones de calidad del hormigón.","El GP8100 es un sistema de georradar portátil de última generación, creado para maximizar la productividad en inspecciones de hormigón de grandes superficies. Su tecnología GPR SFCW Swiss Made proporciona una profundidad de penetración de hasta 80 cm y una claridad de datos superior, permitiendo detectar objetos de cualquier tamaño con rapidez y precisión.
+
+Diseñado para obras, edificios, puentes y grandes losas, combina una anchura de escaneo efectiva de 25 cm con una velocidad de 1.200 escaneos por segundo, logrando una captura de datos extremadamente densa en un solo movimiento. Un escaneo equivale a seis líneas clásicas, optimizando tiempos y aumentando la eficiencia en campo.
+
+La visualización avanzada incluye Superline Scan, vistas migradas y no migradas, A-Scan, 3D y realidad aumentada, proporcionando interpretación inmediata y confiable de las estructuras. Su conectividad Wi-Fi y USB-C permite un flujo de trabajo completamente digital, con generación instantánea de reportes, exportación SEG-Y, y uso de la AppProceq GPR desde un iPad.
+
+Con un diseño portátil, robusto y ergonómico, el GP8100 ofrece tracción total con ruedas, guía láser y operación inalámbrica, garantizando comodidad y precisión incluso en largas jornadas de inspección. Es la herramienta ideal para detección de objetos antes de perforar, extracción de núcleos, evaluación estructural y control de calidad del hormigón.",,,,,,,,,,,,,,,,,
+"PM8000 Lite",,0,,,,"Inspección de Infraestructura Civil",,"Medidor compacto y ultraligero para localizar barras de refuerzo, identificar puntos seguros para perforar y verificar recubrimientos con precisión. Tecnología suiza, resultados rápidos y confiables con solo pulsar un botón. Ideal para controles de calidad en obra y detección profesional de metales en entornos exigentes.","El Profometer PM8000 Lite es un medidor de recubrimiento diseñado para detectar, localizar y evaluar barras de refuerzo con máxima precisión y simplicidad. Fabricado en Suiza, combina calidad, robustez y rendimiento para ofrecer resultados confiables tanto en inspecciones rutinarias como en evaluaciones más exigentes. Su tecnología basada en corrientes de Foucault permite medir de manera rápida la profundidad de recubrimiento y estimar el diámetro de las barras, facilitando la búsqueda de puntos seguros para perforar y verificaciones rápidas de control de calidad en estructuras de hormigón.
+
+Su diseño compacto y ultraliviano hace que sea ideal para trabajos en entornos difíciles, ofreciendo una experiencia de uso cómoda, estable y eficiente. La pantalla OLED de alto contraste permite visualizar claramente todos los datos incluso en condiciones de baja iluminación. Además, su funcionamiento es extremadamente intuitivo: con solo apoyar el instrumento, es posible identificar barras, medir el recubrimiento y obtener estimaciones de diámetro sin necesidad de configuraciones complejas.
+
+Incorpora modos de medición como punto, escaneo lineal y escaneo de área, junto con funciones de visualización avanzada en la app oficial, donde pueden consultarse mapas térmicos, estadísticas, vistas de intensidad de señal y herramientas para documentar la inspección, como marcadores, fotos y geolocalización. La integración con iPad permite un procesamiento ágil de la información, la generación de reportes instantáneos y la exportación en múltiples formatos como JPG, PNG, CSV y HTML. Según el modelo del iPad, es posible utilizar funciones adicionales como realidad aumentada o escaneo LiDAR.
+
+Con una profundidad de medición de recubrimiento de hasta 185 mm y la capacidad de estimar diámetros de barras de hasta 63 mm, el Profometer PM8000 Lite ofrece la precisión necesaria para trabajos profesionales y exigentes. Funciona con baterías AA, recargables o no, y ofrece aproximadamente ocho horas de autonomía, ideal para jornadas completas de trabajo.
+
+En resumen, el Profometer PM8000 Lite es una herramienta confiable, precisa y extremadamente versátil para la detección de armaduras, el control de recubrimiento y la verificación de seguridad, permitiendo inspecciones rápidas, claras y bien documentadas en todo tipo de estructuras de hormigón.",,,,,,,,,,,,,,,,,
+PM8500,,0,,,,"Inspección de Infraestructura Civil",,"La solución más avanzada para evaluar la corrosión en estructuras de hormigón. El PM8500 combina electrodos de rueda ultrarrápidos, mediciones inalámbricas y visualización en tiempo real para mapear potenciales de corrosión con precisión, rapidez y máxima comodidad en cualquier entorno.","El PM8500 es la solución de media celda más completa y avanzada para evaluar el potencial de corrosión en estructuras de hormigón armado. Diseñado para trabajos in situ que requieren precisión, rapidez y trazabilidad, combina electrodos exclusivos de rueda que permiten adquirir datos hasta cuarenta veces más rápido que los sistemas tradicionales de varilla, junto con un ecosistema digital que ofrece análisis y visualización en tiempo real. Esta combinación lo convierte en una herramienta esencial para ingenieros, inspectores y especialistas en integridad estructural que buscan resultados confiables en menos tiempo.
+
+Su diseño compacto, ultraligero e inalámbrico facilita el trabajo en campo, incluso en elementos de hormigón de difícil acceso, y su integración con iPad permite operar desde una interfaz intuitiva optimizada para la evaluación de corrosión. El equipo ofrece múltiples modos de medición, desde análisis básicos hasta escaneos de línea y área con electrodos de rueda, además de configuraciones de cuadrícula flexibles, opciones de autoguardado, omisión de datos y control total de la secuencia de adquisición. Estas funciones permiten adaptar la metodología a cualquier tipo de estructura y necesidad de inspección.
+
+Presenta herramientas de revisión avanzadas, como mapas de calor del potencial, vistas estadísticas y gráficos especializados para identificar zonas de corrosión activa. También incorpora compatibilidad con diversos tipos de electrodos, corrección automática por temperatura y opciones de zoom para un análisis detallado. El sistema permite agregar marcadores, fotos, notas de voz y geolocalización directamente en el sitio, lo que garantiza trazabilidad completa y documentación profesional de cada medición.
+
+La generación de informes es instantánea e integrada al espacio de trabajo digital, permitiendo compartir resultados mediante URL, exportar datos brutos y obtener reportes en formatos JPG, PNG, CSV y HTML. Con conectividad Bluetooth y sensores de alta precisión, logra mediciones confiables dentro de un amplio rango de potencial, acompañado de un rendimiento estable incluso en entornos exigentes. Su construcción robusta, autonomía de ocho horas y alimentación mediante una batería AA lo convierten en un instrumento eficiente, preparado para largas jornadas de trabajo en campo.
+
+Ideal para identificar zonas de corrosión, estimar la durabilidad del hormigón, investigar fallas estructurales o evaluar la efectividad de reparaciones, el PM8500 combina velocidad, precisión y capacidades digitales de última generación para elevar significativamente la productividad y calidad de cualquier inspección de corrosión.",,,,,,,,,,,,,,,,,
+"WEL100 - One Wheel",,0,,,,"Inspección de Infraestructura Civil",,"transductor One-Wheel","El transductor One Wheel del sistema PM8500 está diseñado para maximizar la velocidad y la eficiencia en la evaluación del potencial de corrosión. Su formato compacto, ultraliviano y completamente inalámbrico permite realizar barridos rápidos y precisos incluso en superficies amplias o de difícil acceso. Gracias a su rueda de alta sensibilidad y a la barra telescópica integrada, ofrece una operación cómoda tanto a corta como a larga distancia, manteniendo siempre una excelente calidad de contacto y estabilidad de medición. Es la opción ideal para inspecciones ágiles que requieren movilidad, rapidez y exactitud sostenida en campo.
+
+Dimensiones:
+
+Sin barra telescópica: 194 × 138 × 127 mm
+
+Con barra extendida: 2000 × 138 × 127 mm
+
+Con barra retraída: 700 × 138 × 127 mm",,,,,,,,,,,,,,,,,
+"WEL400 - Four Wheel",,0,,,,"Inspección de Infraestructura Civil",,"transductor Four-Wheel","El transductor Four Wheel del PM8500 está diseñado para brindar máxima estabilidad, precisión y cobertura en la cartografía de potencial de corrosión, especialmente en superficies extensas. Su plataforma de cuatro ruedas garantiza un contacto uniforme y una lectura altamente confiable, permitiendo realizar escaneos lineales y de área a gran velocidad sin comprometer la consistencia de los datos. Con una barra telescópica robusta y un diseño optimizado para largas jornadas de medición, es la solución perfecta para proyectos de gran escala que requieren repetibilidad, seguridad operacional y resultados de nivel profesional.
+
+Dimensiones:
+
+Sin barra telescópica: 830 × 350 × 140 mm
+
+Con barra extendida: 2150 × 830 × 140 mm
+
+Con barra retraída: 840 × 830 × 140 mm",,,,,,,,,,,,,,,,,
+"Proceq GS8000 Pro",,0,,,,"Inspección de Infraestructura Civil",,"Solución GPR de alta precisión para mapear el subsuelo en tiempo real con visualización 2D/3D, datos ultra claros y georreferenciación exacta. El GS8000 combina la mejor tecnología Swiss Made con un flujo de trabajo intuitivo, ideal para obras, ingeniería, servicios públicos y estudios geofísicos.","El GS8000 es una solución GPR profesional “todo en uno” diseñada para detectar, localizar y mapear con máxima precisión todo tipo de objetos enterrados. Equipado con tecnología SFCW Swiss Made, ofrece una claridad de datos superior en múltiples profundidades, visualización en tiempo real en 2D y 3D y georreferenciación exacta mediante un receptor GNSS multibanda.
+
+Su plataforma de software 100% en tiempo real permite interpretar el subsuelo directamente en obra, combinando vistas A-scan, line scan, time slice y mapas con realidad aumentada. Gracias a su flujo de trabajo intuitivo, cualquier usuario puede adquirir, analizar y compartir información sin necesidad de experiencia previa, mientras que los especialistas disponen de todas las herramientas avanzadas necesarias para un análisis profundo.
+
+Se adapta a una gran variedad de aplicaciones: prevención de daños y seguridad en excavaciones, localización y mapeo de servicios públicos, ingeniería SUE, topografía, inspección de carreteras y puentes, estudios geofísicos, arqueología, análisis forense y agricultura de precisión.
+
+Su diseño robusto con protección IP65, carro inalámbrico integrado, baterías de larga duración y compatibilidad con cualquier iPad lo convierten en un equipo ideal para condiciones de campo exigentes. Permite anotar en sitio con fotos, etiquetas, notas de voz y puntos de interés, y generar informes, planos y modelos exportables en formatos como SEG-Y, DXF, SHP, KML y HTML.
+
+El GS8000 ofrece la combinación perfecta entre potencia, precisión y simplicidad operativa para que cada inspección del subsuelo sea rápida, confiable y completamente documentada.",,,,,,,,,,,,,,,,,
+"Proceq GS8000 Lite",,0,,,,"Inspección de Infraestructura Civil",,"solución avanzada para detección y cartografía del subsuelo, combinando tecnología GPR SFCW de última generación con visualización 2D y 3D en tiempo real. Ofrece datos de alta precisión, flujos de trabajo intuitivos y acceso instantáneo a la información desde cualquier lugar, ideal para aplicaciones de ingeniería, topografía, arqueología y seguridad en excavaciones.","El GS8000 es un sistema integral diseñado para detectar, analizar y cartografiar el mundo subterráneo con la máxima precisión. Su tecnología de radar de onda continua de frecuencia escalonada permite obtener datos claros y profundos, gracias a un ancho de banda ultra amplio desarrollado en Suiza. Esta capacidad, combinada con geolocalización GNSS multibanda y compatibilidad con RTK, garantiza resultados altamente exactos en cualquier entorno.
+
+El equipo ofrece una experiencia totalmente visual e intuitiva, con representación del subsuelo en 2D y 3D en tiempo real, flujos de trabajo simples y herramientas completas para anotaciones, marcadores, fotos y notas. Todo está optimizado para interpretaciones rápidas en campo, independientemente de la complejidad del terreno o de la aplicación. Además, permite exportar información en múltiples formatos profesionales y generar mapas, dibujos e informes al instante, listos para compartir mediante una simple URL.
+
+Con modos de medición versátiles que incluyen Line Scan, Grid Scan y Free Path, así como visualización en A-scan, vistas migradas, mapas y realidad aumentada, el GS8000 se adapta por completo a los estándares actuales de topografía, ingeniería y gestión de servicios públicos. Su diseño robusto IP65, la autonomía prolongada y el carro inalámbrico integrado lo convierten en un sistema confiable para jornadas completas de trabajo en campo. Ideal para profesionales que requieren exactitud, velocidad y una plataforma potente capaz de entregar resultados en tiempo real.",,,,,,,,,,,,,,,,,
+"GPR Insights + GPR Slice",,0,,,,"Inspección de Infraestructura Civil",,"Software inteligente de análisis y visualización de datos GPR que procesa información compleja en segundos, con calidad superior y desde cualquier dispositivo. Permite transformar grandes volúmenes de datos en imágenes 2D y 3D claras, precisas y listas para entregar, trabajando 100% online y compatible con cualquier sistema multicanal.","GPR Insights 3 es la plataforma más avanzada del mercado para el análisis, procesamiento y visualización de datos de radar de penetración terrestre (GPR). Diseñada para trabajar con cualquier sistema multicanal y con proyectos de tamaño ilimitado, combina la potencia de los algoritmos de GPR Slice con una arquitectura web ultrarrápida que reduce los tiempos de post-procesamiento hasta en un 80%.
+
+Su entorno completamente online permite trabajar desde cualquier computadora o tablet, sin importar el sistema operativo, y con sincronización automática en la nube para compartir datos de forma segura mediante un simple enlace. Ofrece imágenes 2D y 3D de calidad superior, incluso cuando los datos de campo presentan limitaciones por condiciones de obra, clima o errores de posicionamiento.
+
+Ideal para proveedores de servicios GPR, ingenieros civiles y geocientíficos que buscan optimizar tiempos y mejorar la calidad de sus entregables, el software permite extraer información crítica, generar visualizaciones avanzadas y simplificar todo el flujo de trabajo, desde el procesamiento hasta el reporte final.
+
+Con herramientas inteligentes, análisis ilimitado de datos y una experiencia completamente agnóstica al hardware, Establece un nuevo estándar en el post-procesamiento profesional de datos GPR.",,,,,,,,,,,,,,,,,
+"Pundit PD8050",,0,,,,"Inspección de Infraestructura Civil",,"Sistema ultrasónico más liviano e inteligente del mercado. Combina imágenes 2D, 3D, mapa de calor y realidad aumentada para detectar defectos, medir espesores y evaluar la homogeneidad con máxima precisión. Potencia, velocidad y claridad en un solo dispositivo inalámbrico.","El Pundit PD8050 redefine la inspección ultrasónica del hormigón al combinar en un único equipo toda la potencia de los sistemas Pundit 200 PE, Pundit 250 Array y PD8000. Diseñado para ofrecer imágenes estructurales de alta resolución, permite detectar vacíos, delaminaciones, alvéolos, evaluar adherencias, medir espesores y analizar la calidad del hormigón con una velocidad y precisión incomparables.
+
+Su tecnología de eco de pulso multicanal, junto con modos de visualización en 2D, 3D, mapas térmicos y realidad aumentada, brinda una interpretación inmediata y confiable incluso en estructuras complejas. La asistencia mediante inteligencia artificial, tanto en el posicionamiento como en la interpretación de datos, acelera el trabajo en campo y garantiza resultados consistentes.
+
+El PD8050 se integra a cualquier iPad compatible, ofreciendo flujos de trabajo completamente digitales: registro automático, sincronización en la nube, generación instantánea de informes y exportación de datos en múltiples formatos. Ligero, inalámbrico y diseñado para inspecciones prolongadas, es la herramienta ideal para profesionales que necesitan una solución rápida, precisa e intuitiva para evaluar la calidad y el estado del hormigón en cualquier tipo de obra.",,,,,,,,,,,,,,,,,
+"Pundit PI8000",,0,,,,"Inspección de Infraestructura Civil",,"El Pundit PI8000 es la solución 2 en 1 más versátil del mercado para evaluar integridad de pilotes y realizar ensayos de eco de impacto en placas de hormigón. Con una sonda inalámbrica, visualización en tiempo real y una app móvil intuitiva, permite detectar defectos internos, medir espesores y verificar la calidad estructural con rapidez, trazabilidad total y colaboración remota inmediata.","El Pundit PI8000 combina en una sola sonda dos tecnologías clave, integridad de pilotes y eco de impacto, para ofrecer una solución completa y portátil que agiliza la evaluación estructural en obras civiles, industriales y de infraestructura. Su diseño patentado permite realizar múltiples aplicaciones con el mismo equipo: medición del espesor de placas, detección de discontinuidades internas, análisis de uniformidad y verificación de la longitud y calidad de pilotes, todo con adquisición de datos en tiempo real.
+
+La sonda inalámbrica trabaja junto a una aplicación móvil avanzada que guía el proceso, optimiza los parámetros de medición y ofrece herramientas de análisis inmediato, como mapas de calor para eco de impacto, etiquetado de defectos y comparación rápida de múltiples pilotes en un mismo sitio. Gracias a la conectividad en tiempo real, los datos pueden compartirse al instante con especialistas externos, asegurando decisiones más rápidas y confiables sin demoras en campo.
+
+Se integra con cualquier iPad compatible y permite flujos de trabajo totalmente trazables mediante un libro de registro automático, sincronización en la nube y generación instantánea de informes. Además, ofrece funciones inteligentes como calibración automática de velocidad del pulso, detección automatizada de picos, monitoreo del impacto y aplicación simultánea de configuraciones a todos los pilotes evaluados.
+
+Diseñado para entornos exigentes, combina precisión, rapidez y simplicidad operativa en un equipo compacto y ligero, ideal para inspecciones de edificios, puentes, pilotes y elementos de hormigón donde la fiabilidad y la velocidad de diagnóstico son esenciales.",,,,,,,,,,,,,,,,,
+"PM8000 PRO",,0,,,,"Inspección de Infraestructura Civil",,"El PM8000 Pro es el medidor de recubrimiento para hormigón más avanzado del mercado: combina precisión extrema, ergonomía ultraligera y visualización inteligente en tiempo real para encontrar armaduras, verificar recubrimientos y evaluar la calidad estructural con una rapidez y confiabilidad incomparables.","El PM8000 Pro es la solución profesional definitiva para la inspección de estructuras de hormigón cuando se requiere exactitud, velocidad y una visualización de datos de última generación. Su tecnología Eddy-current, combinada con un motor de interpolación inteligente y un modo automático capaz de optimizar cada lectura, garantiza una precisión inigualable en la detección de barras de refuerzo, evaluación de recubrimientos y análisis de durabilidad.
+
+Diseñado para el trabajo intensivo en obra, su sensor compacto, ultraligero y completamente inalámbrico ofrece una ergonomía superior que permite operar durante horas sin fatiga. La experiencia de uso se potencia con un sistema de visualización avanzada que incluye mapas de calor, realidad aumentada, análisis estadístico y procesamiento automático de la geometría del refuerzo, lo que facilita interpretaciones claras incluso en estructuras complejas.
+
+El PM8000 Pro transforma el proceso de inspección en un flujo ágil y totalmente digital. La disponibilidad instantánea de análisis y visualización en campo, la sincronización con el espacio de trabajo, el registro automático de cada medición y la generación inmediata de informes permiten cerrar evaluaciones en el momento, sin retrabajos ni tiempos muertos. Compatible con cualquier iPad de Apple con iOS 13 o superior, integra anotaciones con fotos, notas de voz y geolocalización para una trazabilidad completa.
+
+Ideal para control de obra nueva, evaluación de estructuras existentes, análisis de recubrimientos mínimos, localización de armaduras para perforaciones seguras, detección de metales y verificación de resistencia al fuego, se posiciona como el medidor de cubiertas más compacto, versátil y potente en su categoría. Un verdadero estándar profesional que combina precisión suiza, software inteligente en tiempo real y productividad sin precedentes.",,,,,,,,,,,,,,,,,
+"Pundit 200",,0,,,,"Inspección de Infraestructura Civil",,"El Pundit 200 es el equipo de ultrasonido más confiable de su categoría para evaluar la calidad del hormigón mediante velocidad de impulso. Permite medir homogeneidad, estimar resistencia, realizar escaneos de área y trabajar con distintos transductores, ofreciendo versatilidad y precisión in situ para todo tipo de estructuras.","El Pundit 200 es la solución profesional más completa para el análisis ultrasónico del hormigón mediante velocidad de impulsos, combinando potencia, exactitud y múltiples modos de medición dentro de un mismo instrumento. Diseñado para trabajos exigentes en obra y laboratorio, permite correlacionar la resistencia a la compresión, estimar el módulo de elasticidad, mapear la homogeneidad del material y aplicar el método SONREB con resultados fiables y repetibles.
+
+Su tecnología de banda ancha (20–500 kHz) y el uso de transductores intercambiables lo hacen adaptable a una amplia gama de hormigones, rocas y elementos estructurales, desde piezas masivas hasta materiales de mayor densidad. El sistema permite configurar escaneos de línea y de área con cuadrículas totalmente personalizables, mostrando variaciones internas mediante códigos de color para identificar defectos, cambios de material o zonas críticas.
+
+La unidad de visualización táctil de 7” ofrece lectura clara incluso en obra, con procesador de doble núcleo, almacenamiento interno, zoom avanzado, revisión completa de A-Scan y ajustes accesibles en tiempo real. Además, el software PL-Link permite análisis avanzados en PC y exportación a aplicaciones externas.
+
+Con su capacidad para operar también con transductores de eco de pulso, el Pundit 200 se convierte en un equipo versátil para laboratorios, constructoras, inspecciones estructurales y universidades que buscan una herramienta robusta, precisa y adaptable a distintas metodologías de evaluación del hormigón.",,,,,,,,,,,,,,,,,
+"XRS Portátil",,0,,,,,,"Analizador portátil de fluorescencia de rayos X (XRF) diseñado para obtener resultados rápidos, precisos y sin destrucción de la muestra. Su diseño compacto, liviano y robusto lo convierte en la herramienta ideal para análisis en campo con calidad comparable a laboratorio. Permite identificar elementos desde Mg hasta U con alta sensibilidad (ppm), múltiples modos de análisis y transmisión inmediata de datos.","El Portable XRF es un analizador de fluorescencia de rayos X de alto rendimiento, especialmente diseñado para realizar mediciones químicas rápidas, precisas y totalmente no destructivas, directamente en campo. Su arquitectura liviana y ergonómica permite operar en entornos industriales, ambientales y de inspección sin necesidad de infraestructura adicional, ofreciendo resultados equivalentes a laboratorio en cuestión de segundos.
+
+Equipado con un sistema de excitación optimizado y refrigeración eléctrica Peltier (sin nitrógeno líquido), el equipo detecta elementos desde magnesio (Mg) hasta uranio (U), con límites de detección en el rango ppm, permitiendo analizar desde metales y aleaciones hasta suelos, residuos, componentes electrónicos y materiales de consumo.
+
+Su sistema inteligente de colimadores automáticos (5 mm, 3 mm, 1 mm, 0,5 mm) y filtros seleccionables mejora la sensibilidad según el tipo de muestra, optimizando precisión y velocidad de análisis con solo presionar un botón. Además, el equipo permite exportar resultados en formatos Excel o PDF, crear informes personalizados con logotipo y transmitir datos vía USB, WiFi o Bluetooth, garantizando trazabilidad y facilidad de integración en cualquier flujo de trabajo.
+
+La carcasa metálica totalmente blindada y los sistemas de protección antifuga cumplen con los estándares de seguridad radiológica GB18871-2002 y GBZ115-2002, asegurando una operación segura en cualquier entorno.
+
+El Portable XRF es la solución ideal para quienes necesitan resultados confiables, inmediatos y sin destruir la muestra, en áreas como reciclaje de metales, controles de calidad, cumplimiento RoHS, evaluaciones ambientales, minería, joyería y manufactura avanzada.",,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,,,,,,,,,

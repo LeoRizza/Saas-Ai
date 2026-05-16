@@ -1,0 +1,21 @@
+nombre,stockUnidades,stockKilos,precio,tipoInventario
+Harina 0000,0,50.5,850,1
+Azúcar,0,25.0,900,1
+Manteca,0,10.0,4500,1
+Maple de huevos,15,0,3200,1
+Medialuna de manteca,120,0,500,1
+Café en grano,0,15.5,12000,1
+Leche entera sachet,40,0,1100,1
+Alfajor de maicena,50,0,800,1
+Tostado de jamón y queso,30,0,2500,1
+Jamón cocido,0,5.2,6500,1
+Queso tybo,0,6.5,5800,1
+Horma pan de miga,20,0,2100,1
+Café expreso,45,0,1500,1
+Capuchino,30,0,1900,1
+Levadura fresca,0,2.0,1800,1
+Sal fina,0,5.0,500,1
+Jugo de naranja,25,0,1700,1
+Naranjas,0,30.0,1200,1
+Porción tarta de manzana,12,0,2200,1
+Manzanas,0,18.0,1500,1

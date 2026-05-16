@@ -1,0 +1,21 @@
+nombre,razon_social,email,telefono,direccion,cuit,condicion_iva,tag,comentarios
+Ana Garcia,Garcia SA,ana@garcia.com.ar,1145238761,Av. Belgrano 456,30712345678,Responsable Inscripto,VIP,Cliente habitual
+Carlos Lopez,Lopez SRL,carlos@lopez.com.ar,1132459870,San Martin 789,30543219876,Monotributista,Regular,Pago a 30 dias
+Maria Martinez,Martinez y Asoc,maria@martinez.com.ar,1165874123,Sarmiento 1011,30654987123,Exento,Nuevo,Requiere factura A
+Pedro Sanchez,Sanchez Hermanos,pedro@sanchez.com.ar,1154789632,Rivadavia 1213,30876543210,Responsable Inscripto,Moroso,Contactar por la mañana
+Laura Gonzalez,Gonzalez Logistics,laura@gonzalez.com.ar,1147852369,Corrientes 1415,30123498765,Responsable Inscripto,Mayorista,Sin comentarios
+Diego Fernandez,Fernandez Tech,diego@fernandez.com.ar,1136985214,Cordoba 1617,30987123456,Monotributista,Minorista,Atención prioritaria
+Sofia Rodriguez,Rodriguez Solutions,sofia@rodriguez.com.ar,1152147896,Santa Fe 1819,30456789123,Responsable Inscripto,VIP,Referido por ventas
+Javier Perez,Perez Comercial,javier@perez.com.ar,1163258741,Callao 2021,30789123456,Exento,Regular,Cliente habitual
+Valeria Gomez,Gomez Group,valeria@gomez.com.ar,1141258963,Pueyrredon 2223,30321654987,Monotributista,Nuevo,Pago a 30 dias
+Matias Diaz,Diaz Cia,matias@diaz.com.ar,1138741256,Las Heras 2425,30654123987,Responsable Inscripto,Moroso,Requiere factura A
+Lucia Romero,Romero Distribuciones,lucia@romero.com.ar,1159632147,Libertador 2627,30159753468,Responsable Inscripto,Mayorista,Contactar por la mañana
+Facundo Alvarez,Alvarez Import,facundo@alvarez.com.ar,1145698712,Cabildo 2829,30753159486,Exento,Minorista,Sin comentarios
+Camila Ruiz,Ruiz Export,camila@ruiz.com.ar,1168745231,Juramento 3031,30258456159,Monotributista,VIP,Atención prioritaria
+Nicolas Suarez,Suarez Servicios,nicolas@suarez.com.ar,1132145698,Monroe 3233,30951753284,Responsable Inscripto,Regular,Referido por ventas
+Florencia Torres,Torres Consultores,florencia@torres.com.ar,1154123698,Congreso 3435,30357159842,Responsable Inscripto,Nuevo,Cliente habitual
+Joaquin Moreno,Moreno Retail,joaquin@moreno.com.ar,1147851236,Triunvirato 3637,30684215973,Monotributista,Moroso,Pago a 30 dias
+Paula Iglesias,Iglesias y Asociados,paula@iglesias.com.ar,1165239874,Alvarez Thomas 3839,30159482673,Exento,Mayorista,Requiere factura A
+Santiago Castro,Castro Construcciones,santiago@castro.com.ar,1136547892,Forest 4041,30852967413,Responsable Inscripto,Minorista,Contactar por la mañana
+Martina Silva,Silva Transportes,martina@silva.com.ar,1151234569,Lacroze 4243,30741852963,Monotributista,VIP,Sin comentarios
+Tomas Ortiz,Ortiz Muebles,tomas@ortiz.com.ar,1149876541,Dorrego 4445,30963852741,Responsable Inscripto,Regular,Atención prioritaria

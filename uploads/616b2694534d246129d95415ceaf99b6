@@ -1,0 +1,9 @@
+nombre,precio,stock_unidades,stock_kilos,unidades_por_caja,categoria,subcategoria,descripcion,long_description,codigo_barras,sku,serie
+Salsa de tomate (lata 8kg),12000,10,80,1,Insumos,Almacén,Salsa de tomate para pizza,Lata de puré de tomate de 8kg industrial,7790001,INS-TOM-01,
+Aceitunas verdes s/carozo,8500,5,10,1,Insumos,Almacén,Aceitunas por balde de 2kg,Balde de aceitunas verdes sin carozo en salmuera,7790002,INS-ACE-02,
+Jamón cocido extra,7500,0,15,3,Insumos,Fiambrería,Pieza de jamón cocido,Jamón cocido de primera calidad por pieza,7790003,INS-JAM-03,
+Harina 000 (25kg),18000,4,100,1,Insumos,Almacén,Bolsa de harina 000,Harina de trigo 000 para panificados bolsa 25kg,7790004,INS-HAR-04,
+Queso Mozzarella (barra),9500,0,20,4,Insumos,Lácteos,Barra de mozzarella,Queso mozzarella en barra para fundir,7790005,INS-MOZ-05,
+Levadura fresca,1200,20,10,10,Insumos,Almacén,Levadura en bloque 500g,Levadura fresca prensada para masa,7790006,INS-LEV-06,
+Orégano seco,3500,2,1,1,Insumos,Especias,Bolsa de orégano 500g,Orégano seco seleccionado,7790007,INS-ORE-07,
+Aceite de girasol 5L,8900,6,30,1,Insumos,Almacén,Bidón de aceite 5 litros,Aceite de girasol para cocina,7790008,INS-ACE-08,
