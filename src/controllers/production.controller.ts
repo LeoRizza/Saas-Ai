@@ -43,6 +43,16 @@ export const createProduccion = async (req: any, res: any) => {
     const usuarioReal = await prisma.usuario.findUnique({ where: { id: req.user.id } });
 
     const produccion = await prisma.$transaction(async (tx) => {
+      // SEGURIDAD: Validar que los inventarios pertenezcan a la empresa del usuario
+      const inventarioOrigen = await tx.inventario.findUnique({ where: { id: inventarioOrigenId } });
+      const inventarioDestino = await tx.inventario.findUnique({ where: { id: inventarioDestinoId } });
+
+      if (!inventarioOrigen || inventarioOrigen.empresaId !== req.user.empresaId) {
+        throw new Error('Acceso denegado: el inventario de origen no pertenece a su empresa');
+      }
+      if (!inventarioDestino || inventarioDestino.empresaId !== req.user.empresaId) {
+        throw new Error('Acceso denegado: el inventario de destino no pertenece a su empresa');
+      }
       const prod = await tx.produccionLog.create({
         data: {
           productoNombre,
@@ -66,15 +76,33 @@ export const createProduccion = async (req: any, res: any) => {
       // Decrementar stocks de insumos utilizados
       for (const ins of insumos) {
         const art = await tx.articulo.findUnique({ where: { id: ins.articuloId } });
-        if (art) {
-          await tx.articulo.update({
-            where: { id: art.id },
-            data: {
-              stockKilos: art.stockKilos - parseFloat(ins.kilos || '0'),
-              stockUnidades: art.stockUnidades - parseFloat(ins.unidades || '0')
-            }
-          });
+        
+        // SEGURIDAD: Validar que el artículo existe y pertenece a la empresa del usuario
+        if (!art) {
+          throw new Error(`Artículo con ID ${ins.articuloId} no encontrado`);
         }
+        if (art.empresaId !== req.user.empresaId) {
+          throw new Error(`Acceso denegado: el artículo "${art.nombre}" no pertenece a su empresa`);
+        }
+
+        // SEGURIDAD: Validar stock suficiente antes de descontar
+        const kilosADescontar = parseFloat(ins.kilos || '0');
+        const unidadesADescontar = parseFloat(ins.unidades || '0');
+
+        if (kilosADescontar > art.stockKilos) {
+          throw new Error(`Stock insuficiente para el artículo "${art.nombre}": se requieren ${kilosADescontar} kg pero solo hay ${art.stockKilos} kg disponibles`);
+        }
+        if (unidadesADescontar > art.stockUnidades) {
+          throw new Error(`Stock insuficiente para el artículo "${art.nombre}": se requieren ${unidadesADescontar} unidades pero solo hay ${art.stockUnidades} disponibles`);
+        }
+
+        await tx.articulo.update({
+          where: { id: art.id },
+          data: {
+            stockKilos: art.stockKilos - kilosADescontar,
+            stockUnidades: art.stockUnidades - unidadesADescontar
+          }
+        });
       }
 
       // Buscar o crear el producto final en el inventario destino

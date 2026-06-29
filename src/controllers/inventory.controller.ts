@@ -90,22 +90,21 @@ export async function createArticulo(req: Request, res: Response): Promise<void>
     // Crear artículo con transacción
     const articulo = await prisma.$transaction(async (tx) => {
       const art = await tx.articulo.create({ data });
-      return art;
-    });
 
-    // 🔥 LOG FUERA DE LA TRANSACCIÓN - Fire & Forget
-    prisma.auditLog
-      .create({
+      // ✅ LOG DENTRO DE LA TRANSACCIÓN
+      await tx.auditLog.create({
         data: {
           accion: 'AJUSTE_MANUAL',
           tablaAfectada: 'ARTICULO',
-          registroId: articulo.id,
-          valorNuevo: articulo as any,
+          registroId: art.id,
+          valorNuevo: art as any,
           usuarioId: user.id,
           empresaId: user.empresaId
         }
-      })
-      .catch((err) => console.error('Error AuditLog Artículo:', err));
+      });
+
+      return art;
+    });
 
     res.status(201).json(articulo);
   } catch (error: any) {
@@ -157,7 +156,7 @@ export async function updateArticulo(req: Request, res: Response): Promise<void>
     const files = req.files as Express.Multer.File[];
     const imageUrls = (files || []).map(getSecureImageUrl);
 
-    const { art, oldArt } = await prisma.$transaction(async (tx) => {
+    const updatedArt = await prisma.$transaction(async (tx) => {
       // Obtener artículo actual
       const oldArtData = await tx.articulo.findUnique({ where: { id } });
 
@@ -199,27 +198,25 @@ export async function updateArticulo(req: Request, res: Response): Promise<void>
       };
 
       // Actualizar artículo
-      const updatedArt = await tx.articulo.update({ where: { id }, data });
+      const updated = await tx.articulo.update({ where: { id }, data });
 
-      return { art: updatedArt, oldArt: oldArtData };
-    });
-
-    // 🔥 LOG FUERA DE LA TRANSACCIÓN - Fire & Forget
-    prisma.auditLog
-      .create({
+      // ✅ LOG DENTRO DE LA TRANSACCIÓN
+      await tx.auditLog.create({
         data: {
           accion: 'AJUSTE_MANUAL',
           tablaAfectada: 'ARTICULO',
-          registroId: art.id,
-          valorAnterior: oldArt as any,
-          valorNuevo: art as any,
+          registroId: updated.id,
+          valorAnterior: oldArtData as any,
+          valorNuevo: updated as any,
           usuarioId: user.id,
-          empresaId: art.empresaId
+          empresaId: updated.empresaId
         }
-      })
-      .catch((err) => console.error('Error AuditLog Update Articulo:', err));
+      });
 
-    res.json(art);
+      return updated;
+    });
+
+    res.json(updatedArt);
   } catch (error: any) {
     if (error.code === 'P2003') {
       res.status(400).json({
@@ -245,7 +242,7 @@ export async function deleteArticulo(req: Request, res: Response): Promise<void>
       throw new AppError('ID del artículo es requerido', 400);
     }
 
-    const oldArt = await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // Obtener artículo
       const artData = await tx.articulo.findUnique({ where: { id } });
 
@@ -261,22 +258,18 @@ export async function deleteArticulo(req: Request, res: Response): Promise<void>
       // Eliminar artículo
       await tx.articulo.delete({ where: { id } });
 
-      return artData;
-    });
-
-    // 🔥 LOG FUERA DE LA TRANSACCIÓN - Fire & Forget
-    prisma.auditLog
-      .create({
+      // ✅ LOG DENTRO DE LA TRANSACCIÓN
+      await tx.auditLog.create({
         data: {
           accion: 'AJUSTE_MANUAL',
           tablaAfectada: 'ARTICULO',
           registroId: id,
-          valorAnterior: oldArt as any,
+          valorAnterior: artData as any,
           usuarioId: user.id,
           empresaId: user.empresaId
         }
-      })
-      .catch((err) => console.error('Error AuditLog Delete Articulo:', err));
+      });
+    });
 
     res.json({ success: true, message: 'Artículo eliminado correctamente' });
   } catch (error: any) {
@@ -317,9 +310,8 @@ export async function bulkImportArticulos(req: Request, res: Response): Promise<
       throw new AppError('El CSV está vacío o no tiene el formato correcto', 400);
     }
 
-    const { processed, auditLogsToCreate } = await prisma.$transaction(async (tx) => {
+    const processed = await prisma.$transaction(async (tx) => {
       const items_processed: any[] = [];
-      const logs: any[] = [];
 
       for (const item of items) {
         if (!item.nombre || item.nombre.trim() === '') continue;
@@ -353,7 +345,7 @@ export async function bulkImportArticulos(req: Request, res: Response): Promise<
         };
 
         let art;
-        let accionAuditoria = 'IMPORTACION_CSV';
+        const accionAuditoria = 'IMPORTACION_CSV';
 
         if (skuStr) {
           const existingArt = await tx.articulo.findFirst({
@@ -371,24 +363,22 @@ export async function bulkImportArticulos(req: Request, res: Response): Promise<
           art = await tx.articulo.create({ data: articuloData });
         }
 
-        logs.push({
-          accion: accionAuditoria,
-          tablaAfectada: 'ARTICULO',
-          registroId: art.id,
-          valorNuevo: art as any,
-          usuarioId: user.id,
-          empresaId: user.empresaId
+        // ✅ LOG DENTRO DE LA TRANSACCIÓN (en cada iteración)
+        await tx.auditLog.create({
+          data: {
+            accion: accionAuditoria,
+            tablaAfectada: 'ARTICULO',
+            registroId: art.id,
+            valorNuevo: art as any,
+            usuarioId: user.id,
+            empresaId: user.empresaId
+          }
         });
 
         items_processed.push(art);
       }
 
-      return { processed: items_processed, auditLogsToCreate: logs };
-    });
-
-    // 🔥 LOGS FUERA DE LA TRANSACCIÓN - Fire & Forget
-    auditLogsToCreate.forEach((logData) => {
-      prisma.auditLog.create({ data: logData }).catch(err => console.error(err));
+      return items_processed;
     });
 
     res.status(201).json({
@@ -562,45 +552,40 @@ export async function transferirStock(req: Request, res: Response): Promise<void
         });
       }
 
-      return {
-        articuloOrigen,
-        articuloDestino: articuloActualizado,
-        esNuevo: !articuloDestino,
-        oldArtData: oldArt
-      };
-    });
-
-    // 🔥 LOGS FUERA DE LA TRANSACCIÓN - Fire & Forget
-    // Log para artículo de origen
-    prisma.auditLog
-      .create({
+      // ✅ LOGS DENTRO DE LA TRANSACCIÓN
+      // Log para artículo de origen
+      await tx.auditLog.create({
         data: {
           accion: 'AJUSTE_MANUAL',
           tablaAfectada: 'ARTICULO',
-          registroId: resultado.articuloOrigen.id,
-          valorAnterior: resultado.oldArtData as any,
-          valorNuevo: resultado.articuloOrigen as any,
+          registroId: articuloOrigen.id,
+          valorAnterior: oldArt as any,
+          valorNuevo: articuloOrigen as any,
           motivo: `Transferencia a inventario ${inventarioDestinoId}: ${unidadesTransferir} unidades, ${kilosTransferir} kilos`,
           usuarioId: user.id,
           empresaId: user.empresaId
         }
-      })
-      .catch((err) => console.error('Error AuditLog Transfer Origen:', err));
+      });
 
-    // Log para artículo de destino
-    prisma.auditLog
-      .create({
+      // Log para artículo de destino
+      await tx.auditLog.create({
         data: {
           accion: 'AJUSTE_MANUAL',
           tablaAfectada: 'ARTICULO',
-          registroId: resultado.articuloDestino.id,
-          valorNuevo: resultado.articuloDestino as any,
+          registroId: articuloActualizado.id,
+          valorNuevo: articuloActualizado as any,
           motivo: `Transferencia desde artículo ${articuloOrigenId}: ${unidadesTransferir} unidades, ${kilosTransferir} kilos`,
           usuarioId: user.id,
           empresaId: user.empresaId
         }
-      })
-      .catch((err) => console.error('Error AuditLog Transfer Destino:', err));
+      });
+
+      return {
+        articuloOrigen,
+        articuloDestino: articuloActualizado,
+        esNuevo: !articuloDestino
+      };
+    });
 
     res.status(200).json({
       success: true,

@@ -1,21 +1,102 @@
-import nodemailer, { Transporter } from 'nodemailer';
+import nodemailer, { Transporter, SendMailOptions } from 'nodemailer';
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 
+import { JSDOM } from 'jsdom';
+// @ts-ignore
+import * as pdfMakeModule from 'pdfmake/build/pdfmake.js';
+// @ts-ignore
+import * as pdfFontsModule from 'pdfmake/build/vfs_fonts.js';
+// @ts-ignore
+import htmlToPdfmakeModule from 'html-to-pdfmake';
+
+// Casting a "any" para silenciar por completo a TypeScript
+const pdfMake: any = pdfMakeModule && (pdfMakeModule as any).default ? (pdfMakeModule as any).default : pdfMakeModule;
+const pdfFonts: any = pdfFontsModule && (pdfFontsModule as any).default ? (pdfFontsModule as any).default : pdfFontsModule;
+const htmlToPdfmake: any = htmlToPdfmakeModule && (htmlToPdfmakeModule as any).default ? (htmlToPdfmakeModule as any).default : htmlToPdfmakeModule;
+
+// Inicializar las fuentes universales (Roboto)
+if (pdfMake && pdfFonts && pdfFonts.pdfMake) {
+  pdfMake.vfs = pdfFonts.pdfMake.vfs;
+} else if (pdfMake && pdfFonts && pdfFonts.vfs) {
+  pdfMake.vfs = pdfFonts.vfs;
+}
+
+export function renderCustomTemplate(
+  htmlCustom: string,
+  datos: {
+    nombreCliente: string;
+    nombreEmpresa: string;
+    subtotal: number;
+    total: number;
+    impuestos?: number;
+    moneda?: string;
+    items: CartItem[];
+  },
+  htmlFilaCustom?: string
+): string {
+  const moneda = datos.moneda || '$';
+
+  const itemsHTML = datos.items.map((item) => {
+    const precioUnitario = item.articulo.precio || 0;
+    const cantidad = item.cantidad;
+    const descuento = item.descuento || 0;
+    const itemSubtotal = (precioUnitario * cantidad) * (1 - descuento / 100);
+
+    if (htmlFilaCustom) {
+      return htmlFilaCustom
+        .replace(/{{articulo\.nombre}}/g, item.articulo.nombre)
+        .replace(/{{articulo\.precio}}/g, `${moneda}${precioUnitario.toFixed(2)}`)
+        .replace(/{{cantidad}}/g, cantidad.toString())
+        .replace(/{{subtotal}}/g, `${moneda}${itemSubtotal.toFixed(2)}`)
+        .replace(/{{moneda}}/g, moneda);
+    }
+
+    return `
+    <tr style="border-bottom: 1px solid #e2e8f0;">
+      <td style="padding: 12px 10px; text-align: left; color: #334155; font-size: 12px;">${item.articulo.nombre}</td>
+      <td style="padding: 12px 10px; text-align: center; color: #334155; font-size: 12px;">${cantidad}</td>
+      <td style="padding: 12px 10px; text-align: right; color: #334155; font-size: 12px;">${moneda}${precioUnitario.toFixed(2)}</td>
+      <td style="padding: 12px 10px; text-align: right; color: #0f172a; font-weight: bold; font-size: 12px;">${moneda}${itemSubtotal.toFixed(2)}</td>
+    </tr>
+    `;
+  }).join('');
+
+  let renderizado = htmlCustom
+    .replace(/{{nombreCliente}}/g, datos.nombreCliente)
+    .replace(/{{nombreEmpresa}}/g, datos.nombreEmpresa)
+    .replace(/{{subtotal}}/g, `${moneda} ${datos.subtotal.toFixed(2)}`)
+    .replace(/{{total}}/g, `${moneda} ${datos.total.toFixed(2)}`)
+    .replace(/{{impuestos}}/g, datos.impuestos ? `${moneda} ${datos.impuestos.toFixed(2)}` : `${moneda} 0.00`)
+    .replace(/{{moneda}}/g, moneda)
+    .replace(/{{fecha}}/g, new Date().toLocaleDateString('es-AR'))
+    .replace(/{{tablaItems}}/g, itemsHTML);
+
+  return renderizado;
+}
+
 const prisma = new PrismaClient();
 
-// Interfaz para los items del carrito
-interface CartItem {
-  articulo: {
-    nombre: string;
-    precio: number;
-  };
+export const safeDecode = (str: string | null | undefined): string => {
+  if (!str) return '';
+  try {
+    return decodeURIComponent(escape(atob(str)));
+  } catch (e1) {
+    try {
+      return decodeURIComponent(str);
+    } catch (e2) {
+      return str;
+    }
+  }
+};
+
+export interface CartItem {
+  articulo: { nombre: string; precio: number; };
   cantidad: number;
   descuento: number;
 }
 
-// Interfaz para el body del request
-interface SendQuoteEmailBody {
+export interface SendQuoteEmailBody {
   emailCliente: string;
   nombreCliente: string;
   items: CartItem[];
@@ -24,62 +105,36 @@ interface SendQuoteEmailBody {
   nombreEmpresa: string;
   empresaId: string;
   impuestos?: number;
+  moneda?: string;
 }
 
-// Interfaz para datos de empresa
-interface EmpresaData {
+export interface EmpresaData {
   id: string;
   nombre: string;
   smtpUser?: string | null;
   smtpPass?: string | null;
   emailContacto?: string | null;
   telefonoContacto?: string | null;
+  config?: any | null;
 }
 
-/**
- * Función auxiliar para crear un transportador dinámico según la empresa
- * Si la empresa tiene credenciales SMTP propias, las usa.
- * Si no, utiliza las credenciales por defecto del sistema.
- * @param empresa - Datos de la empresa
- * @returns Transportador SMTP configurado
- */
-async function createTransporter(empresa: EmpresaData): Promise<Transporter> {
+export async function createTransporter(empresa: EmpresaData): Promise<Transporter> {
   if (empresa.smtpUser && empresa.smtpPass) {
-    // Usar credenciales SMTP de la empresa
     return nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
       secure: process.env.SMTP_SECURE === 'true',
-      auth: {
-        user: empresa.smtpUser,
-        pass: empresa.smtpPass
-      }
+      auth: { user: empresa.smtpUser, pass: empresa.smtpPass }
     });
   }
 
-  // Fallback a credenciales globales
   return nodemailer.createTransport({
     service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
   });
 }
 
-/**
- * Función para generar el template HTML uniforme con diseño estandarizado
- * @param nombreCliente - Nombre del cliente
- * @param items - Items del carrito/venta
- * @param subtotal - Subtotal de la venta
- * @param total - Total de la venta
- * @param titulo - Título del email
- * @param emailEmpresa - Email de contacto de la empresa
- * @param telefonoEmpresa - Teléfono de contacto de la empresa
- * @param impuestos - Impuestos aplicados (opcional)
- * @param mensaje - Mensaje personalizado del email (opcional)
- */
-function generateEmailTemplate(
+export function generateEmailTemplate(
   nombreCliente: string,
   items: CartItem[],
   subtotal: number,
@@ -91,124 +146,97 @@ function generateEmailTemplate(
   impuestos?: number,
   mensaje?: string
 ): string {
-  const fechaGeneracion = new Date().toLocaleDateString('es-ES', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const fechaGeneracion = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 
-  const itemsHTML = items
-    .map((item) => {
-      const precioUnitario = item.articulo.precio || 0;
-      const cantidad = item.cantidad;
-      const descuento = item.descuento || 0;
-      const itemSubtotal = (precioUnitario * cantidad) * (1 - descuento / 100);
+  const itemsHTML = items.map((item) => {
+    const precioUnitario = item.articulo.precio || 0;
+    const cantidad = item.cantidad;
+    const descuento = item.descuento || 0;
+    const itemSubtotal = (precioUnitario * cantidad) * (1 - descuento / 100);
+    return `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: left; color: #334155; font-size: 12px;">${item.articulo.nombre}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: center; color: #334155; font-size: 12px;">${cantidad}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #334155; font-size: 12px;">$${precioUnitario.toFixed(2)}</td>
+        <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; color: #0f172a; font-weight: bold; font-size: 12px;">$${itemSubtotal.toFixed(2)}</td>
+      </tr>`;
+  }).join('');
 
-      return `
-      <tr style="border-bottom: 1px solid #e5e7eb;">
-        <td style="padding: 12px 15px; text-align: left; color: #1f2937; font-size: 14px;">${item.articulo.nombre}</td>
-        <td style="padding: 12px 15px; text-align: center; color: #1f2937; font-size: 14px;">${cantidad}</td>
-        <td style="padding: 12px 15px; text-align: right; color: #1f2937; font-size: 14px;">$${precioUnitario.toFixed(2)}</td>
-        <td style="padding: 12px 15px; text-align: right; color: #1f2937; font-weight: 600; font-size: 14px;">$${itemSubtotal.toFixed(2)}</td>
-      </tr>
-      `;
-    })
-    .join('');
+  const impuestosHTML = impuestos && impuestos > 0 ? `
+    <tr>
+      <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 12px; color: #64748b;">Impuestos (IVA):</td>
+      <td style="padding: 8px 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 12px; color: #0f172a;">$${impuestos.toFixed(2)}</td>
+    </tr>` : '';
 
   return `
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>${titulo}</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif; background-color: #f3f4f6;">
-      <div style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); overflow: hidden;">
-        <!-- Header -->
-        <div style="background-color: #1e293b; color: white; padding: 40px 30px; text-align: center;">
-          <h1 style="margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">${titulo}</h1>
-          <p style="margin: 10px 0 0 0; font-size: 16px; color: #cbd5e1;">${nombreEmpresa}</p>
-        </div>
-
-        <!-- Content -->
-        <div style="padding: 40px 30px;">
-          <!-- Greeting -->
-          <div style="color: #1f2937; margin-bottom: 20px; font-size: 16px; line-height: 1.5;">
-            ¡Hola <strong style="font-weight: 600;">${nombreCliente}</strong>!
-          </div>
-
-          <p style="color: #6b7280; margin: 15px 0; font-size: 14px; line-height: 1.6;">
-            ${mensaje || 'Te compartimos los detalles de tu transacción. Revisa la información a continuación:'}
-          </p>
-
-          <!-- Info Section -->
-          <div style="background-color: #f1f5f9; padding: 15px; border-radius: 5px; margin-bottom: 30px; font-size: 14px;">
-            <p style="margin: 5px 0; color: #475569;"><strong>📅 Fecha:</strong> ${fechaGeneracion}</p>
-            <p style="margin: 5px 0; color: #475569;"><strong>👤 Cliente:</strong> ${nombreCliente}</p>
-          </div>
-
-          <!-- Table Container -->
-          <div style="margin: 30px 0; overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-              <thead>
-                <tr style="background-color: #1e293b; color: white;">
-                  <th style="padding: 15px; text-align: left; font-weight: 600; font-size: 14px;">Concepto</th>
-                  <th style="padding: 15px; text-align: center; font-weight: 600; font-size: 14px;">Cantidad</th>
-                  <th style="padding: 15px; text-align: right; font-weight: 600; font-size: 14px;">Precio Unitario</th>
-                  <th style="padding: 15px; text-align: right; font-weight: 600; font-size: 14px;">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${itemsHTML}
-              </tbody>
+    <div style="font-family: Helvetica, Arial, sans-serif; color: #334155; padding: 20px;">
+      
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 30px;">
+        <tr>
+          <td width="50%" style="vertical-align: top;">
+            <h1 style="margin: 0; color: #0f172a; font-size: 24px; font-weight: bold; text-transform: uppercase;">${titulo}</h1>
+            <p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;">${nombreEmpresa}</p>
+          </td>
+          <td width="50%" style="text-align: right; vertical-align: top;">
+            <table width="100%" cellpadding="6" cellspacing="0" border="0" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+              <tr>
+                <td style="text-align: right; font-size: 11px; color: #475569;"><strong>Fecha:</strong></td>
+                <td style="text-align: left; font-size: 11px; color: #475569;">${fechaGeneracion}</td>
+              </tr>
+              <tr>
+                <td style="text-align: right; font-size: 11px; color: #475569;"><strong>Cliente:</strong></td>
+                <td style="text-align: left; font-size: 11px; color: #475569;">${nombreCliente}</td>
+              </tr>
             </table>
-          </div>
+          </td>
+        </tr>
+      </table>
 
-          <!-- Summary -->
-          <div style="margin-top: 30px; background-color: #f1f5f9; padding: 20px; border-radius: 5px;">
-            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #cbd5e1; font-size: 14px;">
-              <span style="color: #475569;">Subtotal:</span>
-              <span style="color: #1f2937; font-weight: 500;">$${subtotal.toFixed(2)}</span>
-            </div>
-            ${impuestos && impuestos > 0 ? `
-            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #cbd5e1; font-size: 14px;">
-              <span style="color: #475569;">Impuestos (IVA):</span>
-              <span style="color: #1f2937; font-weight: 500;">$${impuestos.toFixed(2)}</span>
-            </div>
-            ` : ''}
-            <div style="display: flex; justify-content: space-between; padding: 15px 0 0 0; font-size: 18px; font-weight: 700; color: #1e293b;">
-              <span>TOTAL:</span>
-              <span style="color: #0ea5e9;">$${total.toFixed(2)}</span>
-            </div>
-          </div>
-        </div>
+      <p style="font-size: 13px; margin-bottom: 20px; line-height: 1.5;">${mensaje || 'Detalle de la cotización solicitada:'}</p>
 
-        <!-- Footer -->
-        <div style="background-color: #f1f5f9; padding: 20px 30px; text-align: center; border-top: 1px solid #cbd5e1;">
-          <div style="margin-bottom: 15px;">
-            <p style="margin: 5px 0; color: #475569; font-size: 12px;">
-              <strong>Contáctanos:</strong>
-            </p>
-            <p style="margin: 5px 0; color: #475569; font-size: 12px;">
-              📧 <a href="mailto:${emailEmpresa}" style="color: #0ea5e9; text-decoration: none;">${emailEmpresa}</a>
-            </p>
-            <p style="margin: 5px 0; color: #475569; font-size: 12px;">
-              📱 ${telefonoEmpresa}
-            </p>
-          </div>
-          <p style="margin: 5px 0; color: #475569; font-size: 12px; border-top: 1px solid #cbd5e1; padding-top: 10px;">Powered by <strong>LR|tech</strong></p>
-        </div>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin-bottom: 30px;">
+        <thead>
+          <tr>
+            <th style="padding: 10px; background-color: #0f172a; color: #ffffff; text-align: left; font-size: 11px; font-weight: bold; text-transform: uppercase; border: 1px solid #0f172a;">Concepto / Artículo</th>
+            <th style="padding: 10px; background-color: #0f172a; color: #ffffff; text-align: center; font-size: 11px; font-weight: bold; text-transform: uppercase; border: 1px solid #0f172a;">Cant.</th>
+            <th style="padding: 10px; background-color: #0f172a; color: #ffffff; text-align: right; font-size: 11px; font-weight: bold; text-transform: uppercase; border: 1px solid #0f172a;">Precio Unit.</th>
+            <th style="padding: 10px; background-color: #0f172a; color: #ffffff; text-align: right; font-size: 11px; font-weight: bold; text-transform: uppercase; border: 1px solid #0f172a;">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${itemsHTML}
+        </tbody>
+      </table>
+
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 40px;">
+        <tr>
+          <td width="55%"></td>
+          <td width="45%">
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse; background-color: #f8fafc; border: 1px solid #e2e8f0;">
+              <tr>
+                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 12px; color: #64748b;">Subtotal:</td>
+                <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: right; font-size: 12px; color: #0f172a; font-weight: bold;">$${subtotal.toFixed(2)}</td>
+              </tr>
+              ${impuestosHTML}
+              <tr>
+                <td style="padding: 12px 10px; text-align: right; font-size: 14px; font-weight: bold; color: #0f172a;">TOTAL:</td>
+                <td style="padding: 12px 10px; text-align: right; font-size: 16px; font-weight: bold; color: #2563eb;">$${total.toFixed(2)}</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <div style="border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: center;">
+        <p style="margin: 0; font-size: 10px; color: #94a3b8;">Documento emitido por <strong>${nombreEmpresa}</strong></p>
+        <p style="margin: 5px 0 0 0; font-size: 10px; color: #94a3b8;">${emailEmpresa} ${telefonoEmpresa ? `| Tel: ${telefonoEmpresa}` : ''}</p>
       </div>
-    </body>
-    </html>
+
+    </div>
   `;
 }
 
-/**
- * Función para generar el template HTML del correo de cotización
- */
-function generateQuoteTemplate(
+export function generateQuoteTemplate(
   nombreCliente: string,
   items: CartItem[],
   subtotal: number,
@@ -218,111 +246,66 @@ function generateQuoteTemplate(
   telefonoEmpresa: string,
   impuestos?: number
 ): string {
-  return generateEmailTemplate(
-    nombreCliente,
-    items,
-    subtotal,
-    total,
-    '📋 COTIZACIÓN',
-    nombreEmpresa,
-    emailEmpresa,
-    telefonoEmpresa,
-    impuestos,
-    'Te compartimos tu cotización personalizada. Revisa los detalles a continuación:'
-  );
+  return generateEmailTemplate(nombreCliente, items, subtotal, total, '📋 COTIZACIÓN', nombreEmpresa, emailEmpresa, telefonoEmpresa, impuestos, 'Tu cotización personalizada:');
 }
 
-/**
- * Controlador para enviar cotización por correo
- * @param req - Request con body: { emailCliente, nombreCliente, items, subtotal, total, empresaId, impuestos? }
- * @param res - Response
- */
 export async function sendQuoteEmail(req: Request, res: Response): Promise<void> {
   let transporter: Transporter | null = null;
-
   try {
     const user = (req as any).user;
-    const {
-      emailCliente,
-      nombreCliente,
-      items,
-      subtotal,
-      total,
-      empresaId,
-      impuestos
-    } = req.body as SendQuoteEmailBody;
+    const { emailCliente, nombreCliente, items, subtotal, total, empresaId, impuestos } = req.body as SendQuoteEmailBody;
 
-    // Validar datos requeridos
     if (!emailCliente || !nombreCliente || !items || subtotal === undefined || total === undefined || !empresaId) {
-      res.status(400).json({
-        success: false,
-        message: 'Faltan datos requeridos: emailCliente, nombreCliente, items, subtotal, total, empresaId'
-      });
-      return;
+      res.status(400).json({ success: false, message: 'Faltan datos requeridos' }); return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailCliente)) {
+      res.status(400).json({ success: false, message: 'Correo no válido' }); return;
     }
 
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailCliente)) {
-      res.status(400).json({
-        success: false,
-        message: 'El formato del correo no es válido'
-      });
-      return;
-    }
+    const empresa = await prisma.empresa.findUnique({ where: { id: empresaId }, select: { id: true, nombre: true, smtpUser: true, smtpPass: true, emailContacto: true, telefonoContacto: true, config: true } });
+    if (!empresa) { res.status(404).json({ success: false, message: 'La empresa no fue encontrada' }); return; }
 
-    // Validar que items sea un array
-    if (!Array.isArray(items) || items.length === 0) {
-      res.status(400).json({
-        success: false,
-        message: 'Debe incluir al menos un artículo en la cotización'
-      });
-      return;
-    }
-
-    // Buscar los datos de la empresa
-    const empresa = await prisma.empresa.findUnique({
-      where: { id: empresaId },
-      select: {
-        id: true,
-        nombre: true,
-        smtpUser: true,
-        smtpPass: true,
-        emailContacto: true,
-        telefonoContacto: true
-      }
-    });
-
-    if (!empresa) {
-      res.status(404).json({
-        success: false,
-        message: 'La empresa no fue encontrada'
-      });
-      return;
-    }
-
-    // Crear transportador dinámico
     transporter = await createTransporter(empresa);
-
-    // Validar y usar fallbacks para datos de contacto
     const emailContacto = empresa.emailContacto || process.env.COMPANY_EMAIL || 'contacto@empresa.com';
     const telefonoContacto = empresa.telefonoContacto || process.env.COMPANY_PHONE || '+34 XXX XXX XXX';
+    const { moneda } = req.body as SendQuoteEmailBody;
 
-    // Generar template HTML
-    const htmlTemplate = generateQuoteTemplate(
-      nombreCliente,
-      items,
-      subtotal,
-      total,
-      empresa.nombre,
-      emailContacto,
-      telefonoContacto,
-      impuestos
-    );
+    let htmlTemplate: string;
+    if (empresa.config) {
+      try {
+        const configData = typeof empresa.config === 'string' ? JSON.parse(empresa.config) : empresa.config;
+        if (configData.templateCotizacion) {
+          const htmlFilaCustom = configData.templateFilaCotizacion ? safeDecode(configData.templateFilaCotizacion) : undefined;
+          htmlTemplate = renderCustomTemplate(safeDecode(configData.templateCotizacion), { nombreCliente, nombreEmpresa: empresa.nombre, subtotal, total, impuestos, moneda: moneda || '$', items }, htmlFilaCustom);
+        } else {
+          htmlTemplate = generateQuoteTemplate(nombreCliente, items, subtotal, total, empresa.nombre, emailContacto, telefonoContacto, impuestos);
+        }
+      } catch (err) {
+        htmlTemplate = generateQuoteTemplate(nombreCliente, items, subtotal, total, empresa.nombre, emailContacto, telefonoContacto, impuestos);
+      }
+    } else {
+      htmlTemplate = generateQuoteTemplate(nombreCliente, items, subtotal, total, empresa.nombre, emailContacto, telefonoContacto, impuestos);
+    }
 
-    // Configurar opciones del correo
+    let pdfBuffer: any = null;
+    try {
+      let cleanHtml = htmlTemplate.replace(/font-family:[^;"]+;?/gi, '');
+      cleanHtml = cleanHtml.replace(/<img[^>]*>/gi, '');
+
+      const { window } = new JSDOM('');
+      const pdfMakeContent = htmlToPdfmake(cleanHtml, { window });
+
+      const docDefinition = { content: pdfMakeContent, defaultStyle: { font: 'Roboto' } };
+      const pdfDocGenerator: any = pdfMake.createPdf(docDefinition);
+
+      // ¡Esperamos la Promesa!
+      pdfBuffer = await pdfDocGenerator.getBuffer();
+    } catch (pdfError) {
+      console.error('⚠️ Error generando el PDF adjunto:', pdfError);
+    }
+
     const fromEmail = empresa.smtpUser || process.env.EMAIL_USER || 'noreply@empresa.com';
-    const mailOptions = {
+    const mailOptions: SendMailOptions = {
       from: `${empresa.nombre} <${fromEmail}>`,
       to: emailCliente,
       subject: `📋 Cotización de ${empresa.nombre}`,
@@ -330,242 +313,104 @@ export async function sendQuoteEmail(req: Request, res: Response): Promise<void>
       replyTo: emailContacto
     };
 
-    // Enviar correo
+    if (pdfBuffer) {
+      const cleanName = nombreCliente.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      mailOptions.attachments = [{ filename: `Cotizacion_${cleanName}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }];
+    }
+
+    if (!transporter) {
+      throw new Error('No se pudo inicializar el transportador de correo');
+    }
+
     const info = await transporter.sendMail(mailOptions);
 
-    console.log(`✅ Cotización enviada a ${emailCliente}. MessageID: ${info.messageId}`);
-
-    // Auditoría en Fire & Forget
     prisma.auditLog.create({
       data: {
-        usuarioId: user?.id || 'SISTEMA',
-        empresaId: empresaId,
-        accion: 'ACTUALIZACION_PEDIDO',
-        tablaAfectada: 'PEDIDO',
-        registroId: 'SISTEMA',
-        motivo: `Cotización enviada al email: ${emailCliente}`
+        usuarioId: user?.id || 'SISTEMA', empresaId, accion: 'ACTUALIZACION_PEDIDO', tablaAfectada: 'PEDIDO', registroId: 'SISTEMA',
+        motivo: `📧 Cotización enviada a: ${emailCliente}`, valorNuevo: { nombre: nombreCliente } as any
       }
-    }).catch(err => console.error('❌ Error registrando auditoría de cotización:', err));
+    }).catch(err => console.error('Error auditoría:', err));
 
-    res.status(200).json({
-      success: true,
-      message: 'Cotización enviada exitosamente',
-      messageId: info.messageId
-    });
+    res.status(200).json({ success: true, message: 'Cotización enviada exitosamente', messageId: info.messageId });
   } catch (error) {
-    console.error('❌ Error al enviar cotización:', error);
-
-    res.status(500).json({
-      success: false,
-      message: 'Error al enviar la cotización',
-      error: error instanceof Error ? error.message : 'Error desconocido'
-    });
+    res.status(500).json({ success: false, message: 'Error al enviar la cotización' });
   }
 }
 
-/**
- * Función auxiliar para verificar la conexión del transportador con credenciales por defecto
- */
 export async function verifyTransporter(): Promise<boolean> {
   try {
-    const defaultTransporter = await createTransporter({
-      id: 'default',
-      nombre: 'Default'
-    });
+    const defaultTransporter = await createTransporter({ id: 'default', nombre: 'Default' });
     await defaultTransporter.verify();
-    console.log('✅ Transportador SMTP verificado correctamente');
     return true;
   } catch (error) {
-    console.error('❌ Error al verificar transportador SMTP:', error);
     return false;
   }
 }
 
-/**
- * Controlador para enviar el ticket/venta por correo
- * @param req - Request con params: { id } - ID de la venta
- * @param res - Response
- */
 export async function sendTicket(req: Request, res: Response): Promise<void> {
   let transporter: Transporter | null = null;
-
   try {
     const user = (req as any).user;
     const { id } = req.params;
 
-    // Validar que se proporcionó el ID de venta
-    if (!id) {
-      res.status(400).json({
-        success: false,
-        message: 'El ID de la venta es requerido'
-      });
-      return;
-    }
+    if (!id) { res.status(400).json({ success: false, message: 'ID requerido' }); return; }
 
-    // Buscar la venta en Prisma con includes
     const venta = await prisma.venta.findUnique({
       where: { id: id },
-      include: {
-        cliente: true,
-        items: {
-          include: {
-            articulo: true
-          }
-        },
-        empresa: {
-          select: {
-            id: true,
-            nombre: true,
-            smtpUser: true,
-            smtpPass: true,
-            emailContacto: true,
-            telefonoContacto: true
-          }
-        }
-      }
+      include: { cliente: true, items: { include: { articulo: true } }, empresa: { select: { id: true, nombre: true, smtpUser: true, smtpPass: true, emailContacto: true, telefonoContacto: true, config: true } } }
     });
 
-    // Validar que la venta existe
-    if (!venta) {
-      res.status(404).json({
-        success: false,
-        message: 'La venta no fue encontrada'
-      });
-      return;
-    }
+    if (!venta || !venta.empresa || !venta.cliente.email) { res.status(400).json({ success: false, message: 'Datos faltantes' }); return; }
 
-    // Validar que la venta tiene empresa asociada
-    if (!venta.empresa) {
-      res.status(400).json({
-        success: false,
-        message: 'La venta no tiene una empresa asociada'
-      });
-      return;
-    }
-
-    // Validar que el cliente tenga email
-    if (!venta.cliente.email) {
-      res.status(400).json({
-        success: false,
-        message: 'El cliente no tiene un email registrado'
-      });
-      return;
-    }
-
-    // Validar formato de email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(venta.cliente.email)) {
-      res.status(400).json({
-        success: false,
-        message: 'El formato del correo del cliente no es válido'
-      });
-      return;
-    }
-
-    // Validar que la venta tenga items
-    if (!venta.items || venta.items.length === 0) {
-      res.status(400).json({
-        success: false,
-        message: 'La venta no tiene artículos asociados'
-      });
-      return;
-    }
-
-    // Crear transportador dinámico
     transporter = await createTransporter(venta.empresa);
-
-    // Validar y usar fallbacks para datos de contacto
     const emailContacto = venta.empresa.emailContacto || process.env.COMPANY_EMAIL || 'contacto@empresa.com';
     const telefonoContacto = venta.empresa.telefonoContacto || process.env.COMPANY_PHONE || '+34 XXX XXX XXX';
 
-    // Transformar items al formato esperado para el email
-    const items: CartItem[] = venta.items.map((item: any) => {
-      const cantidad = item.cantidadUnidades > 0 ? item.cantidadUnidades : item.cantidadKilos;
-      return {
-        articulo: {
-          nombre: item.articulo?.nombre || 'Artículo eliminado',
-          precio: item.subtotal / cantidad // Precio unitario calculado
-        },
-        cantidad: cantidad,
-        descuento: item.descuento || 0
-      };
-    });
+    const items: CartItem[] = venta.items.map((item: any) => ({
+      articulo: { nombre: item.articulo?.nombre || 'Eliminado', precio: item.subtotal / (item.cantidadUnidades > 0 ? item.cantidadUnidades : item.cantidadKilos) },
+      cantidad: item.cantidadUnidades > 0 ? item.cantidadUnidades : item.cantidadKilos,
+      descuento: item.descuento || 0
+    }));
 
-    // Calcular subtotal sumando los subtotales de cada item
-    const subtotal = venta.items.reduce((acc: number, item: any) => {
-      return acc + parseFloat(item.subtotal.toString());
-    }, 0);
-
-    // Usar montoTotal y descuento de la venta
+    const subtotal = venta.items.reduce((acc: number, item: any) => acc + parseFloat(item.subtotal.toString()), 0);
     const descuentoTotal = venta.descuento ? parseFloat(venta.descuento.toString()) : 0;
     const total = parseFloat(venta.montoTotal.toString());
 
-    // Generar template HTML
-    const htmlTemplate = generateEmailTemplate(
-      venta.cliente.nombre,
-      items,
-      subtotal,
-      total,
-      '🧾 TICKET DE VENTA',
-      venta.empresa.nombre,
-      emailContacto,
-      telefonoContacto,
-      descuentoTotal > 0 ? descuentoTotal : undefined,
-      'Gracias por tu compra. Aquí se encuentran los detalles de tu transacción:'
-    );
+    let htmlTemplate: string;
+    if (venta.empresa.config) {
+      try {
+        const configData = typeof venta.empresa.config === 'string' ? JSON.parse(venta.empresa.config) : venta.empresa.config;
+        if (configData.templateTicket) {
+          const htmlFilaCustom = configData.templateFilaTicket ? safeDecode(configData.templateFilaTicket) : undefined;
+          htmlTemplate = renderCustomTemplate(safeDecode(configData.templateTicket), { nombreCliente: venta.cliente.nombre, nombreEmpresa: venta.empresa.nombre, subtotal, total, impuestos: descuentoTotal > 0 ? descuentoTotal : undefined, moneda: '$', items }, htmlFilaCustom);
+        } else { htmlTemplate = generateEmailTemplate(venta.cliente.nombre, items, subtotal, total, '🧾 TICKET DE VENTA', venta.empresa.nombre, emailContacto, telefonoContacto, descuentoTotal > 0 ? descuentoTotal : undefined, 'Gracias por tu compra.'); }
+      } catch (err) { htmlTemplate = generateEmailTemplate(venta.cliente.nombre, items, subtotal, total, '🧾 TICKET DE VENTA', venta.empresa.nombre, emailContacto, telefonoContacto, descuentoTotal > 0 ? descuentoTotal : undefined, 'Gracias por tu compra.'); }
+    } else { htmlTemplate = generateEmailTemplate(venta.cliente.nombre, items, subtotal, total, '🧾 TICKET DE VENTA', venta.empresa.nombre, emailContacto, telefonoContacto, descuentoTotal > 0 ? descuentoTotal : undefined, 'Gracias por tu compra.'); }
 
-    // Configurar opciones del correo
-    const fechaFormateada = new Intl.DateTimeFormat('es-AR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    }).format(new Date(venta.fecha));
+    let pdfBuffer: Buffer | null = null;
+    try {
+      let cleanHtml = htmlTemplate.replace(/font-family:[^;"]+;?/gi, '');
+      cleanHtml = cleanHtml.replace(/<img[^>]*>/gi, '');
+
+      const { window } = new JSDOM('');
+      const pdfMakeContent = htmlToPdfmake(cleanHtml, { window });
+
+      const docDefinition = { content: pdfMakeContent, defaultStyle: { font: 'Roboto' } };
+      const pdfDocGenerator: any = pdfMake.createPdf(docDefinition);
+
+      // ¡Esperamos la Promesa!
+      pdfBuffer = await pdfDocGenerator.getBuffer();
+    } catch (pdfError) { console.error('⚠️ Error generando PDF ticket:', pdfError); }
+
+    const fechaFormateada = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(venta.fecha));
     const fromEmail = venta.empresa.smtpUser || process.env.EMAIL_USER || 'noreply@empresa.com';
-    const mailOptions = {
-      from: `${venta.empresa.nombre} <${fromEmail}>`,
-      to: venta.cliente.email,
-      subject: `🧾 Ticket de Venta ${fechaFormateada}`,
-      html: htmlTemplate,
-      replyTo: emailContacto
-    };
+    const mailOptions: SendMailOptions = { from: `${venta.empresa.nombre} <${fromEmail}>`, to: venta.cliente.email, subject: `🧾 Ticket de Venta ${fechaFormateada}`, html: htmlTemplate, replyTo: emailContacto };
 
-    // Enviar correo
+    if (pdfBuffer) mailOptions.attachments = [{ filename: `Ticket_${venta.id}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }];
+
     const info = await transporter.sendMail(mailOptions);
-
-    console.log(`✅ Ticket enviado a ${venta.cliente.email}. MessageID: ${info.messageId}`);
-
-    // Auditoría en Fire & Forget
-    prisma.auditLog.create({
-      data: {
-        usuarioId: user?.id || 'SISTEMA',
-        empresaId: venta.empresa.id,
-        accion: 'VENTA',
-        tablaAfectada: 'VENTA',
-        registroId: venta.id,
-        motivo: `Ticket de venta enviado al email: ${venta.cliente.email}`
-      }
-    }).catch(err => console.error('❌ Error registrando auditoría de venta:', err));
-
-    res.status(200).json({
-      success: true,
-      message: 'Ticket enviado exitosamente',
-      messageId: info.messageId,
-      ventaId: venta.id,
-      email: venta.cliente.email
-    });
-  } catch (error) {
-    console.error('❌ Error al enviar ticket:', error);
-
-    res.status(500).json({
-      success: false,
-      message: 'Error al enviar el ticket',
-      error: error instanceof Error ? error.message : 'Error desconocido'
-    });
-  }
+    res.status(200).json({ success: true, message: 'Ticket enviado', messageId: info.messageId });
+  } catch (error) { res.status(500).json({ success: false, message: 'Error al enviar ticket' }); }
 }
 
-export default {
-  sendQuoteEmail,
-  sendTicket,
-  verifyTransporter
-};
+export default { sendQuoteEmail, sendTicket, verifyTransporter };

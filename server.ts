@@ -23,7 +23,7 @@ import { getProduccion, createProduccion } from './src/controllers/production.co
 import { getEmpresas, createEmpresa, updateEmpresa, deleteEmpresa, getUsuarios, createUsuario, updateUsuario, deleteUsuario, login, loginLimiter } from './src/controllers/auth.controller';
 import { sendQuoteEmail, sendTicket } from './src/controllers/mailer.controller';
 import { createExternalPedido, externalApiLimiter } from './src/controllers/integrations.controller';
-import { getPedidos, createPedido, updatePedidoStatus, updatePedido } from './src/controllers/pedidos.controller';
+import { getPedidos, createPedido, updatePedidoStatus, updatePedido, downloadPedidoPdf } from './src/controllers/pedidos.controller';
 
 // ==========================================
 // --- VALIDACIÓN DE VARIABLES DE ENTORNO CRÍTICAS ---
@@ -43,7 +43,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
-  'https://lightgreen-badger-438485.hostingersite.com',
+  'https://laris.com.ar',
 ];
 
 const corsOptions: cors.CorsOptions = {
@@ -100,7 +100,7 @@ const upload = multer({
 
 app.use(compression());
 app.use(cors(corsOptions));
-app.use(timeout('15s'));
+app.use(timeout('60s'));
 app.use(express.json());
 app.use(haltOnTimedout);
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
@@ -159,6 +159,7 @@ app.get('/api/pedidos', authenticate, authorize(['ADMIN', 'VENDEDOR']), getPedid
 app.post('/api/pedidos', authenticate, authorize(['ADMIN', 'VENDEDOR']), createPedido);
 app.patch('/api/pedidos/:id/status', authenticate, authorize(['ADMIN', 'VENDEDOR']), updatePedidoStatus);
 app.patch('/api/pedidos/:id', authenticate, authorize(['ADMIN', 'VENDEDOR']), updatePedido);
+app.get('/api/pedidos/:id/pdf', authenticate, authorize(['ADMIN', 'VENDEDOR']), downloadPedidoPdf);
 
 // --- MAILER (Envíos de Correo) ---
 app.post('/api/mailer/quote', authenticate, authorize(['ADMIN', 'VENDEDOR', 'CAJA']), sendQuoteEmail);
@@ -250,7 +251,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   if (err.code === 'ETIMEDOUT' || req.timedout) {
     return res.status(408).json({
       error: 'La solicitud tardó demasiado',
-      message: 'El servidor no pudo procesar la solicitud en el tiempo esperado (15s)',
+      message: 'El servidor no pudo procesar la solicitud en el tiempo esperado (60s)',
     });
   }
   next(err);

@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DollarSign, Users, Calendar, TrendingUp, Package, Scale, Loader2, FileText, CheckCircle, Calculator } from "lucide-react";
 import { useAuditStore } from "../../store/useAuditStore";
 import { useInventoryStore } from "../../store/useInventoryStore";
@@ -30,6 +31,10 @@ interface StatsResponse {
   };
   ventasPorDia: { fecha: string; cantidad: number; monto: number }[];
   topProductos: { nombre: string; unidades: number; kilos: number; ingresos: number }[];
+  conversion?: {
+    porVendedor: { nombre: string; total: number; tasa: number }[];
+    topClientes: { nombre: string; total: number; tasa: number }[];
+  };
 }
 
 export default function Audit() {
@@ -58,6 +63,10 @@ export default function Audit() {
   const [simCosto, setSimCosto] = useState<number>(0);
   const [simMarkup, setSimMarkup] = useState<number>(30); // 30% por defecto
   const [simDescuento, setSimDescuento] = useState<number>(0);
+
+  // Estados para filtros de conversión (CRM style)
+  const [filtroVendedor, setFiltroVendedor] = useState<string>("TODOS");
+  const [filtroClienteConversion, setFiltroClienteConversion] = useState<string>("TODOS");
 
   // Función para obtener estadísticas del backend
   const fetchStats = useCallback(async (start?: string, end?: string) => {
@@ -160,7 +169,7 @@ export default function Audit() {
   const stockLogs = filteredLogs.filter(log => String(log.tablaAfectada) === 'ARTICULO' || String(log.tablaAfectada) === 'INVENTARIO');
   const clientLogs = filteredLogs.filter(log => String(log.tablaAfectada) === 'CLIENTE');
   const pedidoLogs = filteredLogs.filter(log => String(log.tablaAfectada) === 'PEDIDO');
-  
+
   const getProductName = (id: string) => {
     const item = articulos.find(a => a.id === id);
     return item?.nombre || `Artículo (${id.substring(0, 8)}...)`;
@@ -428,6 +437,7 @@ export default function Audit() {
           <TabsTrigger value="stock">Movimientos de Stock</TabsTrigger>
           <TabsTrigger value="clientes">Auditoría Clientes</TabsTrigger>
           <TabsTrigger value="pedidos">Auditoría Pedidos</TabsTrigger>
+          <TabsTrigger value="conversion">Conversión</TabsTrigger>
           <TabsTrigger value="simulador">Simulador</TabsTrigger>
         </TabsList>
 
@@ -538,7 +548,7 @@ export default function Audit() {
                   {stats?.resumen.totalVentas || 0}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Ticket promedio: ${(stats?.resumen.ticketPromedio || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  Ticket promedio: ${((stats?.resumen.ticketPromedio ?? 0) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                 </p>
               </CardContent>
             </Card>
@@ -624,11 +634,11 @@ export default function Audit() {
               <CardContent>
                 <div className="flex gap-4">
                   <div>
-                    <span className="text-sm text-red-500">-${(stats?.resumen.totalDescuentos || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                    <span className="text-sm text-red-500">-${((stats?.resumen.totalDescuentos ?? 0) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
                     <p className="text-xs text-muted-foreground">Descuentos</p>
                   </div>
                   <div>
-                    <span className="text-sm text-green-500">+${(stats?.resumen.totalRecargos || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
+                    <span className="text-sm text-green-500">+${((stats?.resumen.totalRecargos ?? 0) || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</span>
                     <p className="text-xs text-muted-foreground">Recargos</p>
                   </div>
                 </div>
@@ -858,7 +868,7 @@ export default function Audit() {
                 <TableBody>
                   {stockLogs.map((log: any) => (
                     <TableRow key={log.id}>
-                      <TableCell className="whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-AR')}</TableCell>
+                      <TableCell className="whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}</TableCell>
                       <TableCell>{log.usuario?.nombre || log.usuarioId}</TableCell>
                       <TableCell><span className="bg-slate-100 px-2 py-1 rounded text-xs font-medium border">{formatAction(log.accion)}</span></TableCell>
                       <TableCell>{renderDetalle(log)}</TableCell>
@@ -922,7 +932,7 @@ export default function Audit() {
 
                     return (
                       <TableRow key={log.id}>
-                        <TableCell className="whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-AR')}</TableCell>
+                        <TableCell className="whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}</TableCell>
                         <TableCell>{log.usuario?.nombre || log.usuarioId}</TableCell>
                         <TableCell className="font-medium">{clienteNombre}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">{cambios}</TableCell>
@@ -953,28 +963,67 @@ export default function Audit() {
                   <TableRow>
                     <TableHead>Fecha y Hora</TableHead>
                     <TableHead>Usuario</TableHead>
+                    <TableHead>Prospecto</TableHead>
                     <TableHead>Acción</TableHead>
                     <TableHead>Detalle</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pedidoLogs.map((log: any) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-AR')}</TableCell>
-                      <TableCell>{log.usuario?.nombre || log.usuarioId}</TableCell>
-                      <TableCell>
-                        <span className="bg-slate-100 px-2 py-1 rounded text-xs font-medium border">
-                          {String(log.accion).replace(/_/g, ' ')}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">
-                        {log.motivo || (log.accion === 'CREACION_PEDIDO' ? 'Nueva cotización/pedido generada' : 'Modificación de pedido')}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {pedidoLogs.map((log: any) => {
+                    const pedidoNombre = log.valorNuevo?.nombre || log.valorAnterior?.nombre || 'Desconocido';
+
+                    // SOLUCIÓN AL ERROR: Accedemos al registroId directamente
+                    const referenciaId = log.registroId;
+
+                    let cambios = "Sin detalles";
+
+                    if (log.accion === 'CREACION_PEDIDO') {
+                      cambios = "✨ Nueva cotización/pedido generada";
+                    } else if (log.valorAnterior && log.valorNuevo) {
+                      const campos = ['nombre', 'email', 'telefono', 'tag', 'status', 'mensaje'];
+                      const diffs: string[] = [];
+
+                      campos.forEach(c => {
+                        if (log.valorAnterior[c] !== log.valorNuevo[c]) {
+                          const viejo = log.valorAnterior[c] ? log.valorAnterior[c] : 'vacío';
+                          const nuevo = log.valorNuevo[c] ? log.valorNuevo[c] : 'vacío';
+                          diffs.push(`${c}: ${viejo} ➔ ${nuevo}`);
+                        }
+                      });
+
+                      // 2. COMPARACIÓN INTELIGENTE DE FECHAS (Ignora milisegundos invisibles)
+                      const oR = log.valorAnterior.recordatorio ? new Date(log.valorAnterior.recordatorio).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : 'Ninguno';
+                      const nR = log.valorNuevo.recordatorio ? new Date(log.valorNuevo.recordatorio).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : 'Ninguno';
+
+                      if (oR !== nR) {
+                        diffs.push(`Recordatorio: ${oR} ➔ ${nR}`);
+                      }
+
+                      cambios = diffs.length > 0 ? diffs.join(' | ') : "Modificación general sin cambios visuales";
+                    } else {
+                      // Salvavidas para los logs viejos
+                      cambios = log.motivo || "Modificación de pedido";
+                    }
+
+                    return (
+                      <TableRow key={log.id}>
+                        <TableCell className="whitespace-nowrap">
+                          {new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}
+                        </TableCell>
+                        <TableCell>{log.usuario?.nombre || log.usuarioId}</TableCell>
+                        <TableCell className="font-medium">{pedidoNombre}</TableCell>
+                        <TableCell>
+                          <span className="bg-slate-100 px-2 py-1 rounded text-xs font-medium border">
+                            {String(log.accion).replace(/_/g, ' ')}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">{cambios}</TableCell>
+                      </TableRow>
+                    );
+                  })}
                   {pedidoLogs.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                      <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                         No hay registros de auditoría de pedidos.
                       </TableCell>
                     </TableRow>
@@ -983,6 +1032,142 @@ export default function Audit() {
               </Table>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="conversion" className="space-y-4">
+          {/* FILTROS CRM */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Filtro por Vendedor */}
+            <div className="space-y-2">
+              <Label htmlFor="filtro-vendedor" className="text-sm text-muted-foreground">Filtrar por Vendedor</Label>
+              <Select value={filtroVendedor} onValueChange={(val) => setFiltroVendedor(val || "TODOS")}>
+                <SelectTrigger id="filtro-vendedor" className="bg-white">
+                  <SelectValue placeholder="Seleccionar vendedor..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TODOS">TODOS</SelectItem>
+                  {stats?.conversion?.porVendedor?.map((vendedor) => (
+                    <SelectItem key={vendedor.nombre} value={vendedor.nombre}>
+                      {vendedor.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Filtro por Cliente */}
+            <div className="space-y-2">
+              <Label htmlFor="filtro-cliente" className="text-sm text-muted-foreground">Filtrar por Cliente</Label>
+              <Select value={filtroClienteConversion} onValueChange={(val) => setFiltroClienteConversion(val || "TODOS")}>
+                <SelectTrigger id="filtro-cliente" className="bg-white">
+                  <SelectValue placeholder="Seleccionar cliente..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TODOS">TODOS</SelectItem>
+                  {stats?.conversion?.topClientes?.map((cliente) => (
+                    <SelectItem key={cliente.nombre} value={cliente.nombre}>
+                      {cliente.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-2">
+            {/* TABLA 1: Efectividad por Vendedor */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Efectividad por Vendedor</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {stats?.conversion?.porVendedor && stats.conversion.porVendedor.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Vendedor</TableHead>
+                        <TableHead className="text-right">Total Pedidos</TableHead>
+                        <TableHead className="text-right">Tasa Conversión</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stats.conversion.porVendedor
+                        .filter(vendedor => filtroVendedor === "TODOS" || vendedor.nombre === filtroVendedor)
+                        .map((vendedor, idx) => {
+                          const tasa = vendedor.tasa ?? 0;
+                          let badgeColor = "bg-red-100 text-red-800";
+                          if (tasa > 50) badgeColor = "bg-green-100 text-green-800";
+                          else if (tasa > 20) badgeColor = "bg-yellow-100 text-yellow-800";
+
+                          return (
+                            <TableRow key={idx}>
+                              <TableCell className="font-medium">{vendedor.nombre}</TableCell>
+                              <TableCell className="text-right">{vendedor.total ?? 0}</TableCell>
+                              <TableCell className="text-right">
+                                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${badgeColor}`}>
+                                  {(tasa ?? 0).toFixed(1)}%
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="h-24 flex items-center justify-center text-muted-foreground">
+                    No hay datos de conversión por vendedor disponibles.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* TABLA 2: Top 8 Clientes por Tasa de Conversión */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Top Clientes por Tasa de Conversión</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {stats?.conversion?.topClientes && stats.conversion.topClientes.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Cliente</TableHead>
+                        <TableHead className="text-right">Total Pedidos</TableHead>
+                        <TableHead className="text-right">Tasa Conversión</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {stats.conversion.topClientes
+                        .filter(cliente => filtroClienteConversion === "TODOS" || cliente.nombre === filtroClienteConversion)
+                        .slice(0, 8)
+                        .map((cliente, idx) => {
+                          const tasa = cliente.tasa ?? 0;
+                          let badgeColor = "bg-red-100 text-red-800";
+                          if (tasa > 50) badgeColor = "bg-green-100 text-green-800";
+                          else if (tasa > 20) badgeColor = "bg-yellow-100 text-yellow-800";
+
+                          return (
+                            <TableRow key={idx}>
+                              <TableCell className="font-medium">{cliente.nombre}</TableCell>
+                              <TableCell className="text-right">{cliente.total ?? 0}</TableCell>
+                              <TableCell className="text-right">
+                                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${badgeColor}`}>
+                                  {(tasa ?? 0).toFixed(1)}%
+                                </span>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="h-24 flex items-center justify-center text-muted-foreground">
+                    No hay datos de conversión de clientes disponibles.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="simulador" className="space-y-4">
@@ -998,7 +1183,7 @@ export default function Audit() {
               <div className="space-y-6 md:border-r md:pr-6">
                 <div className="space-y-2">
                   <Label>1. Seleccionar Producto Base</Label>
-                  <select 
+                  <select
                     className="w-full px-3 py-2 border rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                     value={simArticuloId}
                     onChange={(e) => {
@@ -1017,9 +1202,9 @@ export default function Audit() {
 
                 <div className="space-y-2">
                   <Label>Costo de Producción / Compra ($)</Label>
-                  <Input 
-                    type="number" 
-                    value={simCosto} 
+                  <Input
+                    type="number"
+                    value={simCosto}
                     onChange={(e) => setSimCosto(Number(e.target.value))}
                     className="bg-white"
                   />
@@ -1030,9 +1215,9 @@ export default function Audit() {
                     <Label>Marcación / Markup (%)</Label>
                     <span className="text-sm font-medium">{simMarkup}%</span>
                   </div>
-                  <input 
-                    type="range" min="0" max="200" step="5" 
-                    value={simMarkup} 
+                  <input
+                    type="range" min="0" max="200" step="5"
+                    value={simMarkup}
                     onChange={(e) => setSimMarkup(Number(e.target.value))}
                     className="w-full accent-primary"
                   />
@@ -1043,9 +1228,9 @@ export default function Audit() {
                     <Label>Descuento Ofrecido (%)</Label>
                     <span className="text-sm text-red-500 font-medium">-{simDescuento}%</span>
                   </div>
-                  <input 
-                    type="range" min="0" max="50" step="1" 
-                    value={simDescuento} 
+                  <input
+                    type="range" min="0" max="50" step="1"
+                    value={simDescuento}
                     onChange={(e) => setSimDescuento(Number(e.target.value))}
                     className="w-full accent-red-500"
                   />
@@ -1067,25 +1252,25 @@ export default function Audit() {
                       <div className="bg-slate-50 p-4 rounded-lg border space-y-2">
                         <div className="flex justify-between text-sm">
                           <span className="text-muted-foreground">Precio de Lista Sugerido:</span>
-                          <span className="font-medium">${precioSugerido.toFixed(2)}</span>
+                          <span className="font-medium">${(precioSugerido ?? 0).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-sm text-red-500">
                           <span>Monto Descontado:</span>
-                          <span>-${descuentoMonto.toFixed(2)}</span>
+                          <span>-${(descuentoMonto ?? 0).toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-lg font-bold border-t pt-2 mt-2">
                           <span>Precio Final al Cliente:</span>
-                          <span>${precioFinal.toFixed(2)}</span>
+                          <span>${(precioFinal ?? 0).toFixed(2)}</span>
                         </div>
                       </div>
 
                       <div className={`p-6 rounded-lg border text-center transition-colors ${isPeligro ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
                         <p className="text-sm text-muted-foreground mb-1 uppercase tracking-wider font-semibold">Ganancia Neta por Unidad</p>
                         <p className={`text-4xl font-bold ${isPeligro ? 'text-red-600' : 'text-green-600'}`}>
-                          ${gananciaNeta.toFixed(2)}
+                          ${(gananciaNeta ?? 0).toFixed(2)}
                         </p>
                         <p className="text-sm font-medium mt-2">
-                          Margen Real: {margenReal.toFixed(1)}% 
+                          Margen Real: {(margenReal ?? 0).toFixed(1)}%
                           {isPeligro && <span className="block mt-1 text-xs text-red-500 font-bold">⚠️ RIESGO: Margen muy bajo</span>}
                         </p>
                       </div>

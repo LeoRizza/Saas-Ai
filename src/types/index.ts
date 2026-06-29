@@ -40,6 +40,7 @@ export interface Empresa {
   activa: boolean;
   logoUrl?: string;
   config?: { modules?: string[]; maxImagenes?: number };
+  metadata?: any;
   createdAt: string;
   updatedAt: string;
 }
@@ -48,6 +49,7 @@ export interface Inventario {
   id: string;
   nombre: string;
   empresaId: string;
+  metadata?: any;
   createdAt: string;
   updatedAt: string;
 }
@@ -59,6 +61,7 @@ export interface Usuario {
   rol: RolUsuario;
   empresaId?: string; // Opcional para SUPER_ADMIN
   password?: string;
+  metadata?: any;
 }
 
 export interface Articulo {
@@ -73,10 +76,11 @@ export interface Articulo {
   imagenes?: string[];
   precio?: number;
   costo?: number;
-  descripcion?: string; // <--- NUEVO
+  descripcion?: string; 
   subcategoria?: string;
   empresaId: string;
   inventarioId: string;
+  metadata?: any;
 }
 
 export interface Cliente {
@@ -92,6 +96,7 @@ export interface Cliente {
   fechaRecordatorio?: string;
   tag?: string;
   empresaId: string;
+  metadata?: any;
   createdAt: string;
   updatedAt: string;
 }
@@ -107,6 +112,7 @@ export interface AuditLog {
   valorNuevo: any;
   motivo?: string;
   fecha: string;
+  metadata?: any;
 }
 
 export interface InsumoConsumidoLog {
@@ -114,6 +120,7 @@ export interface InsumoConsumidoLog {
   insumoNombre: string;
   kilos: number;
   unidades: number;
+  metadata?: any;
 }
 
 export interface ProduccionLogFrontend {
@@ -128,6 +135,7 @@ export interface ProduccionLogFrontend {
   empresaId: string;
   inventarioOrigenId: string;
   inventarioDestinoId: string;
+  metadata?: any;
 }
 
 export interface VentaItem {
@@ -140,6 +148,7 @@ export interface VentaItem {
   precioUnitario?: number;
   subtotal?: number;
   inventarioId: string;
+  metadata?: any;
 }
 
 export interface Venta {
@@ -158,6 +167,7 @@ export interface Venta {
   items: VentaItem[];
   usuarioId: string;
   empresaId: string;
+  metadata?: any;
 }
 
 export enum PedidoStatus {
@@ -166,6 +176,19 @@ export enum PedidoStatus {
   COTIZADO = 'COTIZADO',
   CONFIRMADO = 'CONFIRMADO',
   CANCELADO = 'CANCELADO'
+}
+
+export interface PedidoItem {
+  id: string;
+  pedidoId: string;
+  articuloId?: string;
+  articulo?: Articulo;
+  nombreArticulo: string;
+  cantidad: number;
+  precioUnitario: number;
+  descuento: number;
+  subtotal: number;
+  metadata?: any;
 }
 
 export interface Pedido {
@@ -179,8 +202,17 @@ export interface Pedido {
   status: PedidoStatus;
   recordatorio?: string;
   fechaCreacion: string;
+  
+  subtotal?: number;
+  impuestos?: number;
+  total?: number;
+  moneda?: string;
+  notas?: any; // Añadido para el historial de notas JSON
+  metadata?: any;
+
   empresaId: string;
   cuit?: string;
   clienteId?: string;
   cliente?: Cliente;
+  items?: PedidoItem[]; // Añadido para los ítems de la cotización
 }

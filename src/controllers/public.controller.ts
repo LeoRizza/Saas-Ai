@@ -73,27 +73,19 @@ export const getPublicInventory = async (req: Request, res: Response): Promise<v
         codigoBarras: true,
         sku: true,
         serie: true,
-        imagenUrl: true,
-        imagenUrl2: true,
-        imagenUrl3: true,
-        imagenUrl4: true,
         videoUrl: true,
-        inventarioId: true,
-        stockUnidades: true,
-        stockKilos: true,
         inventario: { select: { nombre: true } }
       },
       orderBy: { nombre: 'asc' }
     });
 
-    // Mapear a datos públicos seguros (excluir stock exacto)
+    // Mapear a datos públicos seguros
     const catalogoSeguro = articulosDisponibles.map((articulo) => {
-      const estado = (articulo.stockUnidades > 0 || articulo.stockKilos > 0) ? 'Disponible' : 'Agotado';
-      const { stockUnidades, stockKilos, inventarioId, inventario, ...datosPublicos } = articulo;
+      const { inventario, ...datosPublicos } = articulo;
       return {
         ...datosPublicos,
-        sucursal: articulo.inventario?.nombre,
-        estado
+        sucursal: inventario?.nombre,
+        estado: 'Disponible' // Asumimos que el catálogo contiene solo productos disponibles
       };
     });
 

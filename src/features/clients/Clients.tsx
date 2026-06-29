@@ -67,6 +67,14 @@ function isDateInRange(fecha: string | null | undefined, range: 'TODOS' | 'HOY' 
   return true;
 }
 
+// Helper function: Convierte una fecha ISO a formato local para datetime-local
+function getLocalISODateTime(dateString: string | null | undefined): string {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+}
+
 // Helper function: Renderiza el badge de estado del recordatorio
 function RecordatorioBadge({ status }: { status: 'VENCIDO' | 'HOY' | 'PENDIENTE' | 'SIN_FECHA' }) {
   const statusStyles = {
@@ -195,7 +203,11 @@ export default function Clients() {
 
   const openEditModal = (cliente: any) => {
     setSelectedItem(cliente);
-    setFormData({ ...cliente });
+    const editData = { ...cliente };
+    if (cliente.fechaRecordatorio) {
+      editData.fechaRecordatorio = getLocalISODateTime(cliente.fechaRecordatorio);
+    }
+    setFormData(editData);
     setIsEditing(true);
     setIsModalOpen(true);
   };
@@ -452,7 +464,7 @@ export default function Clients() {
                         <Input
                           type="datetime-local"
                           autoFocus
-                          defaultValue={cliente.fechaRecordatorio ? new Date(cliente.fechaRecordatorio).toISOString().slice(0, 16) : ""}
+                          defaultValue={getLocalISODateTime(cliente.fechaRecordatorio)}
                           onBlur={(e) => {
                             if (e.target.value) {
                               handleQuickRecordatorioUpdate(cliente.id, e.target.value);

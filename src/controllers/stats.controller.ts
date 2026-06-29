@@ -34,8 +34,29 @@ export async function getStats(req: Request, res: Response) {
       }
     }
 
+    // Construir filtro de fechas para pedidos
+    const pedidosWhereClause: any = {
+      empresaId: user.empresaId
+    };
+
+    if (startDate || endDate) {
+      pedidosWhereClause.fechaCreacion = {};
+
+      if (startDate) {
+        const start = new Date(startDate as string);
+        start.setUTCHours(0, 0, 0, 0);
+        pedidosWhereClause.fechaCreacion.gte = start;
+      }
+
+      if (endDate) {
+        const end = new Date(endDate as string);
+        end.setUTCHours(23, 59, 59, 999);
+        pedidosWhereClause.fechaCreacion.lte = end;
+      }
+    }
+
     // Obtener ventas filtradas con sus items y métricas de pedidos en paralelo
-    const [ventas, totalPedidos, pedidosCompletados, pedidosRecientes] = await Promise.all([
+    const [ventas, totalPedidos, pedidosCompletados, pedidosRecientes, pedidos, auditLogs] = await Promise.all([
       prisma.venta.findMany({
         where: whereClause,
         include: {
@@ -67,6 +88,23 @@ export async function getStats(req: Request, res: Response) {
             gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
           }
         }
+      }),
+      // Pedidos filtrados por fechas para cálculo de conversión
+      prisma.pedido.findMany({
+        where: { empresaId: user.empresaId },
+        include: {
+          cliente: { select: { id: true, nombre: true } }
+        }
+      }),
+      // Logs de auditoría para vincular vendedores con pedidos
+      prisma.auditLog.findMany({
+        where: {
+          empresaId: user.empresaId,
+          accion: 'CREACION_PEDIDO'
+        },
+        include: {
+          usuario: { select: { id: true, nombre: true } }
+        }
       })
     ]);
 
@@ -96,10 +134,10 @@ export async function getStats(req: Request, res: Response) {
     // Agrupar ventas por día para gráficos
     const ventasPorDia: Record<string, { cantidad: number; monto: number }> = {};
     for (const venta of ventas) {
-      const fechaKey = venta.fecha 
-        ? new Date(venta.fecha).toISOString().split('T')[0] 
+      const fechaKey = venta.fecha
+        ? new Date(venta.fecha).toISOString().split('T')[0]
         : 'sin-fecha';
-      
+
       if (!ventasPorDia[fechaKey]) {
         ventasPorDia[fechaKey] = { cantidad: 0, monto: 0 };
       }
@@ -132,6 +170,85 @@ export async function getStats(req: Request, res: Response) {
       .sort((a, b) => b.ingresos - a.ingresos)
       .slice(0, 10);
 
+    // Calcular tasa de conversión por cliente
+    const conversionPorCliente: Record<string, { clienteId: string; nombre: string; total: number; pedidosGanados: number; tasa: number }> = {};
+
+    for (const pedido of pedidos) {
+      const clienteId = pedido.clienteId || 'sin-cliente';
+      const clienteNombre = pedido.cliente?.nombre || 'Cliente desconocido';
+
+      if (!conversionPorCliente[clienteId]) {
+        conversionPorCliente[clienteId] = {
+          clienteId,
+          nombre: clienteNombre,
+          total: 0,
+          pedidosGanados: 0,
+          tasa: 0
+        };
+      }
+
+      conversionPorCliente[clienteId].total += 1;
+      if (pedido.status === 'CONFIRMADO') {
+        conversionPorCliente[clienteId].pedidosGanados += 1;
+      }
+    }
+
+    // Calcular tasas de conversión por cliente
+    for (const key in conversionPorCliente) {
+      const datos = conversionPorCliente[key];
+      datos.tasa = redondear(
+        datos.total > 0 ? (datos.pedidosGanados / datos.total) * 100 : 0
+      );
+    }
+
+    // Calcular tasa de conversión por vendedor
+    const conversionPorVendedor: Record<string, { vendedorId: string; nombre: string; total: number; pedidosGanados: number; tasa: number }> = {};
+
+    // Mapear audit logs para obtener vendedores
+    const auditLogsMap: Record<string, any> = {};
+    for (const log of auditLogs) {
+      const pedidoId = log.registroId;
+      if (pedidoId) {
+        auditLogsMap[pedidoId] = log;
+      }
+    }
+
+    for (const pedido of pedidos) {
+      const auditLog = auditLogsMap[pedido.id];
+      const vendedorId = auditLog?.usuarioId || 'sin-vendedor';
+      const vendedorNombre = auditLog?.usuario?.nombre || 'Vendedor desconocido';
+
+      if (!conversionPorVendedor[vendedorId]) {
+        conversionPorVendedor[vendedorId] = {
+          vendedorId,
+          nombre: vendedorNombre,
+          total: 0,
+          pedidosGanados: 0,
+          tasa: 0
+        };
+      }
+
+      conversionPorVendedor[vendedorId].total += 1;
+      if (pedido.status === 'CONFIRMADO') {
+        conversionPorVendedor[vendedorId].pedidosGanados += 1;
+      }
+    }
+
+    // Calcular tasas de conversión por vendedor
+    for (const key in conversionPorVendedor) {
+      const datos = conversionPorVendedor[key];
+      datos.tasa = redondear(
+        datos.total > 0 ? (datos.pedidosGanados / datos.total) * 100 : 0
+      );
+    }
+
+    // Convertir a arrays y ordenar por tasa de conversión descendente
+    const conversionPorClienteArray = Object.values(conversionPorCliente)
+      .sort((a, b) => b.tasa - a.tasa);
+
+    const conversionPorVendedorArray = Object.values(conversionPorVendedor)
+      .sort((a, b) => b.tasa - a.tasa);
+
     // Respuesta completa con estadísticas
     res.json({
       periodo: {
@@ -152,6 +269,10 @@ export async function getStats(req: Request, res: Response) {
         total: totalPedidos,
         completados: pedidosCompletados,
         recientes: pedidosRecientes
+      },
+      conversion: {
+        porVendedor: conversionPorVendedorArray,
+        topClientes: conversionPorClienteArray
       },
       ventasPorDia: ventasPorDiaArray,
       topProductos,

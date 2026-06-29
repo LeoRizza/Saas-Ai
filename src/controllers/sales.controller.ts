@@ -181,22 +181,22 @@ export async function createVenta(req: Request, res: Response) {
         });
       }
 
+      // ==========================================
+      // 📝 PASO 5: Crear registro de auditoría (dentro de la transacción)
+      // ==========================================
+      await tx.auditLog.create({
+        data: {
+          accion: 'VENTA',
+          tablaAfectada: 'ARTICULO',
+          registroId: newVenta.id,
+          valorNuevo: newVenta as any,
+          usuarioId: user.id,
+          empresaId: user.empresaId
+        }
+      });
+
       return newVenta;
     });
-
-    // ==========================================
-    // 📝 PASO 5: Crear registro de auditoría (asíncrono)
-    // ==========================================
-    prisma.auditLog.create({
-      data: {
-        accion: 'VENTA',
-        tablaAfectada: 'ARTICULO',
-        registroId: venta.id,
-        valorNuevo: venta as any,
-        usuarioId: user.id,
-        empresaId: user.empresaId
-      }
-    }).catch(err => console.error('Error AuditLog Venta:', err));
 
     res.json(venta);
   } catch (error: any) {

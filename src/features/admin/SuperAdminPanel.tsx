@@ -8,9 +8,32 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { RolUsuario } from '../../types';
 import { Plus, Edit, Trash2, ShieldAlert, KeyRound, Package } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const safeDecode = (str: string | null | undefined): string => {
+  if (!str) return '';
+  try {
+    return decodeURIComponent(escape(atob(str)));
+  } catch (e1) {
+    try {
+      return decodeURIComponent(str);
+    } catch (e2) {
+      return str;
+    }
+  }
+};
+
+const safeEncode = (str: string | null | undefined): string => {
+  if (!str) return '';
+  try {
+    return btoa(unescape(encodeURIComponent(str)));
+  } catch (e) {
+    return str;
+  }
+};
 
 export function SuperAdminPanel() {
   const { empresas, usuarios, fetchData, addEmpresa, updateEmpresa, deleteEmpresa, addUsuario, updateUsuario, deleteUsuario } = useSuperAdminStore();
@@ -42,7 +65,7 @@ export function SuperAdminPanel() {
     smtpUser: '',
     smtpPass: '',
     apiKey: '',
-    config: { modules: [] as string[], maxImagenes: 4 }
+    config: { modules: [] as string[], maxImagenes: 4, templateCotizacion: '', templateTicket: '', templateFilaCotizacion: '', templateFilaTicket: '', cuit: '', direccion: '', web: '', diasVigencia: '', colorPdf: '#4A6984' }
   });
 
   const [usuarioForm, setUsuarioForm] = useState({
@@ -57,6 +80,7 @@ export function SuperAdminPanel() {
     id: '',
     nombre: ''
   });
+  const [empresaModalTab, setEmpresaModalTab] = useState('general');
 
   const openNewEmpresaModal = () => {
     setEditingEmpresaId(null);
@@ -69,7 +93,7 @@ export function SuperAdminPanel() {
       smtpUser: '',
       smtpPass: '',
       apiKey: '',
-      config: { modules: ['INVENTARIO', 'VENTAS'], maxImagenes: 4 }
+      config: { modules: ['INVENTARIO', 'VENTAS'], maxImagenes: 4, templateCotizacion: '', templateTicket: '', templateFilaCotizacion: '', templateFilaTicket: '', cuit: '', direccion: '', web: '', diasVigencia: '', colorPdf: '#4A6984' }
     });
     setIsEmpresaModalOpen(true);
   };
@@ -85,17 +109,40 @@ export function SuperAdminPanel() {
       smtpUser: empresa.smtpUser || '',
       smtpPass: empresa.smtpPass || '',
       apiKey: empresa.apiKey || '',
-      config: empresa.config || { modules: [] as string[], maxImagenes: 4 }
+      config: empresa.config ? {
+        modules: empresa.config.modules || [],
+        maxImagenes: empresa.config.maxImagenes || 4,
+        templateCotizacion: safeDecode(empresa.config.templateCotizacion),
+        templateTicket: safeDecode(empresa.config.templateTicket),
+        templateFilaCotizacion: safeDecode(empresa.config.templateFilaCotizacion),
+        templateFilaTicket: safeDecode(empresa.config.templateFilaTicket),
+        cuit: empresa.config.cuit || '',
+        direccion: empresa.config.direccion || '',
+        web: empresa.config.web || '',
+        diasVigencia: empresa.config.diasVigencia || '',
+        colorPdf: empresa.config.colorPdf || '#4A6984'
+      } : { modules: [] as string[], maxImagenes: 4, templateCotizacion: '', templateTicket: '', templateFilaCotizacion: '', templateFilaTicket: '', cuit: '', direccion: '', web: '', diasVigencia: '', colorPdf: '#4A6984' }
     });
     setIsEmpresaModalOpen(true);
   };
 
   const handleSaveEmpresa = async () => {
     try {
+      const payload = {
+        ...empresaForm,
+        config: {
+          ...empresaForm.config,
+          templateCotizacion: empresaForm.config.templateCotizacion ? safeEncode(empresaForm.config.templateCotizacion) : '',
+          templateTicket: empresaForm.config.templateTicket ? safeEncode(empresaForm.config.templateTicket) : '',
+          templateFilaCotizacion: empresaForm.config.templateFilaCotizacion ? safeEncode(empresaForm.config.templateFilaCotizacion) : '',
+          templateFilaTicket: empresaForm.config.templateFilaTicket ? safeEncode(empresaForm.config.templateFilaTicket) : ''
+        }
+      };
+      
       if (editingEmpresaId) {
-        await updateEmpresa(editingEmpresaId, empresaForm);
+        await updateEmpresa(editingEmpresaId, payload);
       } else {
-        await addEmpresa(empresaForm);
+        await addEmpresa(payload);
       }
       setIsEmpresaModalOpen(false);
     } catch (error: any) {
@@ -318,96 +365,230 @@ export function SuperAdminPanel() {
 
       {/* Modal Empresa */}
       <Dialog open={isEmpresaModalOpen} onOpenChange={setIsEmpresaModalOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingEmpresaId ? 'Editar Empresa' : 'Nueva Empresa'}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label>Nombre de la Empresa</Label>
-              <Input value={empresaForm.nombre} onChange={e => setEmpresaForm({ ...empresaForm, nombre: e.target.value })} />
-            </div>
-            <div className="grid gap-2">
-              <Label>Logo URL (Opcional)</Label>
-              <Input value={empresaForm.logoUrl} onChange={e => setEmpresaForm({ ...empresaForm, logoUrl: e.target.value })} placeholder="https://..." />
-            </div>
-            <div className="flex items-center gap-2">
-              <input type="checkbox" id="activa" checked={empresaForm.activa} onChange={e => setEmpresaForm({ ...empresaForm, activa: e.target.checked })} className="h-4 w-4" />
-              <Label htmlFor="activa">Empresa Activa (Permite login)</Label>
-            </div>
-            <div className="grid gap-4 grid-cols-2">
+          <Tabs value={empresaModalTab} onValueChange={setEmpresaModalTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="modulos">Módulos</TabsTrigger>
+              <TabsTrigger value="templates">Templates</TabsTrigger>
+              <TabsTrigger value="avanzado">Avanzado</TabsTrigger>
+            </TabsList>
+
+            {/* Tab General */}
+            <TabsContent value="general" className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label>Email de Contacto</Label>
-                <Input type="email" value={empresaForm.emailContacto} onChange={e => setEmpresaForm({ ...empresaForm, emailContacto: e.target.value })} placeholder="contacto@empresa.com" />
+                <Label>Nombre de la Empresa</Label>
+                <Input value={empresaForm.nombre} onChange={e => setEmpresaForm({ ...empresaForm, nombre: e.target.value })} />
               </div>
               <div className="grid gap-2">
-                <Label>Teléfono de Contacto</Label>
-                <Input value={empresaForm.telefonoContacto} onChange={e => setEmpresaForm({ ...empresaForm, telefonoContacto: e.target.value })} placeholder="342 5678900" />
+                <Label>Logo URL (Opcional)</Label>
+                <Input value={empresaForm.logoUrl} onChange={e => setEmpresaForm({ ...empresaForm, logoUrl: e.target.value })} placeholder="https://..." />
               </div>
-            </div>
-            <h4 className="font-semibold border-b pb-2 mt-4">Configuración de Correos (Opcional)</h4>
-            <div className="grid gap-4 grid-cols-2">
-              <div className="grid gap-2">
-                <Label>Usuario SMTP (Email)</Label>
-                <Input type="email" value={empresaForm.smtpUser} onChange={e => setEmpresaForm({ ...empresaForm, smtpUser: e.target.value })} placeholder="tu-email@gmail.com" />
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="activa" checked={empresaForm.activa} onChange={e => setEmpresaForm({ ...empresaForm, activa: e.target.checked })} className="h-4 w-4" />
+                <Label htmlFor="activa">Empresa Activa (Permite login)</Label>
               </div>
-              <div className="grid gap-2">
-                <Label>Contraseña SMTP</Label>
-                <Input type="password" value={empresaForm.smtpPass} onChange={e => setEmpresaForm({ ...empresaForm, smtpPass: e.target.value })} placeholder="••••••••" />
+              <div className="grid gap-4 grid-cols-2">
+                <div className="grid gap-2">
+                  <Label>Email de Contacto</Label>
+                  <Input type="email" value={empresaForm.emailContacto} onChange={e => setEmpresaForm({ ...empresaForm, emailContacto: e.target.value })} placeholder="contacto@empresa.com" />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Teléfono de Contacto</Label>
+                  <Input value={empresaForm.telefonoContacto} onChange={e => setEmpresaForm({ ...empresaForm, telefonoContacto: e.target.value })} placeholder="342 5678900" />
+                </div>
               </div>
-            </div>
-            <h4 className="font-semibold border-b pb-2 mt-4">Integraciones Externas</h4>
-            <div className="grid gap-2">
-              <Label>API Key Secreta</Label>
-              <div className="flex gap-2">
-                <Input type="text" value={empresaForm.apiKey} readOnly placeholder="Se generará una nueva llave..." className="bg-muted cursor-not-allowed" />
-                <Button type="button" variant="outline" onClick={handleGenerateApiKey}>Generar Nueva Llave</Button>
-              </div>
-            </div>
-            <div className="grid gap-2 mt-4">
-              <h4 className="font-semibold">Módulos Habilitados</h4>
-              <div className="space-y-3">
-                {['INVENTARIO', 'VENTAS', 'PRODUCCION', 'PEDIDOS'].map(moduleName => (
-                  <div key={moduleName} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id={`module-${moduleName}`}
-                      checked={empresaForm.config.modules?.includes(moduleName) || false}
-                      onChange={e => {
-                        const currentModules = empresaForm.config.modules || [];
-                        const updatedModules = e.target.checked
-                          ? [...currentModules, moduleName]
-                          : currentModules.filter((m: string) => m !== moduleName);
-                        setEmpresaForm({
-                          ...empresaForm,
-                          config: { ...empresaForm.config, modules: updatedModules }
-                        });
-                      }}
-                      className="h-4 w-4"
-                    />
-                    <Label htmlFor={`module-${moduleName}`} className="font-normal cursor-pointer">
-                      {moduleName}
-                    </Label>
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-semibold mb-4">Información para PDF</h4>
+                <p className="text-xs text-muted-foreground mb-4">(Opcional. Si se deja vacío, no aparecerá en el PDF)</p>
+                <div className="grid gap-4 grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label>CUIT</Label>
+                    <Input value={empresaForm.config.cuit || ''} onChange={e => setEmpresaForm({ ...empresaForm, config: { ...empresaForm.config, cuit: e.target.value } })} placeholder="20-12345678-9" />
                   </div>
-                ))}
+                  <div className="grid gap-2">
+                    <Label>Sitio Web</Label>
+                    <Input value={empresaForm.config.web || ''} onChange={e => setEmpresaForm({ ...empresaForm, config: { ...empresaForm.config, web: e.target.value } })} placeholder="www.empresa.com" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Dirección</Label>
+                    <Input value={empresaForm.config.direccion || ''} onChange={e => setEmpresaForm({ ...empresaForm, config: { ...empresaForm.config, direccion: e.target.value } })} placeholder="Calle Principal 123, Piso 1" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Días de Vigencia</Label>
+                    <Input value={empresaForm.config.diasVigencia || ''} onChange={e => setEmpresaForm({ ...empresaForm, config: { ...empresaForm.config, diasVigencia: e.target.value } })} placeholder="30 días" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Color Primario (PDF)</Label>
+                    <div className="flex gap-2 items-center">
+                      <Input 
+                        type="color" 
+                        value={empresaForm.config.colorPdf || '#4A6984'} 
+                        onChange={e => setEmpresaForm({ ...empresaForm, config: { ...empresaForm.config, colorPdf: e.target.value } })} 
+                        className="w-12 h-9 p-1 cursor-pointer"
+                      />
+                      <Input 
+                        type="text" 
+                        value={empresaForm.config.colorPdf || '#4A6984'} 
+                        onChange={e => setEmpresaForm({ ...empresaForm, config: { ...empresaForm.config, colorPdf: e.target.value } })} 
+                        className="flex-1 font-mono uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <h4 className="font-semibold border-b pb-2 mt-4">Límites del Plan</h4>
-            <div className="grid gap-2">
-              <Label>Límite de Imágenes por Artículo</Label>
-              <Input 
-                type="number" 
-                min="1"
-                max="20"
-                value={empresaForm.config.maxImagenes || 4} 
-                onChange={e => setEmpresaForm({
-                  ...empresaForm, 
-                  config: { ...empresaForm.config, maxImagenes: parseInt(e.target.value) || 4 }
-                })} 
-              />
-              <p className="text-xs text-muted-foreground">Define cuántas fotos puede subir esta empresa a un solo producto.</p>
-            </div>
-            <Button onClick={handleSaveEmpresa} className="mt-4">Guardar Empresa</Button>
+              <div className="border-t pt-4 mt-4">
+                <h4 className="font-semibold mb-4">Límites del Plan</h4>
+                <div className="grid gap-2">
+                  <Label>Límite de Imágenes por Artículo</Label>
+                  <Input 
+                    type="number" 
+                    min="1"
+                    max="20"
+                    value={empresaForm.config.maxImagenes || 4} 
+                    onChange={e => setEmpresaForm({
+                      ...empresaForm, 
+                      config: { ...empresaForm.config, maxImagenes: parseInt(e.target.value) || 4 }
+                    })} 
+                  />
+                  <p className="text-xs text-muted-foreground">Define cuántas fotos puede subir esta empresa a un solo producto.</p>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Tab Módulos */}
+            <TabsContent value="modulos" className="grid gap-4 py-4">
+              <div>
+                <h4 className="font-semibold mb-4">Módulos Habilitados</h4>
+                <div className="space-y-3">
+                  {['INVENTARIO', 'VENTAS', 'PRODUCCION', 'PEDIDOS'].map(moduleName => (
+                    <div key={moduleName} className="flex items-center gap-2 p-3 border rounded-md hover:bg-accent transition-colors">
+                      <input
+                        type="checkbox"
+                        id={`module-${moduleName}`}
+                        checked={empresaForm.config.modules?.includes(moduleName) || false}
+                        onChange={e => {
+                          const currentModules = empresaForm.config.modules || [];
+                          const updatedModules = e.target.checked
+                            ? [...currentModules, moduleName]
+                            : currentModules.filter((m: string) => m !== moduleName);
+                          setEmpresaForm({
+                            ...empresaForm,
+                            config: { ...empresaForm.config, modules: updatedModules }
+                          });
+                        }}
+                        className="h-4 w-4 cursor-pointer"
+                      />
+                      <Label htmlFor={`module-${moduleName}`} className="font-normal cursor-pointer flex-1">
+                        {moduleName}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Tab Templates */}
+            <TabsContent value="templates" className="py-4">
+              <Tabs defaultValue="cotizacion" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 mb-4">
+                  <TabsTrigger value="cotizacion">Templates de Cotización</TabsTrigger>
+                  <TabsTrigger value="ticket">Templates de Ticket</TabsTrigger>
+                </TabsList>
+
+                {/* Sub-tab Cotización */}
+                <TabsContent value="cotizacion" className="space-y-4">
+                  <div className="grid gap-2">
+                    <Label>1. Hoja de Cotización (Estructura principal)</Label>
+                    <textarea
+                      value={empresaForm.config.templateCotizacion || ''}
+                      onChange={e => setEmpresaForm({
+                        ...empresaForm,
+                        config: { ...empresaForm.config, templateCotizacion: e.target.value }
+                      })}
+                      placeholder="HTML del documento. Usa {{tablaItems}} donde irá la grilla..."
+                      className="h-[350px] p-3 border rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-slate-50 focus:bg-white resize-none"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>2. Fila Dinámica de Cotización (Opcional)</Label>
+                    <textarea
+                      value={empresaForm.config.templateFilaCotizacion || ''}
+                      onChange={e => setEmpresaForm({
+                        ...empresaForm,
+                        config: { ...empresaForm.config, templateFilaCotizacion: e.target.value }
+                      })}
+                      placeholder="HTML de la fila <tr>...</tr>. Variables: {{articulo.nombre}}, {{cantidad}}, {{subtotal}}..."
+                      className="h-[120px] p-3 border rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-slate-50 focus:bg-white resize-none"
+                    />
+                  </div>
+                </TabsContent>
+
+                {/* Sub-tab Ticket */}
+                <TabsContent value="ticket" className="space-y-4">
+                  <div className="grid gap-2">
+                    <Label>1. Hoja de Ticket de Venta (Estructura principal)</Label>
+                    <textarea
+                      value={empresaForm.config.templateTicket || ''}
+                      onChange={e => setEmpresaForm({
+                        ...empresaForm,
+                        config: { ...empresaForm.config, templateTicket: e.target.value }
+                      })}
+                      placeholder="HTML del documento. Usa {{tablaItems}} donde irá la grilla..."
+                      className="h-[350px] p-3 border rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-slate-50 focus:bg-white resize-none"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>2. Fila Dinámica de Ticket (Opcional)</Label>
+                    <textarea
+                      value={empresaForm.config.templateFilaTicket || ''}
+                      onChange={e => setEmpresaForm({
+                        ...empresaForm,
+                        config: { ...empresaForm.config, templateFilaTicket: e.target.value }
+                      })}
+                      placeholder="HTML de la fila <tr>...</tr>. Variables: {{articulo.nombre}}, {{cantidad}}, {{subtotal}}..."
+                      className="h-[120px] p-3 border rounded-md font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary bg-slate-50 focus:bg-white resize-none"
+                    />
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </TabsContent>
+
+            {/* Tab Avanzado */}
+            <TabsContent value="avanzado" className="grid gap-4 py-4">
+              <div className="border-b pb-4">
+                <h4 className="font-semibold mb-4">Configuración de Correos (Opcional)</h4>
+                <div className="grid gap-4 grid-cols-2">
+                  <div className="grid gap-2">
+                    <Label>Usuario SMTP (Email)</Label>
+                    <Input type="email" value={empresaForm.smtpUser} onChange={e => setEmpresaForm({ ...empresaForm, smtpUser: e.target.value })} placeholder="tu-email@gmail.com" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Contraseña SMTP</Label>
+                    <Input type="password" value={empresaForm.smtpPass} onChange={e => setEmpresaForm({ ...empresaForm, smtpPass: e.target.value })} placeholder="••••••••" />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Integraciones Externas</h4>
+                <div className="grid gap-2">
+                  <Label>API Key Secreta</Label>
+                  <div className="flex gap-2">
+                    <Input type="text" value={empresaForm.apiKey} readOnly placeholder="Se generará una nueva llave..." className="bg-muted cursor-not-allowed" />
+                    <Button type="button" variant="outline" onClick={handleGenerateApiKey}>Generar Nueva Llave</Button>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Botón Guardar fuera de las pestañas */}
+          <div className="flex justify-end gap-2 border-t pt-4 mt-4">
+            <Button variant="outline" onClick={() => setIsEmpresaModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEmpresa} className="bg-primary">Guardar Empresa</Button>
           </div>
         </DialogContent>
       </Dialog>

@@ -666,8 +666,8 @@ export default function Inventory() {
                 <Label>Stock (Unidades)</Label>
                 <Input
                   type="number"
-                  value={formData.stockUnidades || 0}
-                  onChange={e => setFormData({ ...formData, stockUnidades: Number(e.target.value) })}
+                  value={formData.stockUnidades ?? ''}
+                  onChange={e => setFormData({ ...formData, stockUnidades: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
               <div className="grid gap-2">
@@ -675,8 +675,8 @@ export default function Inventory() {
                 <Input
                   type="number"
                   step="0.01"
-                  value={formData.stockKilos || 0}
-                  onChange={e => setFormData({ ...formData, stockKilos: Number(e.target.value) })}
+                  value={formData.stockKilos ?? ''}
+                  onChange={e => setFormData({ ...formData, stockKilos: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
             </div>
@@ -685,8 +685,8 @@ export default function Inventory() {
                 <Label>Unidades por Caja</Label>
                 <Input
                   type="number"
-                  value={formData.unidadesPorCaja || 1}
-                  onChange={e => setFormData({ ...formData, unidadesPorCaja: Number(e.target.value) })}
+                  value={formData.unidadesPorCaja ?? ''}
+                  onChange={e => setFormData({ ...formData, unidadesPorCaja: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
               <div className="grid gap-2">
@@ -694,8 +694,8 @@ export default function Inventory() {
                 <Input
                   type="number"
                   step="0.01"
-                  value={formData.costo || 0}
-                  onChange={e => setFormData({ ...formData, costo: Number(e.target.value) })}
+                  value={formData.costo ?? ''}
+                  onChange={e => setFormData({ ...formData, costo: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
               <div className="grid gap-2">
@@ -703,8 +703,8 @@ export default function Inventory() {
                 <Input
                   type="number"
                   step="0.01"
-                  value={formData.precio || 0}
-                  onChange={e => setFormData({ ...formData, precio: Number(e.target.value) })}
+                  value={formData.precio ?? ''}
+                  onChange={e => setFormData({ ...formData, precio: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
             </div>
@@ -833,8 +833,8 @@ export default function Inventory() {
                 <Label>Stock (Unidades)</Label>
                 <Input
                   type="number"
-                  value={adjustData.stockUnidades || 0}
-                  onChange={e => setAdjustData({ ...adjustData, stockUnidades: Number(e.target.value) })}
+                  value={adjustData.stockUnidades ?? ''}
+                  onChange={e => setAdjustData({ ...adjustData, stockUnidades: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
               <div className="grid gap-2">
@@ -842,8 +842,8 @@ export default function Inventory() {
                 <Input
                   type="number"
                   step="0.01"
-                  value={adjustData.stockKilos || 0}
-                  onChange={e => setAdjustData({ ...adjustData, stockKilos: Number(e.target.value) })}
+                  value={adjustData.stockKilos ?? ''}
+                  onChange={e => setAdjustData({ ...adjustData, stockKilos: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
             </div>
@@ -852,8 +852,8 @@ export default function Inventory() {
                 <Label>Unidades por Caja</Label>
                 <Input
                   type="number"
-                  value={adjustData.unidadesPorCaja || 1}
-                  onChange={e => setAdjustData({ ...adjustData, unidadesPorCaja: Number(e.target.value) })}
+                  value={adjustData.unidadesPorCaja ?? ''}
+                  onChange={e => setAdjustData({ ...adjustData, unidadesPorCaja: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
               <div className="grid gap-2">
@@ -861,8 +861,8 @@ export default function Inventory() {
                 <Input
                   type="number"
                   step="0.01"
-                  value={adjustData.costo || 0}
-                  onChange={e => setAdjustData({ ...adjustData, costo: Number(e.target.value) })}
+                  value={adjustData.costo ?? ''}
+                  onChange={e => setAdjustData({ ...adjustData, costo: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
               <div className="grid gap-2">
@@ -870,8 +870,8 @@ export default function Inventory() {
                 <Input
                   type="number"
                   step="0.01"
-                  value={adjustData.precio || 0}
-                  onChange={e => setAdjustData({ ...adjustData, precio: Number(e.target.value) })}
+                  value={adjustData.precio ?? ''}
+                  onChange={e => setAdjustData({ ...adjustData, precio: e.target.value === '' ? '' : Number(e.target.value) })}
                 />
               </div>
             </div>

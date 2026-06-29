@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto';
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
-
+const SYSTEM_EMPRESA_ID = 'ff543aa6-1f3c-4a2b-96f0-072076f83be6';
 // ==========================================
 // --- RATE LIMITING ---
 // ==========================================
@@ -56,18 +56,33 @@ export const createEmpresa = async (req: any, res: any) => {
     // Manejar apiKey: si viene vacío o nulo, generar uno nuevo; si viene válido, usarlo
     const finalApiKey = apiKey && apiKey.trim() ? apiKey : randomUUID();
 
-    const empresa = await prisma.empresa.create({
-      data: { 
-        nombre, 
-        activa, 
-        logoUrl,
-        emailContacto,
-        telefonoContacto,
-        smtpUser,
-        smtpPass,
-        apiKey: finalApiKey,
-        config
-      }
+    const empresa = await prisma.$transaction(async (tx) => {
+      const newEmpresa = await tx.empresa.create({
+        data: { 
+          nombre, 
+          activa, 
+          logoUrl,
+          emailContacto,
+          telefonoContacto,
+          smtpUser,
+          smtpPass,
+          apiKey: finalApiKey,
+          config
+        }
+      });
+
+      await tx.auditLog.create({
+        data: {
+          accion: 'AJUSTE_MANUAL',
+          tablaAfectada: 'EMPRESA',
+          registroId: newEmpresa.id,
+          valorNuevo: newEmpresa as any,
+          usuarioId: req.user.id,
+          empresaId: newEmpresa.id
+        }
+      });
+
+      return newEmpresa;
     });
 
     res.json(empresa);
@@ -96,6 +111,12 @@ export const updateEmpresa = async (req: any, res: any) => {
     const { id } = req.params;
     const { nombre, activa, logoUrl, emailContacto, telefonoContacto, smtpUser, smtpPass, apiKey, config } = req.body;
 
+    // Verificar que la empresa existe
+    const existingEmpresa = await prisma.empresa.findUnique({ where: { id } });
+    if (!existingEmpresa) {
+      return res.status(404).json({ message: 'Empresa no encontrada' });
+    }
+
     // Manejar apiKey: si viene vacío o nulo, generar uno nuevo; si viene válido, usarlo
     const dataToUpdate: any = {
       nombre,
@@ -117,9 +138,25 @@ export const updateEmpresa = async (req: any, res: any) => {
     }
     // Si no viene el campo, no lo incluimos para mantener el actual
 
-    const empresa = await prisma.empresa.update({
-      where: { id },
-      data: dataToUpdate
+    const empresa = await prisma.$transaction(async (tx) => {
+      const updatedEmpresa = await tx.empresa.update({
+        where: { id },
+        data: dataToUpdate
+      });
+
+      await tx.auditLog.create({
+        data: {
+          accion: 'AJUSTE_MANUAL',
+          tablaAfectada: 'EMPRESA',
+          registroId: updatedEmpresa.id,
+          valorAnterior: existingEmpresa as any,
+          valorNuevo: updatedEmpresa as any,
+          usuarioId: req.user.id,
+          empresaId: updatedEmpresa.id
+        }
+      });
+
+      return updatedEmpresa;
     });
 
     res.json(empresa);
@@ -146,7 +183,27 @@ export const deleteEmpresa = async (req: any, res: any) => {
     }
 
     const { id } = req.params;
-    await prisma.empresa.delete({ where: { id } });
+
+    // Verificar que la empresa existe
+    const existingEmpresa = await prisma.empresa.findUnique({ where: { id } });
+    if (!existingEmpresa) {
+      return res.status(404).json({ message: 'Empresa no encontrada' });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.empresa.delete({ where: { id } });
+
+      await tx.auditLog.create({
+        data: {
+          accion: 'AJUSTE_MANUAL',
+          tablaAfectada: 'EMPRESA',
+          registroId: id,
+          valorAnterior: existingEmpresa as any,
+          usuarioId: req.user.id,
+          empresaId: id
+        }
+      });
+    });
 
     res.json({ success: true });
   } catch (error: any) {
@@ -206,14 +263,30 @@ export const createUsuario = async (req: any, res: any) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const usuario = await prisma.usuario.create({
-      data: {
-        nombre,
-        email,
-        password: hashedPassword,
-        rol,
-        empresaId: empresaId || null
-      }
+
+    const usuario = await prisma.$transaction(async (tx) => {
+      const newUsuario = await tx.usuario.create({
+        data: {
+          nombre,
+          email,
+          password: hashedPassword,
+          rol,
+          empresaId: empresaId || null
+        }
+      });
+
+      await tx.auditLog.create({
+        data: {
+          accion: 'AJUSTE_MANUAL',
+          tablaAfectada: 'USUARIO',
+          registroId: newUsuario.id,
+          valorNuevo: { ...newUsuario, password: '[REDACTED]' } as any,
+          usuarioId: req.user.id,
+          empresaId: newUsuario.empresaId || SYSTEM_EMPRESA_ID
+        }
+      });
+
+      return newUsuario;
     });
 
     res.json(usuario);
@@ -242,6 +315,12 @@ export const updateUsuario = async (req: any, res: any) => {
     const { id } = req.params;
     const { nombre, email, password, rol, empresaId } = req.body;
 
+    // Verificar que el usuario existe
+    const existingUsuario = await prisma.usuario.findUnique({ where: { id } });
+    if (!existingUsuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
     // Validar que el nuevo email no esté registrado por otro usuario
     if (email) {
       const usuarioExistente = await prisma.usuario.findUnique({
@@ -266,9 +345,25 @@ export const updateUsuario = async (req: any, res: any) => {
       dataToUpdate.password = await bcrypt.hash(password, 10);
     }
 
-    const usuario = await prisma.usuario.update({
-      where: { id },
-      data: dataToUpdate
+    const usuario = await prisma.$transaction(async (tx) => {
+      const updatedUsuario = await tx.usuario.update({
+        where: { id },
+        data: dataToUpdate
+      });
+
+      await tx.auditLog.create({
+        data: {
+          accion: 'AJUSTE_MANUAL',
+          tablaAfectada: 'USUARIO',
+          registroId: updatedUsuario.id,
+          valorAnterior: { ...existingUsuario, password: '[REDACTED]' } as any,
+          valorNuevo: { ...updatedUsuario, password: '[REDACTED]' } as any,
+          usuarioId: req.user.id,
+          empresaId: updatedUsuario.empresaId || SYSTEM_EMPRESA_ID
+        }
+      });
+
+      return updatedUsuario;
     });
 
     res.json(usuario);
@@ -295,7 +390,27 @@ export const deleteUsuario = async (req: any, res: any) => {
     }
 
     const { id } = req.params;
-    await prisma.usuario.delete({ where: { id } });
+
+    // Verificar que el usuario existe
+    const existingUsuario = await prisma.usuario.findUnique({ where: { id } });
+    if (!existingUsuario) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    await prisma.$transaction(async (tx) => {
+      await tx.usuario.delete({ where: { id } });
+
+      await tx.auditLog.create({
+        data: {
+          accion: 'AJUSTE_MANUAL',
+          tablaAfectada: 'USUARIO',
+          registroId: id,
+          valorAnterior: { ...existingUsuario, password: '[REDACTED]' } as any,
+          usuarioId: req.user.id,
+          empresaId: existingUsuario.empresaId || SYSTEM_EMPRESA_ID
+        }
+      });
+    });
 
     res.json({ success: true });
   } catch (error: any) {

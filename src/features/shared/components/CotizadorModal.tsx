@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +14,8 @@ import toast from "react-hot-toast";
 // Interface para los items del carrito de cotización
 interface QuoteLineItem {
     articulo: any;
-    cantidad: number;
-    descuento: number; // Porcentaje de descuento
+    cantidad: number | '';
+    descuento: number | '';
 }
 
 interface CotizadorModalProps {
@@ -35,7 +35,7 @@ export default function CotizadorModal({
     const { clientes } = useClientStore();
     const { articulos, fetchInventory } = useInventoryStore();
 
-        // Estados del cotizador
+    // Estados del cotizador
     const [selectedClient, setSelectedClient] = useState<any>(clientePreseleccionado);
     const [quoteCart, setQuoteCart] = useState<QuoteLineItem[]>([]);
     const [quoteSearch, setQuoteSearch] = useState("");
@@ -45,6 +45,7 @@ export default function CotizadorModal({
     const [prospectNombre, setProspectNombre] = useState("");
     const [prospectEmail, setProspectEmail] = useState("");
     const [prospectTelefono, setProspectTelefono] = useState("");
+    const [moneda, setMoneda] = useState("ARS");
 
     // Sincronizar cliente preseleccionado cuando cambia
     useEffect(() => {
@@ -80,13 +81,13 @@ export default function CotizadorModal({
 
     // ============ FUNCIONES DEL CARRITO ============
 
-    // Agregar artículo al carrito de cotización
+        // Agregar artículo al carrito de cotización
     const addArticuloToQuoteCart = (articulo: any) => {
         const existe = quoteCart.find((item) => item.articulo.id === articulo.id);
         if (existe) {
             setQuoteCart(
                 quoteCart.map((item) =>
-                    item.articulo.id === articulo.id ? { ...item, cantidad: item.cantidad + 1 } : item
+                    item.articulo.id === articulo.id ? { ...item, cantidad: (typeof item.cantidad === 'number' ? item.cantidad : 0) + 1 } : item
                 )
             );
         } else {
@@ -95,9 +96,9 @@ export default function CotizadorModal({
         toast.success(`${articulo.nombre} agregado al cotizador`);
     };
 
-    // Actualizar cantidad en carrito
-    const updateQuantity = (articuloId: string, newQuantity: number) => {
-        if (newQuantity < 1) return;
+            // Actualizar cantidad en carrito (acepta number | '' para permitir borrado)
+    const updateQuantity = (articuloId: string, newQuantity: number | '') => {
+        if (typeof newQuantity === 'number' && newQuantity < 1) return;
         setQuoteCart(
             quoteCart.map((item) =>
                 item.articulo.id === articuloId ? { ...item, cantidad: newQuantity } : item
@@ -105,9 +106,9 @@ export default function CotizadorModal({
         );
     };
 
-    // Actualizar descuento en carrito
-    const updateDiscount = (articuloId: string, newDiscount: number) => {
-        if (newDiscount < 0 || newDiscount > 100) return;
+        // Actualizar descuento en carrito (acepta number | '' para permitir borrado)
+    const updateDiscount = (articuloId: string, newDiscount: number | '') => {
+        if (typeof newDiscount === 'number' && (newDiscount < 0 || newDiscount > 100)) return;
         setQuoteCart(
             quoteCart.map((item) =>
                 item.articulo.id === articuloId ? { ...item, descuento: newDiscount } : item
@@ -129,10 +130,13 @@ export default function CotizadorModal({
         return subtotal - descuentoAplicado;
     };
 
-    // Calcular totales
-    const calculateTotals = () => {
+            // Calcular totales - Memoizado para evitar recálculos innecesarios
+    const totals = useMemo(() => {
         const subtotal = quoteCart.reduce((sum, item) => {
-            return sum + calculateItemSubtotal(item.articulo.precio || 0, item.cantidad, item.descuento);
+            // Convertir cantidad y descuento vacíos a 0 antes de calcular
+            const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 0;
+            const descuento = typeof item.descuento === 'number' ? item.descuento : 0;
+            return sum + calculateItemSubtotal(item.articulo.precio || 0, cantidad, descuento);
         }, 0);
 
         // Por ahora impuestos = 0, puede ajustarse después
@@ -140,11 +144,11 @@ export default function CotizadorModal({
         const total = subtotal + impuestos;
 
         return { subtotal, impuestos, total };
-    };
+    }, [quoteCart]);
 
-        // ============ FUNCIONES DE ENVÍO ============
+    // ============ FUNCIONES DE ENVÍO ============
 
-        // Guardar cotización sin enviar
+    // Guardar cotización sin enviar
     const handleSaveOnly = async () => {
         const hasClient = selectedClient || (isProspectMode && prospectNombre.trim());
         if (!hasClient) {
@@ -157,21 +161,23 @@ export default function CotizadorModal({
             return;
         }
 
-        const { subtotal, impuestos, total } = calculateTotals();
+                const { subtotal, impuestos, total } = totals;
 
-        if (onSaveQuote) {
+                if (onSaveQuote) {
             try {
                 await onSaveQuote({
                     clienteId: isProspectMode ? null : selectedClient?.id,
-                    nombreCliente: isProspectMode ? prospectNombre : selectedClient?.nombre,
+                    nombre: isProspectMode ? prospectNombre : selectedClient?.nombre,
                     email: isProspectMode ? prospectEmail : selectedClient?.email,
                     telefono: isProspectMode ? prospectTelefono : selectedClient?.telefono,
                     items: quoteCart,
                     subtotal,
                     impuestos,
                     total,
-                    estado: "PENDIENTE",
+                    tag: "PENDIENTE",
                     metodoEnvio: "SISTEMA",
+                    moneda,
+                    mensaje: "Cotización guardada desde el sistema.",
                 });
                 toast.success("Pedido guardado correctamente");
                 setQuoteCart([]);
@@ -182,7 +188,7 @@ export default function CotizadorModal({
         }
     };
 
-        // Enviar cotización por WhatsApp y opcionalmente guardar como pedido
+    // Enviar cotización por WhatsApp y opcionalmente guardar como pedido
     const handleSendWhatsAppQuote = async () => {
         // Validaciones
         const hasClient = selectedClient || (isProspectMode && prospectNombre.trim());
@@ -210,8 +216,16 @@ export default function CotizadorModal({
             return;
         }
 
-        const { subtotal, impuestos, total } = calculateTotals();
+                const { subtotal, impuestos, total } = totals;
         const nombreContacto = isProspectMode ? prospectNombre : selectedClient?.nombre;
+
+        // Mapeo de símbolos de moneda
+        const monedaSymbols: { [key: string]: string } = {
+            "USD": "$",
+            "EUR": "€",
+            "ARS": "$"
+        };
+        const monedaSymbol = monedaSymbols[moneda] || "$";
 
         // Construir mensaje formateado para WhatsApp (Versión segura sin emojis complejos)
         let mensajeWhatsApp = `*COTIZACIÓN - ${empresa?.nombre || "Laris"}*\n\n`;
@@ -219,18 +233,21 @@ export default function CotizadorModal({
         mensajeWhatsApp += `Te comparto tu cotización con los siguientes detalles:\n\n`;
         mensajeWhatsApp += `*DETALLE DE PRODUCTOS:*\n`;
 
-        quoteCart.forEach((item) => {
-            const itemSubtotal = calculateItemSubtotal(item.articulo.precio || 0, item.cantidad, item.descuento);
-            const descuentoText = item.descuento > 0 ? ` (Desc. ${item.descuento}%)` : "";
-            mensajeWhatsApp += `- ${item.cantidad}x *${item.articulo.nombre}*\n`;
-            mensajeWhatsApp += `   Precio: $${(item.articulo.precio || 0).toFixed(2)}${descuentoText}\n`;
-            mensajeWhatsApp += `   Subtotal: *$${itemSubtotal.toFixed(2)}*\n\n`;
+                quoteCart.forEach((item) => {
+            // Convertir cantidad y descuento vacíos a 0 antes de calcular
+            const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 0;
+            const descuento = typeof item.descuento === 'number' ? item.descuento : 0;
+            const itemSubtotal = calculateItemSubtotal(item.articulo.precio || 0, cantidad, descuento);
+            const descuentoText = descuento > 0 ? ` (Desc. ${descuento}%)` : "";
+            mensajeWhatsApp += `- ${cantidad}x *${item.articulo.nombre}*\n`;
+            mensajeWhatsApp += `   Precio: ${monedaSymbol}${(item.articulo.precio || 0).toFixed(2)}${descuentoText}\n`;
+            mensajeWhatsApp += `   Subtotal: *${monedaSymbol}${itemSubtotal.toFixed(2)}*\n\n`;
         });
 
         mensajeWhatsApp += `-----------------------------------\n`;
-        mensajeWhatsApp += `*SUBTOTAL:* $${subtotal.toFixed(2)}\n`;
-        if (impuestos > 0) mensajeWhatsApp += `*IMPUESTOS:* $${impuestos.toFixed(2)}\n`;
-        mensajeWhatsApp += `*TOTAL:* *$${total.toFixed(2)}*\n`;
+        mensajeWhatsApp += `*SUBTOTAL:* ${monedaSymbol}${subtotal.toFixed(2)}\n`;
+        if (impuestos > 0) mensajeWhatsApp += `*IMPUESTOS:* ${monedaSymbol}${impuestos.toFixed(2)}\n`;
+        mensajeWhatsApp += `*TOTAL:* *${monedaSymbol}${total.toFixed(2)}*\n`;
         mensajeWhatsApp += `-----------------------------------\n\n`;
         mensajeWhatsApp += `Si tiene preguntas o desea realizar cambios, no dude en contactarnos.\n\n`;
         mensajeWhatsApp += `Atentamente,\n*${empresa?.nombre || "Nuestro equipo de ventas"}*`;
@@ -246,15 +263,17 @@ export default function CotizadorModal({
             try {
                 await onSaveQuote({
                     clienteId: isProspectMode ? null : selectedClient?.id,
-                    nombreCliente: isProspectMode ? prospectNombre : selectedClient?.nombre,
+                    nombre: isProspectMode ? prospectNombre : selectedClient?.nombre,
                     email: isProspectMode ? prospectEmail : selectedClient?.email,
                     telefono: isProspectMode ? prospectTelefono : selectedClient?.telefono,
                     items: quoteCart,
                     subtotal,
                     impuestos,
                     total,
-                    estado: "COTIZADO",
+                    tag: "COTIZADO",
                     metodoEnvio: "WHATSAPP",
+                    moneda,
+                    mensaje: "Cotización enviada por WhatsApp.",
                 });
             } catch (error) {
                 console.error("Error al guardar la cotización como pedido:", error);
@@ -265,7 +284,7 @@ export default function CotizadorModal({
         onClose();
     };
 
-        // Enviar cotización por correo y opcionalmente guardar como pedido
+    // Enviar cotización por correo y opcionalmente guardar como pedido
     const handleSendQuote = async () => {
         // Validaciones
         const hasClient = selectedClient || (isProspectMode && prospectNombre.trim());
@@ -285,7 +304,7 @@ export default function CotizadorModal({
             return;
         }
 
-        const { subtotal, impuestos, total } = calculateTotals();
+                const { subtotal, impuestos, total } = totals;
 
         try {
             setIsSendingEmail(true);
@@ -301,6 +320,7 @@ export default function CotizadorModal({
                     impuestos,
                     total,
                     empresaId: empresa?.id,
+                    moneda,
                 },
                 {
                     headers: {
@@ -309,19 +329,21 @@ export default function CotizadorModal({
                 }
             );
 
-            // Guardar como pedido si hay callback
+                        // Guardar como pedido si hay callback
             if (onSaveQuote) {
                 await onSaveQuote({
                     clienteId: isProspectMode ? null : selectedClient?.id,
-                    nombreCliente: isProspectMode ? prospectNombre : selectedClient?.nombre,
+                    nombre: isProspectMode ? prospectNombre : selectedClient?.nombre,
                     email: isProspectMode ? prospectEmail : selectedClient?.email,
                     telefono: isProspectMode ? prospectTelefono : selectedClient?.telefono,
                     items: quoteCart,
                     subtotal,
                     impuestos,
                     total,
-                    estado: "COTIZADO",
+                    tag: "COTIZADO",
                     metodoEnvio: "EMAIL",
+                    moneda,
+                    mensaje: "Cotización enviada por correo electrónico.",
                 });
             }
 
@@ -338,7 +360,7 @@ export default function CotizadorModal({
 
     // ============ MANEJO DEL MODAL ============
 
-        const handleClose = () => {
+    const handleClose = () => {
         // Resetear estados
         if (!clientePreseleccionado) {
             setSelectedClient(null);
@@ -365,7 +387,7 @@ export default function CotizadorModal({
                     </DialogTitle>
                 </DialogHeader>
 
-                                <div className="space-y-6 py-4">
+                <div className="space-y-6 py-4">
                     {/* SELECTOR DE CLIENTE (si no viene preseleccionado) */}
                     {!clientePreseleccionado && (
                         <div className="border-b pb-4">
@@ -419,7 +441,7 @@ export default function CotizadorModal({
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
-                                                                                <div className="relative">
+                                            <div className="relative">
                                                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                                                 <Input
                                                     type="search"
@@ -502,7 +524,7 @@ export default function CotizadorModal({
                         </div>
                     )}
 
-                                        {/* CONTENIDO PRINCIPAL: Solo mostrar si hay cliente seleccionado O si estamos en modo prospecto con nombre */}
+                    {/* CONTENIDO PRINCIPAL: Solo mostrar si hay cliente seleccionado O si estamos en modo prospecto con nombre */}
                     {selectedClient || (isProspectMode && prospectNombre.trim()) ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* COLUMNA IZQUIERDA: BÚSQUEDA Y LISTADO DE ARTÍCULOS */}
@@ -563,11 +585,14 @@ export default function CotizadorModal({
                                     {quoteCart.length > 0 ? (
                                         <div className="space-y-2 max-h-[350px] overflow-y-auto border rounded-lg p-4 bg-muted/20">
                                             <div className="space-y-3">
-                                                {quoteCart.map((item) => {
+                                                                                                {quoteCart.map((item) => {
+                                                    // Convertir cantidad y descuento vacíos a 0 antes de calcular
+                                                    const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 0;
+                                                    const descuento = typeof item.descuento === 'number' ? item.descuento : 0;
                                                     const itemSubtotal = calculateItemSubtotal(
                                                         item.articulo.precio || 0,
-                                                        item.cantidad,
-                                                        item.descuento
+                                                        cantidad,
+                                                        descuento
                                                     );
                                                     return (
                                                         <div key={item.articulo.id} className="border-b pb-3 last:border-b-0">
@@ -595,7 +620,10 @@ export default function CotizadorModal({
                                                                         type="number"
                                                                         min="1"
                                                                         value={item.cantidad}
-                                                                        onChange={(e) => updateQuantity(item.articulo.id, parseInt(e.target.value) || 1)}
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            updateQuantity(item.articulo.id, val === '' ? '' : parseInt(val, 10));
+                                                                        }}
                                                                         className="h-8 text-xs"
                                                                     />
                                                                 </div>
@@ -606,9 +634,10 @@ export default function CotizadorModal({
                                                                         min="0"
                                                                         max="100"
                                                                         value={item.descuento}
-                                                                        onChange={(e) =>
-                                                                            updateDiscount(item.articulo.id, parseFloat(e.target.value) || 0)
-                                                                        }
+                                                                        onChange={(e) => {
+                                                                            const val = e.target.value;
+                                                                            updateDiscount(item.articulo.id, val === '' ? '' : parseFloat(val));
+                                                                        }}
                                                                         className="h-8 text-xs"
                                                                     />
                                                                 </div>
@@ -635,26 +664,41 @@ export default function CotizadorModal({
 
                                 {/* RESUMEN TOTALES */}
                                 {quoteCart.length > 0 && (
-                                    <div className="border-t pt-4 space-y-3 bg-slate-50 rounded-lg p-4">
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Subtotal:</span>
-                                            <span className="font-medium">${calculateTotals().subtotal.toFixed(2)}</span>
+                                    <div className="space-y-0 bg-slate-50 rounded-lg overflow-hidden border">
+                                        <div className="flex items-center justify-between p-4 border-b bg-white">
+                                            <Label className="font-semibold text-sm">Moneda de Cotización</Label>
+                                            <Select value={moneda} onValueChange={(value) => setMoneda(value ?? "ARS")}>
+                                                <SelectTrigger className="w-[140px] h-9">
+                                                    <SelectValue placeholder="Seleccionar" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="USD">USD - Dólar</SelectItem>
+                                                    <SelectItem value="EUR">EUR - Euro</SelectItem>
+                                                    <SelectItem value="ARS">ARS - Peso Arg.</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                         </div>
-                                        <div className="flex justify-between text-sm">
-                                            <span className="text-muted-foreground">Impuestos:</span>
-                                            <span className="font-medium">${calculateTotals().impuestos.toFixed(2)}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-lg border-t pt-3">
-                                            <span className="font-bold">TOTAL:</span>
-                                            <span className="font-bold text-green-600 text-2xl">
-                                                ${calculateTotals().total.toFixed(2)}
-                                            </span>
+                                        <div className="space-y-3 p-4">
+                                                                                        <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Subtotal:</span>
+                                                <span className="font-medium">{moneda === "EUR" ? "€" : "$"}{totals.subtotal.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Impuestos:</span>
+                                                <span className="font-medium">{moneda === "EUR" ? "€" : "$"}{totals.impuestos.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-lg border-t pt-3">
+                                                <span className="font-bold">TOTAL:</span>
+                                                <span className="font-bold text-green-600 text-2xl">
+                                                    {moneda === "EUR" ? "€" : "$"}{totals.total.toFixed(2)}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
                             </div>
                         </div>
-                                        ) : (
+                    ) : (
                         <div className="text-center text-muted-foreground py-8">
                             {!isProspectMode
                                 ? "Selecciona un cliente para comenzar a cotizar"
@@ -663,11 +707,11 @@ export default function CotizadorModal({
                     )}
                 </div>
 
-                                <DialogFooter className="mt-6 border-t pt-4 flex flex-col sm:flex-row gap-3 sm:justify-between items-center">
-                                    <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
-                                        Cancelar
-                                    </Button>
-                                    {(selectedClient || (isProspectMode && prospectNombre.trim())) && quoteCart.length > 0 && (
+                <DialogFooter className="mt-6 border-t pt-4 flex flex-col sm:flex-row gap-3 sm:justify-between items-center">
+                    <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
+                        Cancelar
+                    </Button>
+                    {(selectedClient || (isProspectMode && prospectNombre.trim())) && quoteCart.length > 0 && (
                         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto justify-end">
                             {onSaveQuote && (
                                 <Button

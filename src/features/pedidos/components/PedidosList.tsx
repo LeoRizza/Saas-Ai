@@ -1,17 +1,25 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { usePedidosStore } from '../../../store/pedidosStore';
+import { useClientStore } from '../../../store/useClientStore';
 import { updatePedidoStatus } from '../services/pedidos.service';
 import { PedidoStatus } from '../../../types';
 import React from 'react';
 import CotizadorModal from '../../shared/components/CotizadorModal';
 import { api } from '../../../config/axios';
-import { UserPlus, Search, Edit, MessageCircle, FileText, ArrowUpDown, Calendar, Bell, Filter } from 'lucide-react';
+import { UserPlus, Users, Search, Edit, MessageCircle, FileText, ArrowUpDown, Calendar, Bell, Filter, Download } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+// Helper para convertir datetime a formato local sin desplazamiento de zona horaria
+function getLocalISODateTime(dateString: string) {
+  const date = new Date(dateString);
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+}
 
 function getRecordatorioStatus(fecha: string | null | undefined): 'VENCIDO' | 'HOY' | 'PENDIENTE' | 'SIN_FECHA' {
   if (!fecha) return 'SIN_FECHA';
@@ -57,23 +65,29 @@ function RecordatorioBadge({ status }: { status: 'VENCIDO' | 'HOY' | 'PENDIENTE'
 
 export default function PedidosList() {
   const { pedidos, isLoading, error, fetchPedidos, updateStatusLocal } = usePedidosStore();
+  const { clientes, fetchClientes } = useClientStore();
   const [statusUpdating, setStatusUpdating] = useState<string | null>(null);
   const [isCotizadorOpen, setIsCotizadorOpen] = useState(false);
-  const [pedidoToConvert, setPedidoToConvert] = useState<any>(null);
-  const [isConvertingToClient, setIsConvertingToClient] = useState(false);
+  const [pedidoForClient, setPedidoForClient] = useState<any>(null);
+  const [selectedExistingClient, setSelectedExistingClient] = useState<string | null>(null);
   const [pedidoToEdit, setPedidoToEdit] = useState<any>(null);
-    const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("TODOS");
   const [filterRecordatorio, setFilterRecordatorio] = useState("TODOS");
   const [selectedPedidoForQuote, setSelectedPedidoForQuote] = useState<any>(null);
   const [editingRecordatorio, setEditingRecordatorio] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: 'fecha' | 'recordatorio', direction: 'asc' | 'desc' } | null>(null);
-  const [dateRange, setDateRange] = useState<'TODOS' | 'HOY' | 'ESTA_SEMANA' | 'ESTE_MES'>('TODOS');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [filterTag, setFilterTag] = useState("TODOS");
+  const [nuevaAnotacion, setNuevaAnotacion] = useState("");
+  const [isProcessingClientAssignment, setIsProcessingClientAssignment] = useState(false);
 
-  // Fetch pedidos on component mount
+  // Fetch pedidos and clientes on component mount
   useEffect(() => {
     fetchPedidos();
-  }, [fetchPedidos]);
+    fetchClientes();
+  }, [fetchPedidos, fetchClientes]);
 
   // Handle status change
   const handleStatusChange = async (
@@ -146,51 +160,97 @@ export default function PedidosList() {
     }
   };
 
-  // Handle converting pedido to cliente
-  const handleConvertToClient = async () => {
-    if (!pedidoToConvert?.nombre) {
+  // Handle downloading PDF
+  const handleDownloadPDF = async (pedidoId: string, nombreCliente: string) => {
+    try {
+      const toastId = toast.loading("Generando PDF...");
+      const response = await api.get(`/pedidos/${pedidoId}/pdf`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      const cleanName = nombreCliente.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      link.setAttribute('download', `Cotizacion_${cleanName}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      toast.success("PDF descargado correctamente", { id: toastId });
+    } catch (error) {
+      console.error("Error descargando PDF:", error);
+      toast.error("Error al generar el PDF. Verifica que el pedido tenga items.");
+    }
+  };
+
+  // Handle assigning existing client to pedido
+  const handleAssignExistingClient = async () => {
+    if (!selectedExistingClient) {
+      toast.error('Por favor selecciona un cliente');
+      return;
+    }
+
+    setIsProcessingClientAssignment(true);
+    try {
+      await api.patch(`/pedidos/${pedidoForClient.id}`, {
+        clienteId: selectedExistingClient,
+      });
+      await fetchPedidos();
+      setPedidoForClient(null);
+      setSelectedExistingClient(null);
+      toast.success('Cliente asignado exitosamente!');
+    } catch (error: any) {
+      console.error('Error asignando cliente:', error);
+      const errorMessage = error.response?.data?.message || 'Error al asignar el cliente';
+      toast.error(errorMessage);
+    } finally {
+      setIsProcessingClientAssignment(false);
+    }
+  };
+
+  // Handle creating new client and assigning to pedido
+  const handleCreateAndAssignNewClient = async () => {
+    if (!pedidoForClient?.nombre) {
       toast.error('El nombre es obligatorio');
       return;
     }
 
-    if (pedidoToConvert.email && !emailRegex.test(pedidoToConvert.email.trim())) {
+    if (pedidoForClient.email && !emailRegex.test(pedidoForClient.email.trim())) {
       toast.error('El email no tiene un formato válido');
       return;
     }
 
-    if (pedidoToConvert.telefono && !phoneRegex.test(pedidoToConvert.telefono.trim())) {
+    if (pedidoForClient.telefono && !phoneRegex.test(pedidoForClient.telefono.trim())) {
       toast.error('El teléfono solo debe contener números (sin espacios, ni letras, ni símbolos)');
       return;
     }
 
-    setIsConvertingToClient(true);
+    setIsProcessingClientAssignment(true);
     try {
       // 1. Crear el cliente en la API de clientes
       const resCliente = await api.post('/clientes', {
-        nombre: pedidoToConvert.nombre,
-        razonSocial: pedidoToConvert.nombre,
-        email: pedidoToConvert.email?.trim() || null,
-        telefono: pedidoToConvert.telefono?.trim() || null,
-        cuit: pedidoToConvert.cuit?.trim() || null,
-        fechaRecordatorio: pedidoToConvert.fechaRecordatorio ? new Date(pedidoToConvert.fechaRecordatorio).toISOString() : null,
+        nombre: pedidoForClient.nombre,
+        razonSocial: pedidoForClient.nombre,
+        email: pedidoForClient.email?.trim() || null,
+        telefono: pedidoForClient.telefono?.trim() || null,
+        cuit: pedidoForClient.cuit?.trim() || null,
+        fechaRecordatorio: pedidoForClient.fechaRecordatorio ? new Date(pedidoForClient.fechaRecordatorio).toISOString() : null,
         condicionIva: 'Consumidor Final',
       });
 
       // 2. Vincular el pedido a ese nuevo cliente
-      await api.patch(`/pedidos/${pedidoToConvert.id}`, {
+      await api.patch(`/pedidos/${pedidoForClient.id}`, {
         clienteId: resCliente.data.id,
       });
 
       // 3. Recargar y cerrar el modal
       await fetchPedidos();
-      setPedidoToConvert(null);
-      toast.success('Cliente creado exitosamente!');
+      setPedidoForClient(null);
+      setSelectedExistingClient(null);
+      toast.success('Cliente creado y asignado exitosamente!');
     } catch (error: any) {
-      console.error('Error convirtiendo cliente:', error);
+      console.error('Error creando cliente:', error);
       const errorMessage = error.response?.data?.message || 'Error al crear el cliente. Revisa los datos.';
       toast.error(errorMessage);
     } finally {
-      setIsConvertingToClient(false);
+      setIsProcessingClientAssignment(false);
     }
   };
 
@@ -227,35 +287,17 @@ export default function PedidosList() {
     );
   }
 
-    const statusOptions = Object.values(PedidoStatus);
+  const statusOptions = Object.values(PedidoStatus);
 
-  // Función para verificar si una fecha está dentro de un rango
-  const isDateInRange = (fecha: string | null | undefined, range: 'TODOS' | 'HOY' | 'ESTA_SEMANA' | 'ESTE_MES'): boolean => {
-    if (!fecha) return false;
-    const recordatorioDate = new Date(fecha);
-    const today = new Date();
-    recordatorioDate.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
+  // Extraer tags únicos de la lista de pedidos
+  const uniqueTags = Array.from(new Set(pedidos.map(p => p.tag).filter(Boolean)));
 
-    switch (range) {
-      case 'HOY':
-        return recordatorioDate.getTime() === today.getTime();
-      case 'ESTA_SEMANA':
-        const nextWeek = new Date(today);
-        nextWeek.setDate(nextWeek.getDate() + 7);
-        return recordatorioDate.getTime() >= today.getTime() && recordatorioDate.getTime() <= nextWeek.getTime();
-      case 'ESTE_MES':
-        return recordatorioDate.getFullYear() === today.getFullYear() && recordatorioDate.getMonth() === today.getMonth();
-      default:
-        return true;
-    }
-  };
-
-    // Lógica de filtrado
+  // Lógica de filtrado
   const filteredPedidos = pedidos.filter(p => {
     // 1. Búsqueda por texto (nombre, email, telefono, tag)
     const searchLower = searchTerm.toLowerCase();
     const matchesSearch =
+      (p.id || '').toLowerCase().includes(searchLower) ||
       (p.nombre || '').toLowerCase().includes(searchLower) ||
       (p.email || '').toLowerCase().includes(searchLower) ||
       (p.telefono || '').includes(searchTerm) ||
@@ -271,13 +313,18 @@ export default function PedidosList() {
       matchesRecordatorio = recStatus === filterRecordatorio;
     }
 
-    // 4. Filtro por Rango de Fechas
+    // 4. Filtro por Rango de Fechas (Aplica a fechaCreacion)
     let matchesDateRange = true;
-    if (dateRange !== 'TODOS') {
-      matchesDateRange = isDateInRange(p.recordatorio, dateRange);
+    if (startDate || endDate) {
+      const fechaYMD = p.fechaCreacion.substring(0, 10); // Formato YYYY-MM-DD
+      if (startDate && fechaYMD < startDate) matchesDateRange = false;
+      if (endDate && fechaYMD > endDate) matchesDateRange = false;
     }
 
-    return matchesSearch && matchesStatus && matchesRecordatorio && matchesDateRange;
+    // 5. Filtro por Tag exacto
+    const matchesTag = filterTag === 'TODOS' || p.tag === filterTag;
+
+    return matchesSearch && matchesStatus && matchesRecordatorio && matchesDateRange && matchesTag;
   }).sort((a, b) => {
     // Ordenamiento múltiple
     if (sortConfig === null) {
@@ -336,7 +383,7 @@ export default function PedidosList() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-                <Select value={filterStatus} onValueChange={(val) => setFilterStatus(val || 'TODOS')}>
+        <Select value={filterStatus} onValueChange={(val) => setFilterStatus(val || 'TODOS')}>
           <SelectTrigger className="w-full sm:w-[200px] bg-white">
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4 text-muted-foreground" />
@@ -364,25 +411,31 @@ export default function PedidosList() {
             <SelectItem value="PENDIENTE">Pendientes</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={dateRange} onValueChange={(val) => setDateRange(val as 'TODOS' | 'HOY' | 'ESTA_SEMANA' | 'ESTE_MES')}>
-          <SelectTrigger className="w-full sm:w-[200px] bg-white">
+        <Select value={filterTag} onValueChange={(val) => setFilterTag(val || 'TODOS')}>
+          <SelectTrigger className="w-full sm:w-[160px] bg-white">
             <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-              <SelectValue placeholder="Rango de Fechas" />
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <SelectValue placeholder="Etiqueta" />
             </div>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="TODOS">Rango: Todas</SelectItem>
-            <SelectItem value="HOY">Hoy</SelectItem>
-            <SelectItem value="ESTA_SEMANA">Esta semana</SelectItem>
-            <SelectItem value="ESTE_MES">Este mes</SelectItem>
+            <SelectItem value="TODOS">Tags: Todos</SelectItem>
+            {uniqueTags.map(tag => (
+              <SelectItem key={tag as string} value={tag as string}>{tag}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
+        <div className="flex items-center gap-2 w-full sm:w-auto bg-white border rounded-md px-2">
+          <Calendar className="h-4 w-4 text-muted-foreground shrink-0" />
+          <Input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="border-0 shadow-none focus-visible:ring-0 px-1 w-[130px]" title="Fecha Desde" />
+          <span className="text-gray-400">-</span>
+          <Input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="border-0 shadow-none focus-visible:ring-0 px-1 w-[130px]" title="Fecha Hasta" />
+        </div>
       </div>
       <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
         {/* Desktop Table */}
         <table className="hidden md:table w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => {
                 if (sortConfig?.key === 'fecha') {
@@ -404,9 +457,6 @@ export default function PedidosList() {
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
                 Tag
-              </th>
-              <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
-                Mensaje
               </th>
               <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => {
                 if (sortConfig?.key === 'recordatorio') {
@@ -452,25 +502,22 @@ export default function PedidosList() {
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  {pedido.tag ? (
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-blue-200">
-                      {pedido.tag}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">-</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  <p className="line-clamp-2">
-                    {pedido.mensaje || 'Sin mensaje'}
-                  </p>
+                  <div className="flex flex-wrap gap-1 max-w-[120px]">
+                    {pedido.tag ? (
+                      <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border border-indigo-100 truncate w-full" title={pedido.tag}>
+                        {pedido.tag}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">-</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {editingRecordatorio === pedido.id ? (
                     <input
                       type="datetime-local"
                       autoFocus
-                      defaultValue={pedido.recordatorio ? new Date(pedido.recordatorio).toISOString().slice(0, 16) : ''}
+                      defaultValue={pedido.recordatorio ? getLocalISODateTime(pedido.recordatorio) : ''}
                       className="px-2 py-1 border border-blue-300 rounded-md text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       onBlur={(e) => {
                         if (e.target.value) {
@@ -521,44 +568,50 @@ export default function PedidosList() {
                   </select>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="flex gap-2">
+                  <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={() => handleDownloadPDF(pedido.id, pedido.nombre)}
+                      className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                      title="Descargar Cotización (PDF)"
+                    >
+                      <Download className="h-4 w-4" />
+                    </button>
                     <button
                       onClick={() => handleWhatsApp(pedido)}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-md transition-colors"
-                      title="Enviar Cotización por WhatsApp"
+                      className="p-1.5 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                      title="Enviar por WhatsApp"
                     >
                       <MessageCircle className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => openQuoteModal(pedido)}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                      title="Nueva Cotización para este prospecto"
+                      className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                      title="Nueva Cotización"
                     >
                       <FileText className="h-4 w-4" />
                     </button>
+                    <div className="w-px h-4 bg-slate-200 mx-1"></div>
                     <button
                       onClick={() => {
                         const editData = { ...pedido };
-                        if (editData.recordatorio) {
-                          editData.recordatorio = new Date(editData.recordatorio).toISOString().slice(0, 16);
-                        }
+                        if (editData.recordatorio) editData.recordatorio = getLocalISODateTime(editData.recordatorio);
                         setPedidoToEdit(editData);
                       }}
-                      className="inline-flex items-center gap-2 px-3 py-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
-                      title="Editar Pedido"
+                      className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                      title="Ver / Editar Pedido"
                     >
                       <Edit className="h-4 w-4" />
                     </button>
-                    {!pedido.clienteId && (
-                      <button
-                        onClick={() => setPedidoToConvert(pedido)}
-                        className="inline-flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
-                        title="Convertir a Cliente Oficial"
-                      >
-                        <UserPlus className="h-4 w-4" />
-                        <span className="text-xs font-medium"></span>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => {
+                        setPedidoForClient(pedido);
+                        setSelectedExistingClient(pedido.clienteId || null);
+                      }}
+                      className="p-1.5 text-slate-600 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+                      title={pedido.clienteId ? "Reasignar Cliente" : "Asignar o Crear Cliente"}
+                    >
+                      {pedido.clienteId ? <Users className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -591,13 +644,15 @@ export default function PedidosList() {
                   </p>
                 </div>
                 <div>
-                  {pedido.tag ? (
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-blue-200 inline-block">
-                      {pedido.tag}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-xs">-</span>
-                  )}
+                  <div className="flex flex-wrap gap-1 max-w-[120px]">
+                    {pedido.tag ? (
+                      <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border border-indigo-100 truncate w-full" title={pedido.tag}>
+                        {pedido.tag}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">-</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -629,21 +684,12 @@ export default function PedidosList() {
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold text-gray-500 uppercase">
-                    Mensaje
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {pedido.mensaje || 'Sin mensaje'}
-                  </p>
-                </div>
-
-                <div>
                   <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Recordatorio</p>
                   {editingRecordatorio === pedido.id ? (
                     <input
                       type="datetime-local"
                       autoFocus
-                      defaultValue={pedido.recordatorio ? new Date(pedido.recordatorio).toISOString().slice(0, 16) : ''}
+                      defaultValue={pedido.recordatorio ? getLocalISODateTime(pedido.recordatorio) : ''}
                       className="w-full px-2 py-1 border border-blue-300 rounded-md text-xs bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       onBlur={(e) => {
                         if (e.target.value) {
@@ -698,43 +744,50 @@ export default function PedidosList() {
                 </select>
 
                 {/* Botones de acción */}
-                <div className="flex flex-wrap gap-2 justify-end">
+                <div className="flex items-center justify-end gap-1">
+                  <button
+                    onClick={() => handleDownloadPDF(pedido.id, pedido.nombre)}
+                    className="p-1.5 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                    title="Descargar Cotización (PDF)"
+                  >
+                    <Download className="h-4 w-4" />
+                  </button>
                   <button
                     onClick={() => handleWhatsApp(pedido)}
-                    className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded transition-colors"
-                    title="Enviar Cotización por WhatsApp"
+                    className="p-1.5 text-slate-600 hover:text-green-600 hover:bg-green-50 rounded-md transition-colors"
+                    title="Enviar por WhatsApp"
                   >
                     <MessageCircle className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => openQuoteModal(pedido)}
-                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                    title="Nueva Cotización para este prospecto"
+                    className="p-1.5 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                    title="Nueva Cotización"
                   >
                     <FileText className="h-4 w-4" />
                   </button>
+                  <div className="w-px h-4 bg-slate-200 mx-1"></div>
                   <button
                     onClick={() => {
                       const editData = { ...pedido };
-                      if (editData.recordatorio) {
-                        editData.recordatorio = new Date(editData.recordatorio).toISOString().slice(0, 16);
-                      }
+                      if (editData.recordatorio) editData.recordatorio = getLocalISODateTime(editData.recordatorio);
                       setPedidoToEdit(editData);
                     }}
-                    className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded transition-colors"
-                    title="Editar Pedido"
+                    className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-md transition-colors"
+                    title="Ver / Editar Pedido"
                   >
                     <Edit className="h-4 w-4" />
                   </button>
-                  {!pedido.clienteId && (
-                    <button
-                      onClick={() => setPedidoToConvert(pedido)}
-                      className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
-                      title="Convertir a Cliente Oficial"
-                    >
-                      <UserPlus className="h-4 w-4" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => {
+                      setPedidoForClient(pedido);
+                      setSelectedExistingClient(pedido.clienteId || null);
+                    }}
+                    className="p-1.5 text-slate-600 hover:text-purple-600 hover:bg-purple-50 rounded-md transition-colors"
+                    title={pedido.clienteId ? "Reasignar Cliente" : "Asignar o Crear Cliente"}
+                  >
+                    {pedido.clienteId ? <Users className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
             </div>
@@ -742,105 +795,183 @@ export default function PedidosList() {
         </div>
       </div>
 
-      {/* Modal Convertir a Cliente */}
-      <Dialog open={!!pedidoToConvert} onOpenChange={() => setPedidoToConvert(null)}>
-        <DialogContent>
+      {/* Modal Unificado: Asignar o Reasignar Cliente */}
+      <Dialog open={!!pedidoForClient} onOpenChange={(isOpen) => {
+        if (!isOpen) {
+          setPedidoForClient(null);
+          setSelectedExistingClient(null);
+        }
+      }}>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="h-5 w-5 text-blue-600" />
-              Convertir Prospecto a Cliente
+              {pedidoForClient?.clienteId ? (
+                <>
+                  <Users className="h-5 w-5 text-purple-600" />
+                  Reasignar Cliente
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-5 w-5 text-blue-600" />
+                  Asignar o Crear Cliente
+                </>
+              )}
             </DialogTitle>
           </DialogHeader>
 
           <div className="grid gap-4 py-4">
             <div className="bg-slate-50 p-3 rounded text-sm text-slate-600 border">
-              Vas a crear un cliente oficial a partir de la solicitud de <b>{pedidoToConvert?.nombre}</b>. Verifica los datos antes de guardar.
+              {pedidoForClient?.clienteId ? (
+                <>Vas a reasignar el pedido de <b>{pedidoForClient?.nombre}</b> a otro cliente.</>
+              ) : (
+                <>Vas a asignar el pedido de <b>{pedidoForClient?.nombre}</b> a un cliente.</>
+              )}
             </div>
-
             <div className="grid gap-2">
-              <Label>Nombre / Razón Social *</Label>
-              <Input
-                value={pedidoToConvert?.nombre || ''}
-                onChange={(e) =>
-                  setPedidoToConvert({ ...pedidoToConvert, nombre: e.target.value })
-                }
-              />
+              <Label>Seleccionar Cliente Existente *</Label>
+              <Select value={selectedExistingClient || ''} onValueChange={(val) => setSelectedExistingClient(val || null)}>
+                <SelectTrigger className="bg-white">
+                  <SelectValue>
+                    {selectedExistingClient
+                      ? clientes.find(c => c.id === selectedExistingClient)?.nombre || 'Cliente seleccionado'
+                      : "Elige un cliente..."}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {clientes.length === 0 ? (
+                    <SelectItem value="_no_clientes" disabled>
+                      No hay clientes disponibles
+                    </SelectItem>
+                  ) : (
+                    clientes.map(cliente => (
+                      <SelectItem key={cliente.id} value={cliente.id}>
+                        {cliente.nombre}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                disabled={isProcessingClientAssignment || !selectedExistingClient}
+                onClick={handleAssignExistingClient}
+                className="w-full mt-2"
+              >
+                {isProcessingClientAssignment ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-gray-600 border-t-transparent rounded-full mr-2"></div>
+                    Asignando...
+                  </>
+                ) : (
+                  'Asignar Cliente Seleccionado'
+                )}
+              </Button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={pedidoToConvert?.email || ''}
-                  onChange={(e) =>
-                    setPedidoToConvert({ ...pedidoToConvert, email: e.target.value })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Teléfono</Label>
-                <Input
-                  type="tel"
-                  value={pedidoToConvert?.telefono || ''}
-                  onChange={(e) =>
-                    setPedidoToConvert({ ...pedidoToConvert, telefono: e.target.value })
-                  }
-                />
-              </div>
-            </div>
+            {/* Sección B: Crear Cliente Nuevo (solo si no tiene clienteId) */}
+            {!pedidoForClient?.clienteId && (
+              <>
+                <div className="my-4 border-t border-gray-200 relative">
+                  <span className="absolute -top-3 bg-white px-2 text-xs text-gray-500 left-1/2 -translate-x-1/2">
+                    O Crear Cliente Nuevo
+                  </span>
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>CUIT</Label>
-                <Input
-                  value={pedidoToConvert?.cuit || ''}
-                  placeholder="Sin CUIT cargado"
-                  onChange={(e) =>
-                    setPedidoToConvert({ ...pedidoToConvert, cuit: e.target.value })
-                  }
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Fecha Recordatorio</Label>
-                <Input
-                  type="datetime-local"
-                  value={pedidoToConvert?.fechaRecordatorio || ''}
-                  onChange={(e) =>
-                    setPedidoToConvert({ ...pedidoToConvert, fechaRecordatorio: e.target.value })
-                  }
-                />
-              </div>
-            </div>
+                <div className="grid gap-2">
+                  <Label>Nombre / Razón Social *</Label>
+                  <Input
+                    value={pedidoForClient?.nombre || ''}
+                    onChange={(e) =>
+                      setPedidoForClient({ ...pedidoForClient, nombre: e.target.value })
+                    }
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={pedidoForClient?.email || ''}
+                      onChange={(e) =>
+                        setPedidoForClient({ ...pedidoForClient, email: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Teléfono</Label>
+                    <Input
+                      type="tel"
+                      value={pedidoForClient?.telefono || ''}
+                      onChange={(e) =>
+                        setPedidoForClient({ ...pedidoForClient, telefono: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>CUIT</Label>
+                    <Input
+                      value={pedidoForClient?.cuit || ''}
+                      placeholder="Sin CUIT cargado"
+                      onChange={(e) =>
+                        setPedidoForClient({ ...pedidoForClient, cuit: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Fecha Recordatorio</Label>
+                    <Input
+                      type="datetime-local"
+                      value={pedidoForClient?.fechaRecordatorio || ''}
+                      onChange={(e) =>
+                        setPedidoForClient({ ...pedidoForClient, fechaRecordatorio: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700 w-full"
+                  disabled={isProcessingClientAssignment || !pedidoForClient?.nombre}
+                  onClick={handleCreateAndAssignNewClient}
+                >
+                  {isProcessingClientAssignment ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                      Creando...
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Crear y Asignar Nuevo
+                    </>
+                  )}
+                </Button>
+              </>
+            )}
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPedidoToConvert(null)}>
-              Cancelar
-            </Button>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700"
-              disabled={isConvertingToClient || !pedidoToConvert?.nombre}
-              onClick={handleConvertToClient}
-            >
-              {isConvertingToClient ? (
-                <>
-                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
-                  Creando...
-                </>
-              ) : (
-                <>
-                  <UserPlus className="h-4 w-4 mr-2" />
-                  Confirmar y Crear Cliente
-                </>
-              )}
+            <Button variant="outline" onClick={() => {
+              setPedidoForClient(null);
+              setSelectedExistingClient(null);
+            }}>
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Modal Editar Pedido */}
-      <Dialog open={!!pedidoToEdit} onOpenChange={(open) => !open && setPedidoToEdit(null)}>
+      <Dialog open={!!pedidoToEdit} onOpenChange={(open) => {
+        if (!open) {
+          setPedidoToEdit(null);
+          setNuevaAnotacion('');
+        }
+      }}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Detalles del Prospecto / Pedido</DialogTitle>
@@ -897,12 +1028,30 @@ export default function PedidosList() {
                 />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label>Mensaje / Detalles de Cotización</Label>
+            <div className="grid gap-2 sm:col-span-2">
+              <Label>Historial de Notas</Label>
+              <div className="flex flex-col gap-2 w-full rounded-md border bg-slate-50 p-3 h-[200px] overflow-y-auto">
+                {(!pedidoToEdit?.notas || !Array.isArray(pedidoToEdit.notas) || pedidoToEdit.notas.length === 0) && (
+                  <div className="text-sm text-slate-400 italic">No hay notas registradas.</div>
+                )}
+                {Array.isArray(pedidoToEdit?.notas) && pedidoToEdit.notas.map((nota: any, idx: number) => (
+                  <div key={idx} className="bg-white p-2 rounded border border-slate-200 shadow-sm">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] font-bold text-blue-600 uppercase">{nota.usuario || 'Sistema'}</span>
+                      <span className="text-[10px] text-slate-400">{new Date(nota.fecha).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    </div>
+                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{nota.texto}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="grid gap-2 sm:col-span-2">
+              <Label>Agregar nueva anotación</Label>
               <textarea
-                className="flex min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                value={pedidoToEdit?.mensaje || ''}
-                onChange={e => setPedidoToEdit({ ...pedidoToEdit, mensaje: e.target.value })}
+                className="flex min-h-[80px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                placeholder="Escribe una nueva nota aquí..."
+                value={nuevaAnotacion}
+                onChange={e => setNuevaAnotacion(e.target.value)}
               />
             </div>
           </div>
@@ -927,9 +1076,15 @@ export default function PedidosList() {
                 }
 
                 try {
-                  await api.patch(`/pedidos/${pedidoToEdit.id}`, pedidoToEdit);
+                  const payloadUpdate = { ...pedidoToEdit };
+                  if (nuevaAnotacion.trim() !== "") {
+                    payloadUpdate.nuevaNota = nuevaAnotacion.trim();
+                  }
+
+                  await api.patch(`/pedidos/${pedidoToEdit.id}`, payloadUpdate);
                   fetchPedidos();
                   setPedidoToEdit(null);
+                  setNuevaAnotacion('');
                   toast.success('Pedido actualizado correctamente');
                 } catch (error) {
                   console.error(error);
@@ -953,31 +1108,39 @@ export default function PedidosList() {
         clientePreseleccionado={selectedPedidoForQuote}
         onSaveQuote={async (data) => {
           try {
-            // 1. Transformar el carrito en texto para el campo 'mensaje'
-            let detalleMensaje = 'COTIZACIÓN INTERNA:\n\n';
-            if (data.items && data.items.length > 0) {
-              data.items.forEach((item: any) => {
-                detalleMensaje += `- ${item.cantidad}x ${item.articulo.nombre} ($${(item.articulo.precio || 0).toFixed(2)})\n`;
-              });
-              detalleMensaje += `\nSubtotal: $${data.subtotal.toFixed(2)}\nImpuestos: $${data.impuestos.toFixed(2)}\nTotal: $${data.total.toFixed(2)}`;
-            }
-            // 2. Mapear al formato exacto que espera 'createPedido' en el backend
+            // 1. Preparar items con subtotal calculado para la Base de Datos
+            const itemsConSubtotal = data.items.map((item: any) => {
+              const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 0;
+              const descuento = typeof item.descuento === 'number' ? item.descuento : 0;
+              const precio = item.articulo?.precio || 0;
+              const subtotal = (precio * cantidad) * (1 - descuento / 100);
+              return { ...item, cantidad, descuento, subtotal };
+            });
+
+            // 2. Sanitizar datos (el backend rechaza teléfonos con espacios o símbolos)
             const payload = {
-              nombre: data.nombreCliente,
-              clienteId: data.clienteId,
-              email: data.email,
-              telefono: data.telefono,
-              cuit: data.cuit,
-              mensaje: detalleMensaje,
-              tag: 'COTIZADO'
+              nombre: data.nombre || data.nombreCliente || 'Sin nombre',
+              clienteId: data.clienteId || null,
+              email: data.email?.trim() || null,
+              telefono: data.telefono ? data.telefono.replace(/\D/g, '') : null, // Mantiene SOLO números puros
+              cuit: data.cuit?.trim() || null,
+              tag: data.tag || 'COTIZADO',
+              items: itemsConSubtotal,
+              subtotal: data.subtotal || 0,
+              impuestos: data.impuestos || 0,
+              total: data.total || 0,
+              moneda: data.moneda || 'ARS',
+              mensaje: data.mensaje || "Cotización guardada en el sistema."
             };
+
             // 3. Enviar a la API
             await api.post('/pedidos', payload);
             fetchPedidos();
             setIsCotizadorOpen(false);
-          } catch (error) {
-            console.error('Error guardando pedido:', error);
-            // Lanzar el error para que el modal no cierre y no muestre éxito
+          } catch (error: any) {
+            console.error('Error guardando pedido:', error.response?.data || error);
+            // Mostrar el error exacto que devuelve el backend en la notificación
+            toast.error(error.response?.data?.error || 'Error al guardar el pedido');
             throw error;
           }
         }}

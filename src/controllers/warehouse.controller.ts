@@ -70,8 +70,17 @@ export async function updateInventario(req: Request, res: Response) {
         const { id } = req.params;
         const { nombre } = req.body;
 
+        // Verificar que el inventario existe y pertenece a la empresa del usuario
+        const whereClause = user.rol === 'SUPER_ADMIN' 
+            ? { id } 
+            : { id, empresaId: user.empresaId };
+        
+        const oldInv = await prisma.inventario.findFirst({ where: whereClause });
+        if (!oldInv) {
+            return res.status(404).json({ message: 'Inventario no encontrado' });
+        }
+
         const inventario = await prisma.$transaction(async (tx) => {
-            const oldInv = await tx.inventario.findUnique({ where: { id } });
             const inv = await tx.inventario.update({
                 where: { id },
                 data: { nombre }
@@ -89,7 +98,7 @@ export async function updateInventario(req: Request, res: Response) {
             });
             return inv;
         });
-                res.json(inventario);
+        res.json(inventario);
     } catch (error: any) {
         console.error('Error en controlador de inventarios (warehouse):', error);
         if (error.code === 'P2003') {

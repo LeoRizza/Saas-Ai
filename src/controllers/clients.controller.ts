@@ -131,58 +131,19 @@ export async function updateCliente(req: Request, res: Response) {
         throw new AppError('No tienes permiso para modificar este cliente', 403);
       }
 
-      // 🔥 Comparar campos y construir descripción detallada de cambios
-      const camposAuditar = [
-        { campo: 'nombre', label: 'Nombre' },
-        { campo: 'razonSocial', label: 'Razón Social' },
-        { campo: 'email', label: 'Email' },
-        { campo: 'telefono', label: 'Teléfono' },
-        { campo: 'direccion', label: 'Dirección' },
-        { campo: 'cuit', label: 'CUIT' },
-        { campo: 'condicionIva', label: 'Condición IVA' },
-        { campo: 'comentarios', label: 'Comentarios' },
-        { campo: 'fechaRecordatorio', label: 'Fecha Recordatorio' },
-        { campo: 'tag', label: 'Tag' }
-      ];
-
-      const cambiosDetectados: string[] = [];
-      const camposModificados: { campo: string; valorAnterior: any; valorNuevo: any }[] = [];
-
-      for (const { campo, label } of camposAuditar) {
-        const valorAnterior = (oldCli as any)[campo];
-        const valorNuevo = (data as any)[campo];
-
-        // Normalizar valores para comparación (null, undefined, '' se consideran iguales)
-        const normalizar = (v: any) => (v === null || v === undefined || v === '') ? null : v;
-        const oldNorm = normalizar(valorAnterior);
-        const newNorm = normalizar(valorNuevo);
-
-        if (oldNorm !== newNorm) {
-          const oldDisplay = oldNorm ?? '(vacío)';
-          const newDisplay = newNorm ?? '(vacío)';
-          cambiosDetectados.push(`${label}: "${oldDisplay}" → "${newDisplay}"`);
-          camposModificados.push({ campo, valorAnterior: oldNorm, valorNuevo: newNorm });
-        }
-      }
-
       const cli = await tx.cliente.update({ where: { id }, data });
 
-      // Solo crear log si hubo cambios reales
-      if (cambiosDetectados.length > 0) {
-        const descripcionCambios = cambiosDetectados.join(' | ');
-
-        await tx.auditLog.create({
-          data: {
-            accion: 'MODIFICACION_CLIENTE',
-            tablaAfectada: 'CLIENTE',
-            registroId: cli.id,
-            valorAnterior: { cambios: descripcionCambios, detalles: camposModificados } as any,
-            valorNuevo: cli as any,
-            usuarioId: user.id,
-            empresaId: user.empresaId
-          }
-        });
-      }
+      await tx.auditLog.create({
+        data: {
+          accion: 'MODIFICACION_CLIENTE',
+          tablaAfectada: 'CLIENTE',
+          registroId: cli.id,
+          valorAnterior: oldCli as any,
+          valorNuevo: cli as any,
+          usuarioId: user.id,
+          empresaId: user.empresaId
+        }
+      });
 
       return cli;
     });
@@ -272,9 +233,8 @@ export async function bulkImportClientes(req: Request, res: Response): Promise<v
       throw new AppError('El CSV está vacío o no tiene el formato correcto', 400);
     }
 
-    const { processed, auditLogsToCreate } = await prisma.$transaction(async (tx) => {
+    const processed = await prisma.$transaction(async (tx) => {
       const clients_processed: any[] = [];
-      const logs: any[] = [];
 
       for (const item of items) {
         if (!item.nombre || item.nombre.trim() === '') continue;
@@ -311,24 +271,22 @@ export async function bulkImportClientes(req: Request, res: Response): Promise<v
 
         const cli = await tx.cliente.create({ data });
 
-        logs.push({
-          accion: 'IMPORTACION_CSV',
-          tablaAfectada: 'CLIENTE',
-          registroId: cli.id,
-          valorNuevo: cli as any,
-          usuarioId: user.id,
-          empresaId: user.empresaId
+        // ✅ LOG DENTRO DE LA TRANSACCIÓN (en cada iteración)
+        await tx.auditLog.create({
+          data: {
+            accion: 'IMPORTACION_CSV',
+            tablaAfectada: 'CLIENTE',
+            registroId: cli.id,
+            valorNuevo: cli as any,
+            usuarioId: user.id,
+            empresaId: user.empresaId
+          }
         });
 
         clients_processed.push(cli);
       }
 
-      return { processed: clients_processed, auditLogsToCreate: logs };
-    });
-
-    // Logs fuera de la transacción
-    auditLogsToCreate.forEach((logData) => {
-      prisma.auditLog.create({ data: logData }).catch(err => console.error(err));
+      return clients_processed;
     });
 
     res.status(201).json({
