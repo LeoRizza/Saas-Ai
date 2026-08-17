@@ -72,6 +72,9 @@ export default function Inventory() {
   const [transferData, setTransferData] = useState({ destId: '', unidades: 0, kilos: 0 });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'nombre', direction: 'asc' });
+
+  // Tipos numéricos para determinar dirección inicial al cambiar de columna
+  const numericFields = new Set(['stockUnidades', 'stockKilos', 'unidadesPorCaja', 'precio', 'costo']);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [stockFilter, setStockFilter] = useState<string>('all');
 
@@ -95,15 +98,26 @@ export default function Inventory() {
     })
     .sort((a, b) => {
       const key = sortConfig.key as keyof typeof a;
-      const aVal = a[key];
-      const bVal = b[key];
-
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return sortConfig.direction === 'asc'
-          ? aVal.localeCompare(bVal)
-          : bVal.localeCompare(aVal);
+      
+      // Obtener valores con validación para null/undefined
+      let aVal = a[key];
+      let bVal = b[key];
+      
+      // Tratar null/undefined como valor por defecto
+      if (aVal === null || aVal === undefined) {
+        aVal = typeof bVal === 'number' ? 0 : '';
+      }
+      if (bVal === null || bVal === undefined) {
+        bVal = typeof aVal === 'number' ? 0 : '';
       }
 
+      // Comparación de strings con case-insensitive
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        const comparison = aVal.localeCompare(bVal, undefined, { sensitivity: 'base' });
+        return sortConfig.direction === 'asc' ? comparison : -comparison;
+      }
+
+      // Comparación de números
       if (typeof aVal === 'number' && typeof bVal === 'number') {
         return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
       }
@@ -112,10 +126,22 @@ export default function Inventory() {
     });
 
   const requestSort = (key: string) => {
-    setSortConfig(prev => ({
-      key,
-      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
-    }));
+    setSortConfig(prev => {
+      // Si es la misma columna, alterna entre asc y desc
+      if (prev.key === key) {
+        return {
+          key,
+          direction: prev.direction === 'asc' ? 'desc' : 'asc'
+        };
+      }
+      
+      // Si es una columna diferente, comienza en desc para números, asc para texto
+      const isNumericField = numericFields.has(key);
+      return {
+        key,
+        direction: isNumericField ? 'desc' : 'asc'
+      };
+    });
   };
 
   const handleSelectAll = () => {
@@ -415,8 +441,8 @@ export default function Inventory() {
     }
   };
 
-  const handleInventarioChange = (value: string | null, _eventDetails?: any) => {
-    setSelectedInventarioId(value ?? '');
+  const handleInventarioChange = (val: string | null) => {
+    setSelectedInventarioId(val || '');
   };
 
   const handleBulkDelete = () => {
@@ -519,7 +545,7 @@ export default function Inventory() {
             {/* Selector de Inventario */}
             <div className="w-full">
               <Label className="mb-2 block text-sm font-medium">Seleccionar Inventario</Label>
-              <Select value={selectedInventarioId} onValueChange={handleInventarioChange as any}>
+              <Select value={selectedInventarioId} onValueChange={handleInventarioChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccione un inventario">
                     {inventarios.find(i => i.id === selectedInventarioId)?.nombre || "Seleccione un inventario"}
@@ -551,7 +577,7 @@ export default function Inventory() {
               </div>
               <div>
                 <Label className="mb-2 block text-sm font-medium">Categoría</Label>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select value={categoryFilter} onValueChange={(val: string | null) => setCategoryFilter(val || 'all')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -565,7 +591,7 @@ export default function Inventory() {
               </div>
               <div>
                 <Label className="mb-2 block text-sm font-medium">Stock</Label>
-                <Select value={stockFilter} onValueChange={setStockFilter}>
+                <Select value={stockFilter} onValueChange={(val: string | null) => setStockFilter(val || 'all')}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -1224,7 +1250,7 @@ export default function Inventory() {
                   Debes crear al menos otro inventario (sucursal/depósito) para poder realizar transferencias.
                 </div>
               ) : (
-                <Select value={transferData.destId || ""} onValueChange={(v) => setTransferData({ ...transferData, destId: v || "" })}>
+                <Select value={transferData.destId || ""} onValueChange={(v: string | null) => setTransferData({ ...transferData, destId: v || "" })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleccione destino">
                       {transferData.destId ? inventarios.find(i => i.id === transferData.destId)?.nombre : undefined}
@@ -1277,7 +1303,7 @@ export default function Inventory() {
             </div>
             <div className="grid gap-2">
               <Label className="text-base font-medium">1. ¿A qué sucursal ingresarán?</Label>
-              <Select value={selectedInventarioId} onValueChange={handleInventarioChange as any}>
+              <Select value={selectedInventarioId} onValueChange={handleInventarioChange}>
                 <SelectTrigger className="h-12 text-md">
                   <SelectValue placeholder="Seleccione un inventario...">
                     {selectedInventarioId ? inventarios.find(i => i.id === selectedInventarioId)?.nombre : undefined}
