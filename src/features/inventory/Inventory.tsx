@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { Plus, Search, ImageIcon, Edit, Trash2, Upload, X, Video, Download, Info, FileSpreadsheet, ArrowRightLeft, Trash } from "lucide-react";
+import { Plus, Search, ImageIcon, Edit, Trash2, Upload, X, Video, Download, Info, FileSpreadsheet, ArrowRightLeft, Trash, ArrowUpDown, ArrowUp, ArrowDown, Filter, PackageSearch, Loader2 } from "lucide-react";
 import { useInventoryStore } from "../../store/useInventoryStore";
 import { useInventariosStore } from "../../store/useInventariosStore";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -21,7 +22,7 @@ export default function Inventory() {
   const isVendedor = user?.rol === RolUsuario.VENDEDOR;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedInventarioId, setSelectedInventarioId] = useState<string>(() => {
-    return localStorage.getItem('lastSelectedInventarioId') || "";
+    return localStorage.getItem('lastSelectedInventarioId') || '';
   });
 
   useEffect(() => {
@@ -70,10 +71,52 @@ export default function Inventory() {
   const [isUploading, setIsUploading] = useState(false);
   const [transferData, setTransferData] = useState({ destId: '', unidades: 0, kilos: 0 });
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'nombre', direction: 'asc' });
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [stockFilter, setStockFilter] = useState<string>('all');
+
+  const categoriasUnicas = Array.from(
+    new Set(
+      articulos
+        .filter(a => a.empresaId === empresa?.id && a.inventarioId === selectedInventarioId)
+        .map(a => a.categoria)
+        .filter(Boolean)
+    )
+  ).sort();
 
   const filteredArticulos = articulos
     .filter(a => a.empresaId === empresa?.id && a.inventarioId === selectedInventarioId)
-    .filter(a => (a.nombre || "").toLowerCase().includes(searchTerm.toLowerCase()));
+    .filter(a => (a.nombre || "").toLowerCase().includes(searchTerm.toLowerCase()))
+    .filter(a => categoryFilter === 'all' || a.categoria === categoryFilter)
+    .filter(a => {
+      if (stockFilter === 'low') return a.stockUnidades < 5 && a.stockUnidades > 0;
+      if (stockFilter === 'out') return a.stockUnidades === 0;
+      return true;
+    })
+    .sort((a, b) => {
+      const key = sortConfig.key as keyof typeof a;
+      const aVal = a[key];
+      const bVal = b[key];
+
+      if (typeof aVal === 'string' && typeof bVal === 'string') {
+        return sortConfig.direction === 'asc'
+          ? aVal.localeCompare(bVal)
+          : bVal.localeCompare(aVal);
+      }
+
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return sortConfig.direction === 'asc' ? aVal - bVal : bVal - aVal;
+      }
+
+      return 0;
+    });
+
+  const requestSort = (key: string) => {
+    setSortConfig(prev => ({
+      key,
+      direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
 
   const handleSelectAll = () => {
     if (selectedIds.length === filteredArticulos.length) {
@@ -372,6 +415,10 @@ export default function Inventory() {
     }
   };
 
+  const handleInventarioChange = (value: string | null, _eventDetails?: any) => {
+    setSelectedInventarioId(value ?? '');
+  };
+
   const handleBulkDelete = () => {
     if (selectedIds.length > 20) {
       toast.error('Por seguridad, solo podés eliminar hasta 20 artículos a la vez');
@@ -420,7 +467,14 @@ export default function Inventory() {
 
 
   if (isLoadingInventarios || isLoadingArticulos) {
-    return <div className="p-6">Cargando inventario...</div>;
+    return (
+      <div className="flex items-center justify-center" style={{ height: '60vh' }}>
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <p className="text-lg font-medium text-slate-700">Sincronizando inventario...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -461,10 +515,11 @@ export default function Inventory() {
               </Button>
             )}
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 mt-4">
-            <div className="w-full sm:w-1/3">
-              <Label className="mb-2 mx-1">Seleccionar Inventario</Label>
-              <Select value={selectedInventarioId || ""} onValueChange={(v) => setSelectedInventarioId(v || "")}>
+          <div className="flex flex-col gap-4 mt-4">
+            {/* Selector de Inventario */}
+            <div className="w-full">
+              <Label className="mb-2 block text-sm font-medium">Seleccionar Inventario</Label>
+              <Select value={selectedInventarioId} onValueChange={handleInventarioChange as any}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccione un inventario">
                     {inventarios.find(i => i.id === selectedInventarioId)?.nombre || "Seleccione un inventario"}
@@ -479,17 +534,68 @@ export default function Inventory() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="w-full sm:w-2/3 flex items-end">
-              <div className="relative w-full">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar artículo..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-8"
-                />
+
+            {/* Búsqueda y Filtros */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <div className="md:col-span-2">
+                <Label className="mb-2 block text-sm font-medium">Buscar Artículo</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Por nombre, SKU, código..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="mb-2 block text-sm font-medium">Categoría</Label>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categoriasUnicas.map(cat => (
+                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="mb-2 block text-sm font-medium">Stock</Label>
+                <Select value={stockFilter} onValueChange={setStockFilter}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todo el stock</SelectItem>
+                    <SelectItem value="low">Stock bajo (&lt;5)</SelectItem>
+                    <SelectItem value="out">Agotado (0)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+
+            {/* Botón Limpiar Filtros */}
+            {(categoryFilter !== 'all' || stockFilter !== 'all' || searchTerm) && (
+              <div className="flex justify-end">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setCategoryFilter('all');
+                    setStockFilter('all');
+                    setSearchTerm('');
+                  }}
+                  className="text-xs"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Limpiar filtros
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -511,12 +617,42 @@ export default function Inventory() {
                     />
                   </TableHead>
                   <TableHead>Imagen</TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Stock (Unidades)</TableHead>
-                  <TableHead>Stock (Kilos)</TableHead>
-                  <TableHead>Unidades x Caja</TableHead>
-                  <TableHead>Precio</TableHead>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('nombre')}>
+                    <div className="flex items-center gap-2">
+                      Nombre
+                      {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('categoria')}>
+                    <div className="flex items-center gap-2">
+                      Categoría
+                      {sortConfig.key === 'categoria' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('stockUnidades')}>
+                    <div className="flex items-center gap-2">
+                      Stock (Unidades)
+                      {sortConfig.key === 'stockUnidades' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('stockKilos')}>
+                    <div className="flex items-center gap-2">
+                      Stock (Kilos)
+                      {sortConfig.key === 'stockKilos' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('unidadesPorCaja')}>
+                    <div className="flex items-center gap-2">
+                      Unidades x Caja
+                      {sortConfig.key === 'unidadesPorCaja' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+                    </div>
+                  </TableHead>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('precio')}>
+                    <div className="flex items-center gap-2">
+                      Precio
+                      {sortConfig.key === 'precio' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
+                    </div>
+                  </TableHead>
                   <TableHead>Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -571,8 +707,18 @@ export default function Inventory() {
                 ))}
                 {filteredArticulos.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={9} className="text-center py-4 text-muted-foreground">
-                      No se encontraron artículos en este inventario.
+                    <TableCell colSpan={9}>
+                      <div className="flex flex-col items-center justify-center py-12 px-4">
+                        <div className="bg-slate-100 rounded-full p-4 mb-4">
+                          <PackageSearch className="h-10 w-10 text-slate-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-slate-700 mb-2">No hay artículos para mostrar</h3>
+                        <p className="text-sm text-slate-600 text-center max-w-xs">
+                          {searchTerm || categoryFilter !== 'all' || stockFilter !== 'all'
+                            ? "No se encontraron resultados para esta búsqueda o filtros aplicados. Intenta ajustarlos."
+                            : "Este inventario está vacío. ¡Agrega el primer artículo para comenzar!"}
+                        </p>
+                      </div>
                     </TableCell>
                   </TableRow>
                 )}
@@ -584,165 +730,182 @@ export default function Inventory() {
 
       {/* Modal Nuevo Artículo */}
       <Dialog open={isNewModalOpen} onOpenChange={setIsNewModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Nuevo Artículo</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label>Nombre</Label>
-              <Input
-                value={formData.nombre || ''}
-                onChange={e => setFormData({ ...formData, nombre: e.target.value })}
-              />
-            </div>
-
-            {/* NUEVOS CAMPOS */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Categoría</Label>
-                <Input
-                  value={formData.categoria || ''}
-                  onChange={e => setFormData({ ...formData, categoria: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Subcategoría</Label>
-                <Input
-                  value={formData.subcategoria || ''}
-                  onChange={e => setFormData({ ...formData, subcategoria: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-2 md:col-span-2">
-              <Label>Descripción Corta</Label>
-              <textarea
-                className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={formData.descripcion || ''}
-                onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
-                placeholder="Breve descripción del producto..."
-              />
-            </div>
-
-            <div className="grid gap-2 md:col-span-2">
-              <Label>Descripción Larga</Label>
-              <textarea
-                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={formData.longDescription || ''}
-                onChange={e => setFormData({ ...formData, longDescription: e.target.value })}
-                placeholder="Descripción detallada, características, especificaciones técnicas..."
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label>Código de Barras</Label>
-                <Input
-                  value={formData.codigoBarras || ''}
-                  onChange={e => setFormData({ ...formData, codigoBarras: e.target.value })}
-                  placeholder="EAN/UPC"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>SKU</Label>
-                <Input
-                  value={formData.sku || ''}
-                  onChange={e => setFormData({ ...formData, sku: e.target.value })}
-                  placeholder="Código único"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Serie</Label>
-                <Input
-                  value={formData.serie || ''}
-                  onChange={e => setFormData({ ...formData, serie: e.target.value })}
-                  placeholder="Nº de serie"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Stock (Unidades)</Label>
-                <Input
-                  type="number"
-                  value={formData.stockUnidades ?? ''}
-                  onChange={e => setFormData({ ...formData, stockUnidades: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Stock (Kilos)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.stockKilos ?? ''}
-                  onChange={e => setFormData({ ...formData, stockKilos: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label>Unidades por Caja</Label>
-                <Input
-                  type="number"
-                  value={formData.unidadesPorCaja ?? ''}
-                  onChange={e => setFormData({ ...formData, unidadesPorCaja: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Costo ($)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.costo ?? ''}
-                  onChange={e => setFormData({ ...formData, costo: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Precio Venta ($)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.precio ?? ''}
-                  onChange={e => setFormData({ ...formData, precio: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label>URL de Video</Label>
-              <Input
-                value={formData.videoUrl || ''}
-                onChange={e => setFormData({ ...formData, videoUrl: e.target.value })}
-                placeholder="https://youtube.com/watch?v=... o enlace directo al video"
-              />
-            </div>
-            <div className="grid gap-2 border-t pt-4">
-              <Label>Imágenes (Máx 4)</Label>
-              <Input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => handleImageChange(e, false)}
-              />
-              {formData.imagenPreviews && formData.imagenPreviews.length > 0 && (
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {formData.imagenPreviews.map((src: string, idx: number) => (
-                    <div key={idx} className="relative group">
-                      <img src={src} alt="Preview" className="w-16 h-16 object-cover rounded border shadow-sm" />
-                      <button
-                        type="button"
-                        onClick={() => removePendingImage(idx, false)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+          <Tabs defaultValue="general" className="w-full mt-2 flex flex-col flex-1">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="stock">Stock y Precios</TabsTrigger>
+              <TabsTrigger value="multimedia">Multimedia</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex-1 overflow-y-auto py-4">
+              {/* TAB: General */}
+              <TabsContent value="general" className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label>Nombre</Label>
+                  <Input
+                    value={formData.nombre || ''}
+                    onChange={e => setFormData({ ...formData, nombre: e.target.value })}
+                  />
                 </div>
-              )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Categoría</Label>
+                    <Input
+                      value={formData.categoria || ''}
+                      onChange={e => setFormData({ ...formData, categoria: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Subcategoría</Label>
+                    <Input
+                      value={formData.subcategoria || ''}
+                      onChange={e => setFormData({ ...formData, subcategoria: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Descripción Corta</Label>
+                  <textarea
+                    className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={formData.descripcion || ''}
+                    onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
+                    placeholder="Breve descripción del producto..."
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Descripción Larga</Label>
+                  <textarea
+                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={formData.longDescription || ''}
+                    onChange={e => setFormData({ ...formData, longDescription: e.target.value })}
+                    placeholder="Descripción detallada, características, especificaciones técnicas..."
+                  />
+                </div>
+              </TabsContent>
+
+              {/* TAB: Stock y Precios */}
+              <TabsContent value="stock" className="grid gap-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Código de Barras</Label>
+                    <Input
+                      value={formData.codigoBarras || ''}
+                      onChange={e => setFormData({ ...formData, codigoBarras: e.target.value })}
+                      placeholder="EAN/UPC"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>SKU</Label>
+                    <Input
+                      value={formData.sku || ''}
+                      onChange={e => setFormData({ ...formData, sku: e.target.value })}
+                      placeholder="Código único"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Serie</Label>
+                    <Input
+                      value={formData.serie || ''}
+                      onChange={e => setFormData({ ...formData, serie: e.target.value })}
+                      placeholder="Nº de serie"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Stock (Unidades)</Label>
+                    <Input
+                      type="number"
+                      value={formData.stockUnidades ?? ''}
+                      onChange={e => setFormData({ ...formData, stockUnidades: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Stock (Kilos)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={formData.stockKilos ?? ''}
+                      onChange={e => setFormData({ ...formData, stockKilos: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Unidades por Caja</Label>
+                    <Input
+                      type="number"
+                      value={formData.unidadesPorCaja ?? ''}
+                      onChange={e => setFormData({ ...formData, unidadesPorCaja: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Costo ($)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={formData.costo ?? ''}
+                      onChange={e => setFormData({ ...formData, costo: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Precio Venta ($)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={formData.precio ?? ''}
+                      onChange={e => setFormData({ ...formData, precio: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* TAB: Multimedia */}
+              <TabsContent value="multimedia" className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label>URL de Video</Label>
+                  <Input
+                    value={formData.videoUrl || ''}
+                    onChange={e => setFormData({ ...formData, videoUrl: e.target.value })}
+                    placeholder="https://youtube.com/watch?v=... o enlace directo al video"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label>Imágenes (Máx 4)</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleImageChange(e, false)}
+                  />
+                  {formData.imagenPreviews && formData.imagenPreviews.length > 0 && (
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      {formData.imagenPreviews.map((src: string, idx: number) => (
+                        <div key={idx} className="relative group">
+                          <img src={src} alt="Preview" className="w-16 h-16 object-cover rounded border shadow-sm" />
+                          <button
+                            type="button"
+                            onClick={() => removePendingImage(idx, false)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
             </div>
-          </div>
-          <DialogFooter>
+          </Tabs>
+          <DialogFooter className="border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setIsNewModalOpen(false)}>Cancelar</Button>
             <Button onClick={handleSaveNew}>Guardar</Button>
           </DialogFooter>
@@ -751,181 +914,198 @@ export default function Inventory() {
 
       {/* Modal Ajustar Artículo */}
       <Dialog open={isAdjustModalOpen} onOpenChange={setIsAdjustModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Ajustar Artículo</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label>Nombre</Label>
-              <Input
-                value={adjustData.nombre || ''}
-                onChange={e => setAdjustData({ ...adjustData, nombre: e.target.value })}
-              />
-            </div>
-
-            {/* NUEVOS CAMPOS */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Categoría</Label>
-                <Input
-                  value={adjustData.categoria || ''}
-                  onChange={e => setAdjustData({ ...adjustData, categoria: e.target.value })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Subcategoría</Label>
-                <Input
-                  value={adjustData.subcategoria || ''}
-                  onChange={e => setAdjustData({ ...adjustData, subcategoria: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-2 md:col-span-2">
-              <Label>Descripción Corta</Label>
-              <textarea
-                className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={adjustData.descripcion || ''}
-                onChange={e => setAdjustData({ ...adjustData, descripcion: e.target.value })}
-                placeholder="Breve descripción del producto..."
-              />
-            </div>
-
-            <div className="grid gap-2 md:col-span-2">
-              <Label>Descripción Larga</Label>
-              <textarea
-                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                value={adjustData.longDescription || ''}
-                onChange={e => setAdjustData({ ...adjustData, longDescription: e.target.value })}
-                placeholder="Descripción detallada, características, especificaciones técnicas..."
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label>Código de Barras</Label>
-                <Input
-                  value={adjustData.codigoBarras || ''}
-                  onChange={e => setAdjustData({ ...adjustData, codigoBarras: e.target.value })}
-                  placeholder="EAN/UPC"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>SKU</Label>
-                <Input
-                  value={adjustData.sku || ''}
-                  onChange={e => setAdjustData({ ...adjustData, sku: e.target.value })}
-                  placeholder="Código único"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Serie</Label>
-                <Input
-                  value={adjustData.serie || ''}
-                  onChange={e => setAdjustData({ ...adjustData, serie: e.target.value })}
-                  placeholder="Nº de serie"
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Stock (Unidades)</Label>
-                <Input
-                  type="number"
-                  value={adjustData.stockUnidades ?? ''}
-                  onChange={e => setAdjustData({ ...adjustData, stockUnidades: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Stock (Kilos)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={adjustData.stockKilos ?? ''}
-                  onChange={e => setAdjustData({ ...adjustData, stockKilos: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="grid gap-2">
-                <Label>Unidades por Caja</Label>
-                <Input
-                  type="number"
-                  value={adjustData.unidadesPorCaja ?? ''}
-                  onChange={e => setAdjustData({ ...adjustData, unidadesPorCaja: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Costo ($)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={adjustData.costo ?? ''}
-                  onChange={e => setAdjustData({ ...adjustData, costo: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Precio Venta ($)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={adjustData.precio ?? ''}
-                  onChange={e => setAdjustData({ ...adjustData, precio: e.target.value === '' ? '' : Number(e.target.value) })}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label>URL de Video</Label>
-              <Input
-                value={adjustData.videoUrl || ''}
-                onChange={e => setAdjustData({ ...adjustData, videoUrl: e.target.value })}
-                placeholder="https://youtube.com/watch?v=... o enlace directo al video"
-              />
-            </div>
-
-            <div className="grid gap-2 border-t pt-4 mt-2">
-              <Label>Imágenes Actuales del Sistema</Label>
-              <div className="flex gap-2 mb-2 flex-wrap">
-                {adjustData.imagenes && adjustData.imagenes.map((img: string, idx: number) => (
-                  <div key={idx} className="relative group">
-                    <img src={img} className="w-16 h-16 object-cover rounded border opacity-80" />
-                    <button type="button" onClick={() => removeExistingImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow z-10">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-                {(!adjustData.imagenes || adjustData.imagenes.length === 0) && (
-                  <span className="text-xs text-muted-foreground mt-1">No hay imágenes en la base de datos.</span>
-                )}
-              </div>
-
-              <Label className="mt-2">Agregar Nuevas Imágenes</Label>
-              <Input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={(e) => handleImageChange(e, true)}
-              />
-              {adjustData.imagenPreviews && adjustData.imagenPreviews.length > 0 && (
-                <div className="flex gap-2 mt-2 flex-wrap">
-                  {adjustData.imagenPreviews.map((src: string, idx: number) => (
-                    <div key={idx} className="relative group">
-                      <img src={src} alt="Preview" className="w-16 h-16 object-cover rounded border shadow-sm border-blue-400" />
-                      <button
-                        type="button"
-                        onClick={() => removePendingImage(idx, true)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ))}
+          <Tabs defaultValue="general" className="w-full mt-2 flex flex-col flex-1">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="stock">Stock y Precios</TabsTrigger>
+              <TabsTrigger value="multimedia">Multimedia</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex-1 overflow-y-auto py-4">
+              {/* TAB: General */}
+              <TabsContent value="general" className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label>Nombre</Label>
+                  <Input
+                    value={adjustData.nombre || ''}
+                    onChange={e => setAdjustData({ ...adjustData, nombre: e.target.value })}
+                  />
                 </div>
-              )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Categoría</Label>
+                    <Input
+                      value={adjustData.categoria || ''}
+                      onChange={e => setAdjustData({ ...adjustData, categoria: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Subcategoría</Label>
+                    <Input
+                      value={adjustData.subcategoria || ''}
+                      onChange={e => setAdjustData({ ...adjustData, subcategoria: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Descripción Corta</Label>
+                  <textarea
+                    className="flex min-h-[60px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={adjustData.descripcion || ''}
+                    onChange={e => setAdjustData({ ...adjustData, descripcion: e.target.value })}
+                    placeholder="Breve descripción del producto..."
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Descripción Larga</Label>
+                  <textarea
+                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={adjustData.longDescription || ''}
+                    onChange={e => setAdjustData({ ...adjustData, longDescription: e.target.value })}
+                    placeholder="Descripción detallada, características, especificaciones técnicas..."
+                  />
+                </div>
+              </TabsContent>
+
+              {/* TAB: Stock y Precios */}
+              <TabsContent value="stock" className="grid gap-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Código de Barras</Label>
+                    <Input
+                      value={adjustData.codigoBarras || ''}
+                      onChange={e => setAdjustData({ ...adjustData, codigoBarras: e.target.value })}
+                      placeholder="EAN/UPC"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>SKU</Label>
+                    <Input
+                      value={adjustData.sku || ''}
+                      onChange={e => setAdjustData({ ...adjustData, sku: e.target.value })}
+                      placeholder="Código único"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Serie</Label>
+                    <Input
+                      value={adjustData.serie || ''}
+                      onChange={e => setAdjustData({ ...adjustData, serie: e.target.value })}
+                      placeholder="Nº de serie"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Stock (Unidades)</Label>
+                    <Input
+                      type="number"
+                      value={adjustData.stockUnidades ?? ''}
+                      onChange={e => setAdjustData({ ...adjustData, stockUnidades: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Stock (Kilos)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={adjustData.stockKilos ?? ''}
+                      onChange={e => setAdjustData({ ...adjustData, stockKilos: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="grid gap-2">
+                    <Label>Unidades por Caja</Label>
+                    <Input
+                      type="number"
+                      value={adjustData.unidadesPorCaja ?? ''}
+                      onChange={e => setAdjustData({ ...adjustData, unidadesPorCaja: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Costo ($)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={adjustData.costo ?? ''}
+                      onChange={e => setAdjustData({ ...adjustData, costo: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label>Precio Venta ($)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={adjustData.precio ?? ''}
+                      onChange={e => setAdjustData({ ...adjustData, precio: e.target.value === '' ? '' : Number(e.target.value) })}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              {/* TAB: Multimedia */}
+              <TabsContent value="multimedia" className="grid gap-4">
+                <div className="grid gap-2">
+                  <Label>URL de Video</Label>
+                  <Input
+                    value={adjustData.videoUrl || ''}
+                    onChange={e => setAdjustData({ ...adjustData, videoUrl: e.target.value })}
+                    placeholder="https://youtube.com/watch?v=... o enlace directo al video"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Imágenes Actuales del Sistema</Label>
+                  <div className="flex gap-2 mb-2 flex-wrap">
+                    {adjustData.imagenes && adjustData.imagenes.map((img: string, idx: number) => (
+                      <div key={idx} className="relative group">
+                        <img src={img} className="w-16 h-16 object-cover rounded border opacity-80" />
+                        <button type="button" onClick={() => removeExistingImage(idx)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow z-10">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                    {(!adjustData.imagenes || adjustData.imagenes.length === 0) && (
+                      <span className="text-xs text-muted-foreground mt-1">No hay imágenes en la base de datos.</span>
+                    )}
+                  </div>
+
+                  <Label className="mt-2">Agregar Nuevas Imágenes</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleImageChange(e, true)}
+                  />
+                  {adjustData.imagenPreviews && adjustData.imagenPreviews.length > 0 && (
+                    <div className="flex gap-2 mt-2 flex-wrap">
+                      {adjustData.imagenPreviews.map((src: string, idx: number) => (
+                        <div key={idx} className="relative group">
+                          <img src={src} alt="Preview" className="w-16 h-16 object-cover rounded border shadow-sm border-blue-400" />
+                          <button
+                            type="button"
+                            onClick={() => removePendingImage(idx, true)}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
             </div>
-          </div>
-          <DialogFooter>
+          </Tabs>
+          <DialogFooter className="border-t pt-4 mt-4">
             <Button variant="outline" onClick={() => setIsAdjustModalOpen(false)}>Cancelar</Button>
             <Button onClick={handleSaveAdjust}>Guardar Cambios</Button>
           </DialogFooter>
@@ -1097,7 +1277,7 @@ export default function Inventory() {
             </div>
             <div className="grid gap-2">
               <Label className="text-base font-medium">1. ¿A qué sucursal ingresarán?</Label>
-              <Select value={selectedInventarioId || ""} onValueChange={(v) => setSelectedInventarioId(v || "")}>
+              <Select value={selectedInventarioId} onValueChange={handleInventarioChange as any}>
                 <SelectTrigger className="h-12 text-md">
                   <SelectValue placeholder="Seleccione un inventario...">
                     {selectedInventarioId ? inventarios.find(i => i.id === selectedInventarioId)?.nombre : undefined}
