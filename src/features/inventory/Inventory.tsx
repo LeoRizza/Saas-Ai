@@ -84,7 +84,7 @@ export default function Inventory() {
   };
 
   const handleSelectOne = (id: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(sid => sid !== id) : [...prev, id]
     );
   };
@@ -387,7 +387,7 @@ export default function Inventory() {
       return;
     }
 
-    const deletePromises = selectedIds.map(id => 
+    const deletePromises = selectedIds.map(id =>
       new Promise((resolve, reject) => {
         try {
           deleteArticulo(id);
@@ -450,8 +450,8 @@ export default function Inventory() {
           <div className="flex justify-between items-center">
             <CardTitle>Artículos</CardTitle>
             {selectedIds.length > 0 && !isVendedor && (
-              <Button 
-                variant="destructive" 
+              <Button
+                variant="destructive"
                 size="sm"
                 onClick={handleBulkDelete}
                 className="text-white bg-red-600 hover:bg-red-700"
@@ -467,7 +467,7 @@ export default function Inventory() {
               <Select value={selectedInventarioId || ""} onValueChange={(v) => setSelectedInventarioId(v || "")}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccione un inventario">
-                    {selectedInventarioId ? inventarios.find(i => i.id === selectedInventarioId)?.nombre : undefined}
+                    {inventarios.find(i => i.id === selectedInventarioId)?.nombre || "Seleccione un inventario"}
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -522,8 +522,8 @@ export default function Inventory() {
               </TableHeader>
               <TableBody>
                 {filteredArticulos.map((item) => (
-                  <TableRow 
-                    key={item.id} 
+                  <TableRow
+                    key={item.id}
                     onClick={() => openViewModal(item)}
                     className="cursor-pointer hover:bg-slate-50"
                   >

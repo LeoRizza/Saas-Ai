@@ -35,7 +35,7 @@ export default function CotizadorModal({
     const { clientes } = useClientStore();
     const { articulos, fetchInventory } = useInventoryStore();
 
-    // Estados del cotizador
+        // Estados del cotizador
     const [selectedClient, setSelectedClient] = useState<any>(clientePreseleccionado);
     const [quoteCart, setQuoteCart] = useState<QuoteLineItem[]>([]);
     const [quoteSearch, setQuoteSearch] = useState("");
@@ -46,6 +46,8 @@ export default function CotizadorModal({
     const [prospectEmail, setProspectEmail] = useState("");
     const [prospectTelefono, setProspectTelefono] = useState("");
     const [moneda, setMoneda] = useState("ARS");
+    const [recargoPorcentaje, setRecargoPorcentaje] = useState<number | ''>('');
+    const [aclaraciones, setAclaraciones] = useState("");
 
     // Sincronizar cliente preseleccionado cuando cambia
     useEffect(() => {
@@ -130,7 +132,7 @@ export default function CotizadorModal({
         return subtotal - descuentoAplicado;
     };
 
-            // Calcular totales - Memoizado para evitar recálculos innecesarios
+                        // Calcular totales - Memoizado para evitar recálculos innecesarios
     const totals = useMemo(() => {
         const subtotal = quoteCart.reduce((sum, item) => {
             // Convertir cantidad y descuento vacíos a 0 antes de calcular
@@ -139,12 +141,12 @@ export default function CotizadorModal({
             return sum + calculateItemSubtotal(item.articulo.precio || 0, cantidad, descuento);
         }, 0);
 
-        // Por ahora impuestos = 0, puede ajustarse después
-        const impuestos = 0;
+        // Calcular impuestos como recargo aplicado al subtotal
+        const impuestos = subtotal * ((typeof recargoPorcentaje === 'number' ? recargoPorcentaje : 0) / 100);
         const total = subtotal + impuestos;
 
         return { subtotal, impuestos, total };
-    }, [quoteCart]);
+    }, [quoteCart, recargoPorcentaje]);
 
     // ============ FUNCIONES DE ENVÍO ============
 
@@ -163,7 +165,7 @@ export default function CotizadorModal({
 
                 const { subtotal, impuestos, total } = totals;
 
-                if (onSaveQuote) {
+                                if (onSaveQuote) {
             try {
                 await onSaveQuote({
                     clienteId: isProspectMode ? null : selectedClient?.id,
@@ -177,7 +179,7 @@ export default function CotizadorModal({
                     tag: "PENDIENTE",
                     metodoEnvio: "SISTEMA",
                     moneda,
-                    mensaje: "Cotización guardada desde el sistema.",
+                    mensaje: aclaraciones || "Cotización guardada desde el sistema.",
                 });
                 toast.success("Pedido guardado correctamente");
                 setQuoteCart([]);
@@ -244,11 +246,12 @@ export default function CotizadorModal({
             mensajeWhatsApp += `   Subtotal: *${monedaSymbol}${itemSubtotal.toFixed(2)}*\n\n`;
         });
 
-        mensajeWhatsApp += `-----------------------------------\n`;
+                mensajeWhatsApp += `-----------------------------------\n`;
         mensajeWhatsApp += `*SUBTOTAL:* ${monedaSymbol}${subtotal.toFixed(2)}\n`;
-        if (impuestos > 0) mensajeWhatsApp += `*IMPUESTOS:* ${monedaSymbol}${impuestos.toFixed(2)}\n`;
+        if (impuestos > 0) mensajeWhatsApp += `*RECARGOS / OTROS:* ${monedaSymbol}${impuestos.toFixed(2)}\n`;
         mensajeWhatsApp += `*TOTAL:* *${monedaSymbol}${total.toFixed(2)}*\n`;
         mensajeWhatsApp += `-----------------------------------\n\n`;
+        if (aclaraciones.trim()) mensajeWhatsApp += `*ACLARACIONES:*\n${aclaraciones}\n\n`;
         mensajeWhatsApp += `Si tiene preguntas o desea realizar cambios, no dude en contactarnos.\n\n`;
         mensajeWhatsApp += `Atentamente,\n*${empresa?.nombre || "Nuestro equipo de ventas"}*`;
         // Codificar el mensaje para la URL de WhatsApp
@@ -258,7 +261,7 @@ export default function CotizadorModal({
         const urlWhatsApp = `https://wa.me/${numeroLimpio}?text=${mensajeCodificado}`;
         window.open(urlWhatsApp, "_blank");
 
-                // Guardar como pedido si hay callback
+                                // Guardar como pedido si hay callback
         if (onSaveQuote) {
             try {
                 await onSaveQuote({
@@ -273,7 +276,7 @@ export default function CotizadorModal({
                     tag: "COTIZADO",
                     metodoEnvio: "WHATSAPP",
                     moneda,
-                    mensaje: "Cotización enviada por WhatsApp.",
+                    mensaje: aclaraciones || "Cotización enviada por WhatsApp.",
                 });
             } catch (error) {
                 console.error("Error al guardar la cotización como pedido:", error);
@@ -309,7 +312,7 @@ export default function CotizadorModal({
         try {
             setIsSendingEmail(true);
 
-            // Enviar cotización por correo
+                        // Enviar cotización por correo
             await axios.post(
                 "/api/mailer/quote",
                 {
@@ -321,6 +324,7 @@ export default function CotizadorModal({
                     total,
                     empresaId: empresa?.id,
                     moneda,
+                    mensaje: aclaraciones || "Cotización enviada por correo electrónico.",
                 },
                 {
                     headers: {
@@ -329,7 +333,7 @@ export default function CotizadorModal({
                 }
             );
 
-                        // Guardar como pedido si hay callback
+                                                // Guardar como pedido si hay callback
             if (onSaveQuote) {
                 await onSaveQuote({
                     clienteId: isProspectMode ? null : selectedClient?.id,
@@ -343,7 +347,7 @@ export default function CotizadorModal({
                     tag: "COTIZADO",
                     metodoEnvio: "EMAIL",
                     moneda,
-                    mensaje: "Cotización enviada por correo electrónico.",
+                    mensaje: aclaraciones || "Cotización enviada por correo electrónico.",
                 });
             }
 
@@ -360,7 +364,7 @@ export default function CotizadorModal({
 
     // ============ MANEJO DEL MODAL ============
 
-    const handleClose = () => {
+        const handleClose = () => {
         // Resetear estados
         if (!clientePreseleccionado) {
             setSelectedClient(null);
@@ -373,6 +377,8 @@ export default function CotizadorModal({
         setQuoteCart([]);
         setQuoteSearch("");
         setIsSendingEmail(false);
+        setRecargoPorcentaje('');
+        setAclaraciones("");
         onClose();
     };
 
@@ -662,29 +668,50 @@ export default function CotizadorModal({
                                     )}
                                 </div>
 
-                                {/* RESUMEN TOTALES */}
+                                                                {/* RESUMEN TOTALES */}
                                 {quoteCart.length > 0 && (
                                     <div className="space-y-0 bg-slate-50 rounded-lg overflow-hidden border">
-                                        <div className="flex items-center justify-between p-4 border-b bg-white">
-                                            <Label className="font-semibold text-sm">Moneda de Cotización</Label>
-                                            <Select value={moneda} onValueChange={(value) => setMoneda(value ?? "ARS")}>
-                                                <SelectTrigger className="w-[140px] h-9">
-                                                    <SelectValue placeholder="Seleccionar" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="USD">USD - Dólar</SelectItem>
-                                                    <SelectItem value="EUR">EUR - Euro</SelectItem>
-                                                    <SelectItem value="ARS">ARS - Peso Arg.</SelectItem>
-                                                </SelectContent>
-                                            </Select>
+                                        <div className="flex items-center justify-between gap-4 p-4 border-b bg-white flex-wrap">
+                                            <div className="flex items-center gap-4 flex-1 min-w-max">
+                                                <div>
+                                                    <Label className="font-semibold text-sm">Moneda de Cotización</Label>
+                                                    <Select value={moneda} onValueChange={(value) => setMoneda(value ?? "ARS")}>
+                                                        <SelectTrigger className="w-[140px] h-9">
+                                                            <SelectValue placeholder="Seleccionar" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="USD">USD - Dólar</SelectItem>
+                                                            <SelectItem value="EUR">EUR - Euro</SelectItem>
+                                                            <SelectItem value="ARS">ARS - Peso Arg.</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor="recargoPorcentaje" className="font-semibold text-sm">Recargo / Otros (%)</Label>
+                                                    <Input
+                                                        id="recargoPorcentaje"
+                                                        type="number"
+                                                        min="0"
+                                                        max="100"
+                                                        step="0.01"
+                                                        placeholder="0"
+                                                        value={recargoPorcentaje}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            setRecargoPorcentaje(val === '' ? '' : parseFloat(val));
+                                                        }}
+                                                        className="h-9 w-24"
+                                                    />
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="space-y-3 p-4">
                                                                                         <div className="flex justify-between text-sm">
                                                 <span className="text-muted-foreground">Subtotal:</span>
                                                 <span className="font-medium">{moneda === "EUR" ? "€" : "$"}{totals.subtotal.toFixed(2)}</span>
                                             </div>
-                                            <div className="flex justify-between text-sm">
-                                                <span className="text-muted-foreground">Impuestos:</span>
+                                                                                        <div className="flex justify-between text-sm">
+                                                <span className="text-muted-foreground">Recargos / Otros:</span>
                                                 <span className="font-medium">{moneda === "EUR" ? "€" : "$"}{totals.impuestos.toFixed(2)}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-lg border-t pt-3">
@@ -693,7 +720,21 @@ export default function CotizadorModal({
                                                     {moneda === "EUR" ? "€" : "$"}{totals.total.toFixed(2)}
                                                 </span>
                                             </div>
-                                        </div>
+                                                                                </div>
+                                    </div>
+                                )}
+
+                                {/* ACLARACIONES */}
+                                {quoteCart.length > 0 && (
+                                    <div>
+                                        <Label htmlFor="aclaraciones" className="mb-2 block font-semibold">Aclaraciones o Notas (Opcional)</Label>
+                                        <textarea
+                                            id="aclaraciones"
+                                            placeholder="Ingresa cualquier aclaración, nota o especificación adicional..."
+                                            value={aclaraciones}
+                                            onChange={(e) => setAclaraciones(e.target.value)}
+                                            className="w-full p-2 border rounded-lg bg-white text-sm min-h-[80px] resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
                                     </div>
                                 )}
                             </div>

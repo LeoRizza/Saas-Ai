@@ -70,6 +70,7 @@ function haltOnTimedout(req: any, res: any, next: any) {
 }
 
 const app = express();
+app.set('trust proxy', 1);
 const prisma = new PrismaClient();
 
 // ==========================================
@@ -93,8 +94,8 @@ const storage = multer.diskStorage({
   }
 });
 
-const upload = multer({ 
-  storage: storage, 
+const upload = multer({
+  storage: storage,
   limits: { fileSize: 8 * 1024 * 1024 }
 });
 

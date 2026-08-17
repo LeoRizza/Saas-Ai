@@ -113,7 +113,7 @@ export default function MainLayout() {
             />
           ) : (
             <h1 className="text-xl font-bold tracking-wider text-white truncate w-full text-center">
-              {empresa?.nombre || 'LR|tech'}
+              {empresa?.nombre || 'Laris'}
             </h1>
           )}
         </div>
@@ -174,7 +174,7 @@ export default function MainLayout() {
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm lg:px-8">
+        <header className="flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm lg:hidden">
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="rounded-md p-2 text-gray-500 hover:bg-gray-100 lg:hidden"
