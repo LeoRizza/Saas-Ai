@@ -12,6 +12,7 @@ export interface AuthenticatedRequest extends Request {
     rol: string;
     empresaId: string;
   };
+  tenantId?: string;
 }
 
 /**
@@ -152,4 +153,30 @@ export const checkModule = (moduleName: string) => {
       res.status(500).json({ message: 'Error al verificar módulos de la empresa.' });
     }
   };
+};
+
+/**
+ * Middleware de verificación de Bot API Key.
+ * Verifica que la key del bot sea válida y que se proporcione un tenant ID.
+ */
+export const verifySystemBot = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  const botApiKey = req.headers['x-bot-api-key'] as string;
+  const tenantId = req.headers['x-tenant-id'] as string;
+
+  if (botApiKey !== process.env.BOT_API_KEY) {
+    res.status(401).json({ message: 'API Key inválida' });
+    return;
+  }
+
+  if (!tenantId) {
+    res.status(400).json({ message: 'Tenant requerido' });
+    return;
+  }
+
+  req.tenantId = tenantId;
+  next();
 };
