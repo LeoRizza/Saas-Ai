@@ -6,13 +6,47 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Edit, Trash2, MessageCircle, FileText, Upload, FileSpreadsheet, Info, Download, ArrowUpDown } from "lucide-react";
+import { Plus, Search, Edit, Trash2, MessageCircle, FileText, Upload, FileSpreadsheet, Info, Download, ArrowUpDown, Users, UserPlus, BellRing, X } from "lucide-react";
 import { useClientStore } from "../../store/useClientStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useInventoryStore } from "../../store/useInventoryStore";
 import CotizadorModal from "../shared/components/CotizadorModal";
 import toast from 'react-hot-toast';
 import { api } from '../../config/axios';
+
+// Array de colores semánticos para las etiquetas (badges)
+const TAG_COLORS = [
+  { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200' },
+  { bg: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-200' },
+  { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200' },
+  { bg: 'bg-violet-100', text: 'text-violet-800', border: 'border-violet-200' },
+  { bg: 'bg-pink-100', text: 'text-pink-800', border: 'border-pink-200' },
+  { bg: 'bg-cyan-100', text: 'text-cyan-800', border: 'border-cyan-200' },
+  { bg: 'bg-rose-100', text: 'text-rose-800', border: 'border-rose-200' },
+  { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-200' }
+];
+
+// Función para calcular un hash simple de un string
+function simpleHash(str: string): number {
+  if (!str) return 0;
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convertir a entero de 32 bits
+  }
+  return hash;
+}
+
+// Función para obtener el color del badge basado en el tag
+function getBadgeColor(tag: string | undefined | null) {
+  if (!tag || tag.trim() === '') {
+    return { bg: 'bg-gray-100', text: 'text-gray-600', border: 'border-gray-200' };
+  }
+  const hash = simpleHash(tag.toLowerCase());
+  const colorIndex = Math.abs(hash) % TAG_COLORS.length;
+  return TAG_COLORS[colorIndex];
+}
 
 // Helper function: Obtiene el estado del recordatorio comparando fechas (ignorando hora)
 function getRecordatorioStatus(fecha: string | null | undefined): 'VENCIDO' | 'HOY' | 'PENDIENTE' | 'SIN_FECHA' {
@@ -110,8 +144,10 @@ export default function Clients() {
   const { articulos, fetchInventory } = useInventoryStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState('TODOS');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
-  const [dateRange, setDateRange] = useState<'TODOS' | 'HOY' | 'ESTA_SEMANA' | 'ESTE_MES'>('TODOS');
+  const [filterTag, setFilterTag] = useState('TODOS');
+  const [sortConfig, setSortConfig] = useState<{ key: 'nombre' | 'fechaRecordatorio'; direction: 'asc' | 'desc' }>({ key: 'nombre', direction: 'asc' });
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   // Estado para el modal de cotización
   const [isQuoteModalOpen, setIsQuoteModalOpen] = useState(false);
@@ -145,9 +181,23 @@ export default function Clients() {
       (c.tag && c.tag.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
+  // Función para solicitar ordenamiento
+  const requestSort = (key: 'nombre' | 'fechaRecordatorio') => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
   // Filtro por estado de recordatorio y rango de fechas con ordenamiento
   let filteredClientes = clientesBySearch
-    // 1. Filtro por estado de recordatorio
+    // 1. Filtro por etiqueta (tag)
+    .filter(c => {
+      if (filterTag === 'TODOS') return true;
+      return c.tag === filterTag;
+    })
+    // 2. Filtro por estado de recordatorio
     .filter(c => {
       if (filterStatus === 'TODOS') return true;
 
@@ -164,14 +214,41 @@ export default function Clients() {
           return true;
       }
     })
-    // 2. Filtro por rango de fechas
+    // 3. Filtro por rango de fechas (dateFrom y dateTo)
     .filter(c => {
-      if (dateRange === 'TODOS') return true;
-      return isDateInRange(c.fechaRecordatorio, dateRange);
+      // Si no hay filtro de fechas activo, permitir todos los clientes
+      if (!dateFrom && !dateTo) return true;
+      
+      // Si hay filtro de fechas pero el cliente no tiene fecha, rechazar
+      if (!c.fechaRecordatorio) return false;
+      
+      const recordatorioDate = new Date(c.fechaRecordatorio);
+      recordatorioDate.setHours(0, 0, 0, 0);
+
+      let passesFilter = true;
+
+      if (dateFrom) {
+        const fromDate = new Date(dateFrom);
+        fromDate.setHours(0, 0, 0, 0);
+        passesFilter = passesFilter && recordatorioDate.getTime() >= fromDate.getTime();
+      }
+
+      if (dateTo) {
+        const toDate = new Date(dateTo);
+        toDate.setHours(0, 0, 0, 0);
+        passesFilter = passesFilter && recordatorioDate.getTime() <= toDate.getTime();
+      }
+
+      return passesFilter;
     });
 
-  // 3. Ordenamiento por fecha de recordatorio
-  if (sortOrder !== null) {
+  // 4. Ordenamiento según sortConfig
+  if (sortConfig.key === 'nombre') {
+    filteredClientes = filteredClientes.sort((a, b) => {
+      const comparison = a.nombre.localeCompare(b.nombre, 'es-AR', { sensitivity: 'base' });
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    });
+  } else if (sortConfig.key === 'fechaRecordatorio') {
     filteredClientes = filteredClientes.sort((a, b) => {
       const dateA = a.fechaRecordatorio ? new Date(a.fechaRecordatorio).getTime() : null;
       const dateB = b.fechaRecordatorio ? new Date(b.fechaRecordatorio).getTime() : null;
@@ -181,7 +258,8 @@ export default function Clients() {
       if (dateA === null) return 1;
       if (dateB === null) return -1;
 
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      const comparison = dateA - dateB;
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
     });
   }
 
@@ -336,6 +414,39 @@ export default function Clients() {
     }
   };
 
+  // Calcular métricas KPI
+  const totalClientes = clientesBySearch.length;
+  
+  const clientesNuevos = clientesBySearch.filter(c => {
+    if (!c.createdAt) return false;
+    const createdDate = new Date(c.createdAt);
+    const today = new Date();
+    const daysAgo = Math.floor((today.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+    return daysAgo <= 30;
+  }).length;
+  
+  const clientesConRecordatorio = clientesBySearch.filter(c => {
+    return c.fechaRecordatorio && c.fechaRecordatorio.trim() !== '';
+  }).length;
+
+  // Obtener lista única de etiquetas
+  const uniqueTags = Array.from(
+    new Set(clientes.filter(c => c.empresaId === empresa?.id && c.tag).map(c => c.tag))
+  ).sort();
+
+  // Función para limpiar filtros
+  const handleClearFilters = () => {
+    setSearchTerm("");
+    setFilterStatus('TODOS');
+    setFilterTag('TODOS');
+    setDateFrom("");
+    setDateTo("");
+    setSortConfig({ key: 'nombre', direction: 'asc' });
+  };
+
+  // Verificar si hay filtros activos
+  const hasActiveFilters = searchTerm !== "" || filterStatus !== 'TODOS' || filterTag !== 'TODOS' || dateFrom !== "" || dateTo !== "" || sortConfig.key !== 'nombre' || sortConfig.direction !== 'asc';
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -354,70 +465,92 @@ export default function Clients() {
           </Button>
         </div>
       </div>
-
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
             <CardTitle>Listado de Clientes</CardTitle>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
-              <div className="relative flex-1 sm:flex-none sm:w-72">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Buscar nombre, razón social, CUIT o etiqueta..."
-                  className="pl-8"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value ?? "TODOS")}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Filtrar por recordatorio" />
+            <div className="flex items-center gap-2 ml-auto">
+              {hasActiveFilters && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-9 text-muted-foreground hover:text-foreground hover:bg-red-50"
+                  onClick={handleClearFilters}
+                  title="Limpiar todos los filtros"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Limpiar filtros
+                </Button>
+              )}
+            </div>
+          </div>
+          
+          {/* Barra de Filtros Compacta (Toolbar) */}
+          <div className="flex flex-col lg:flex-row gap-4 items-center w-full mb-2">
+            {/* Buscador Compacto - Ocupa el espacio disponible */}
+            <div className="relative w-full flex-1 max-w-4xl h-9">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search-clients"
+                type="search"
+                placeholder="Buscar por nombre, email, teléfono o etiqueta..."
+                className="h-full pl-8 text-sm w-full"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* Filtros adicionales - Se alinean a la derecha */}
+            <div className="flex flex-wrap items-center justify-start lg:justify-end gap-2 w-full lg:w-auto lg:ml-auto">
+              {/* Select Etiqueta Compacto */}
+              <Select value={filterTag} onValueChange={(value) => setFilterTag(value ?? "TODOS")}>
+                <SelectTrigger id="filter-tag" className="w-full sm:w-[150px] h-9 text-sm">
+                  <SelectValue placeholder="Etiqueta" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="TODOS">Todos los clientes</SelectItem>
+                  <SelectItem value="TODOS">Todas las etiquetas</SelectItem>
+                  {uniqueTags.map((tag) => (
+                    <SelectItem key={tag} value={tag}>
+                      {tag}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              {/* Select Estado/Recordatorio Compacto */}
+              <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value ?? "TODOS")}>
+                <SelectTrigger id="filter-status" className="w-full sm:w-[150px] h-9 text-sm">
+                  <SelectValue placeholder="Estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="TODOS">Todos los estados</SelectItem>
                   <SelectItem value="HOY">Llamar Hoy</SelectItem>
                   <SelectItem value="VENCIDO">Recordatorios Vencidos</SelectItem>
                   <SelectItem value="PENDIENTE">Próximos a llamar</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={dateRange} onValueChange={(value) => setDateRange(value as 'TODOS' | 'HOY' | 'ESTA_SEMANA' | 'ESTE_MES')}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <SelectValue placeholder="Rango de fechas" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="TODOS">Todas las fechas</SelectItem>
-                  <SelectItem value="HOY">Hoy</SelectItem>
-                  <SelectItem value="ESTA_SEMANA">Esta Semana</SelectItem>
-                  <SelectItem value="ESTE_MES">Este Mes</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden sm:flex gap-2"
-                onClick={() => setSortOrder(prev => prev === null ? 'asc' : prev === 'asc' ? 'desc' : null)}
-                title="Ordenar por fecha de recordatorio"
-              >
-                <ArrowUpDown className="h-4 w-4" />
-                {sortOrder === 'asc' && '↑'}
-                {sortOrder === 'desc' && '↓'}
-              </Button>
+
+              {/* Rango de Fechas Agrupadas */}
+              <div className="flex items-center gap-2 border rounded-md px-2 h-9 bg-background focus-within:ring-1 focus-within:ring-ring">
+                <Input
+                  id="filter-date-from"
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="bg-transparent border-0 text-sm focus:outline-none w-[110px] p-0 h-full"
+                  title="Desde"
+                />
+                <span className="text-muted-foreground text-sm">-</span>
+                <Input
+                  id="filter-date-to"
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="bg-transparent border-0 text-sm focus:outline-none w-[110px] p-0 h-full"
+                  title="Hasta"
+                />
+              </div>
             </div>
-          </div>
-          <div className="flex sm:hidden gap-2 mt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1 gap-2"
-              onClick={() => setSortOrder(prev => prev === null ? 'asc' : prev === 'asc' ? 'desc' : null)}
-              title="Ordenar por fecha de recordatorio"
-            >
-              <ArrowUpDown className="h-4 w-4" />
-              Ordenar {sortOrder === 'asc' && '(Antiguo→Nuevo)'}
-              {sortOrder === 'desc' && '(Nuevo→Antiguo)'}
-              {sortOrder === null && 'por fecha'}
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -427,18 +560,35 @@ export default function Clients() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nombre / Razón Social</TableHead>
+                  <TableHead>
+                    <button
+                      className="flex items-center gap-2 cursor-pointer select-none hover:bg-muted/50 rounded px-2 py-1 transition-colors"
+                      onClick={() => requestSort('nombre')}
+                      title="Ordenar por nombre de cliente"
+                    >
+                      Nombre / Razón Social
+                      <ArrowUpDown 
+                        className={`h-3.5 w-3.5 ml-1 inline-block transition-colors ${
+                          sortConfig.key === 'nombre' ? 'text-foreground' : 'text-muted-foreground'
+                        }`}
+                      />
+                    </button>
+                  </TableHead>
                   <TableHead>Etiqueta</TableHead>
                   <TableHead>Teléfono</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>
                     <button
-                      className="flex items-center gap-2 hover:text-foreground cursor-pointer transition-colors text-muted-foreground hover:bg-muted rounded px-2 py-1"
-                      onClick={() => setSortOrder(prev => prev === null ? 'asc' : prev === 'asc' ? 'desc' : null)}
+                      className="flex items-center gap-2 cursor-pointer select-none hover:bg-muted/50 rounded px-2 py-1 transition-colors"
+                      onClick={() => requestSort('fechaRecordatorio')}
                       title="Ordenar por fecha de recordatorio"
                     >
                       Recordatorio
-                      <ArrowUpDown className="h-3.5 w-3.5" />
+                      <ArrowUpDown 
+                        className={`h-3.5 w-3.5 ml-1 inline-block transition-colors ${
+                          sortConfig.key === 'fechaRecordatorio' ? 'text-foreground' : 'text-muted-foreground'
+                        }`}
+                      />
                     </button>
                   </TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -449,11 +599,14 @@ export default function Clients() {
                   <TableRow key={cliente.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openViewModal(cliente)}>
                     <TableCell className="font-medium">{cliente.nombre}</TableCell>
                     <TableCell>
-                      {cliente.tag ? (
-                        <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border border-blue-200">
-                          {cliente.tag}
-                        </span>
-                      ) : (
+                      {cliente.tag ? (() => {
+                        const colors = getBadgeColor(cliente.tag);
+                        return (
+                          <span className={`${colors.bg} ${colors.text} px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors.border}`}>
+                            {cliente.tag}
+                          </span>
+                        );
+                      })() : (
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
@@ -494,30 +647,44 @@ export default function Clients() {
                       )}
                     </TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                        onClick={() => openQuoteModal(cliente)}
-                        title="Crear cotización"
-                      >
-                        <FileText className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="hover:text-green-600 hover:bg-green-50 hover:scale-130 transition-transform"
-                        onClick={() => handleWhatsApp(cliente.telefono, cliente.nombre)}
-                        title="Enviar WhatsApp"
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => openEditModal(cliente)}>
-                        <Edit className="h-4 w-4 mr-2" /> Editar
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={() => openDeleteModal(cliente)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          onClick={() => openQuoteModal(cliente)}
+                          title="Crear cotización"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 hover:text-green-600 hover:bg-green-50 transition-colors"
+                          onClick={() => handleWhatsApp(cliente.telefono, cliente.nombre)}
+                          title="Enviar WhatsApp"
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                          onClick={() => openEditModal(cliente)}
+                          title="Editar cliente"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-red-50 transition-colors"
+                          onClick={() => openDeleteModal(cliente)}
+                          title="Eliminar cliente"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -591,6 +758,19 @@ export default function Clients() {
                 placeholder="Ej: potencial, vip, regular..."
                 className="border-blue-200"
               />
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-xs text-muted-foreground">Previsualización:</span>
+                {formData.tag && formData.tag.trim() ? (() => {
+                  const colors = getBadgeColor(formData.tag);
+                  return (
+                    <span className={`${colors.bg} ${colors.text} px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${colors.border}`}>
+                      {formData.tag}
+                    </span>
+                  );
+                })() : (
+                  <span className="text-xs text-muted-foreground italic">Sin etiqueta</span>
+                )}
+              </div>
               <span className="text-xs text-muted-foreground">Útil para filtrar y categorizar clientes en el buscador.</span>
             </div>
 
@@ -679,11 +859,14 @@ export default function Clients() {
             <div className="border-b pb-4">
               <div className="flex items-center gap-3">
                 <h3 className="text-2xl font-bold">{selectedItem?.nombre}</h3>
-                {selectedItem?.tag && (
-                  <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border border-blue-200">
-                    {selectedItem.tag}
-                  </span>
-                )}
+                {selectedItem?.tag && (() => {
+                  const colors = getBadgeColor(selectedItem.tag);
+                  return (
+                    <span className={`${colors.bg} ${colors.text} px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border ${colors.border}`}>
+                      {selectedItem.tag}
+                    </span>
+                  );
+                })()}
               </div>
               {selectedItem?.razonSocial && selectedItem.razonSocial !== selectedItem.nombre && (
                 <p className="text-muted-foreground mt-2 text-sm">Razón Social: {selectedItem.razonSocial}</p>

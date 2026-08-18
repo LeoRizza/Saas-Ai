@@ -22,7 +22,7 @@ import { getPublicInventory, catalogoLimiter } from './src/controllers/public.co
 import { getProduccion, createProduccion } from './src/controllers/production.controller';
 import { getEmpresas, createEmpresa, updateEmpresa, deleteEmpresa, getUsuarios, createUsuario, updateUsuario, deleteUsuario, login, loginLimiter } from './src/controllers/auth.controller';
 import { sendQuoteEmail, sendTicket } from './src/controllers/mailer.controller';
-import { createExternalPedido, externalApiLimiter } from './src/controllers/integrations.controller';
+import { createExternalPedido, externalApiLimiter, consultarStock } from './src/controllers/integrations.controller';
 import { getPedidos, createPedido, updatePedidoStatus, updatePedido, downloadPedidoPdf } from './src/controllers/pedidos.controller';
 
 // ==========================================
@@ -67,6 +67,61 @@ const corsOptions: cors.CorsOptions = {
 // Función para detener la respuesta si la conexión se cortó por timeout
 function haltOnTimedout(req: any, res: any, next: any) {
   if (!req.timedout) next();
+}
+
+// ==========================================
+// --- WEBHOOK DE EL BÚNKER (Fiscalización) ---
+// ==========================================
+async function handleBunkerWebhook(req: express.Request, res: express.Response) {
+  const secret = req.headers['x-bunker-secret'];
+  if (secret !== process.env.BUNKER_SECRET) {
+    return res.status(403).json({ error: 'No autorizado' });
+  }
+
+  const { ventaId, estadoFiscal, cae, fiscalData } = req.body;
+
+  try {
+    // Paso 1: Buscar la venta original
+    const ventaOriginal = await prisma.venta.findUnique({
+      where: { id: ventaId },
+    });
+
+    // Si no existe la venta, devolver 404
+    if (!ventaOriginal) {
+      return res.status(404).json({ error: 'Venta no encontrada' });
+    }
+
+    // Paso 2: Mantener el update actual
+    await prisma.venta.update({
+      where: { id: ventaId },
+      data: {
+        estadoFiscal,
+        cae,
+        fiscalData,
+        facturada: estadoFiscal === 'APROBADO',
+      },
+    });
+
+    // Paso 3: Crear auditLog en Fire & Forget mode
+    const motivo = `Estado fiscal AFIP actualizado a: ${estadoFiscal}${cae ? ` (CAE: ${cae})` : ''}`;
+    prisma.auditLog.create({
+      data: {
+        accion: 'VENTA',
+        tablaAfectada: 'VENTA',
+        registroId: ventaId,
+        motivo,
+        usuarioId: ventaOriginal.usuarioId,
+        empresaId: ventaOriginal.empresaId,
+      },
+    }).catch((error) => {
+      console.error('⚠️  Error registrando auditLog para cambio de estado fiscal:', error);
+    });
+
+    res.json({ message: 'Venta actualizada por El Búnker' });
+  } catch (error) {
+    console.error('❌ Error en handleBunkerWebhook:', error);
+    res.status(500).json({ error: 'Error actualizando venta' });
+  }
 }
 
 const app = express();
@@ -123,14 +178,14 @@ app.put('/api/usuarios/:id', authenticate, authorize(['SUPER_ADMIN']), updateUsu
 app.delete('/api/usuarios/:id', authenticate, authorize(['SUPER_ADMIN']), deleteUsuario);
 
 // --- INVENTARIOS CRUD ---
-
-app.get('/api/inventory', authenticate, authorize(['ADMIN', 'VENDEDOR', 'CAJA', 'OPERARIO']), checkModule('INVENTARIO'), getInventory);
+// Nota: Las rutas específicas deben ir ANTES de las rutas con parámetros dinámicos
 app.get('/api/inventory/export', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), exportInventoryCSV);
+app.post('/api/inventory/bulk', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), upload.single('file'), bulkImportArticulos);
+app.post('/api/inventory/transfer', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), transferirStock);
+app.get('/api/inventory', authenticate, authorize(['ADMIN', 'VENDEDOR', 'CAJA', 'OPERARIO']), checkModule('INVENTARIO'), getInventory);
 app.post('/api/inventory', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), upload.array('imagenes', 50), createArticulo);
 app.put('/api/inventory/:id', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), upload.array('imagenes', 50), updateArticulo);
 app.delete('/api/inventory/:id', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), deleteArticulo);
-app.post('/api/inventory/bulk', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), upload.single('file'), bulkImportArticulos);
-app.post('/api/inventory/transfer', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), transferirStock);
 
 // --- GESTIÓN DE DEPÓSITOS (Warehouses) ---
 app.get('/api/inventarios', authenticate, authorize(['ADMIN', 'VENDEDOR', 'CAJA', 'OPERARIO']), getInventarios);
@@ -178,6 +233,7 @@ app.get('/api/stats', authenticate, authorize(['ADMIN']), getStats);
 // --- ENDPOINTS PARA INTEGRACIONES (WEBHOOKS) ---
 // ==========================================
 app.post('/api/integrations/pedidos', externalApiLimiter, verifyApiKey, createExternalPedido);
+app.get('/api/bot/productos/search', externalApiLimiter, verifyApiKey, consultarStock);
 app.post('/api/webhooks/bunker', express.json(), handleBunkerWebhook);
 
 
@@ -190,62 +246,6 @@ app.get('/api/public/inventory/:empresaId', catalogoLimiter, getPublicInventory)
 
 // --- AUTH Y ADMIN ---
 app.post('/api/auth/login', loginLimiter, login);
-
-// ==========================================
-// --- WEBHOOK DE EL BÚNKER (Fiscalización) ---
-// ==========================================
-
-async function handleBunkerWebhook(req: express.Request, res: express.Response) {
-  const secret = req.headers['x-bunker-secret'];
-  if (secret !== process.env.BUNKER_SECRET) {
-    return res.status(403).json({ error: 'No autorizado' });
-  }
-
-  const { ventaId, estadoFiscal, cae, fiscalData } = req.body;
-
-  try {
-    // Paso 1: Buscar la venta original
-    const ventaOriginal = await prisma.venta.findUnique({
-      where: { id: ventaId },
-    });
-
-    // Si no existe la venta, devolver 404
-    if (!ventaOriginal) {
-      return res.status(404).json({ error: 'Venta no encontrada' });
-    }
-
-    // Paso 2: Mantener el update actual
-    await prisma.venta.update({
-      where: { id: ventaId },
-      data: {
-        estadoFiscal,
-        cae,
-        fiscalData,
-        facturada: estadoFiscal === 'APROBADO',
-      },
-    });
-
-    // Paso 3: Crear auditLog en Fire & Forget mode
-    const motivo = `Estado fiscal AFIP actualizado a: ${estadoFiscal}${cae ? ` (CAE: ${cae})` : ''}`;
-    prisma.auditLog.create({
-      data: {
-        accion: 'VENTA',
-        tablaAfectada: 'VENTA',
-        registroId: ventaId,
-        motivo,
-        usuarioId: ventaOriginal.usuarioId,
-        empresaId: ventaOriginal.empresaId,
-      },
-    }).catch((error) => {
-      console.error('⚠️  Error registrando auditLog para cambio de estado fiscal:', error);
-    });
-
-    res.json({ message: 'Venta actualizada por El Búnker' });
-  } catch (error) {
-    console.error('❌ Error en handleBunkerWebhook:', error);
-    res.status(500).json({ error: 'Error actualizando venta' });
-  }
-}
 
 // Middleware de error global para timeout
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {

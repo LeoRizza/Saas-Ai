@@ -144,7 +144,7 @@ export const consultarStock = async (
             return;
         }
 
-        // Buscar artículos que coincidan con el tenant y contengan 'q' en el nombre
+                // Buscar artículos que coincidan con el tenant y contengan 'q' en el nombre
         const articulos = await prisma.articulo.findMany({
             where: {
                 empresaId: tenantId,
@@ -152,6 +152,15 @@ export const consultarStock = async (
                     contains: q.trim(),
                     mode: 'insensitive', // búsqueda case-insensitive
                 },
+            },
+            select: {
+                id: true,
+                nombre: true,
+                descripcion: true,
+                precio: true,
+                stockUnidades: true,
+                imagenes: true,
+                categoria: true,
             },
             take: 3, // Limitar a 3 resultados
         });
