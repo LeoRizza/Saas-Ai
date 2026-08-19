@@ -9,7 +9,7 @@ import compression from 'compression';
 import timeout from 'connect-timeout';
 
 // Utilidades y middlewares extraídos
-import { authenticate, authorize, verifyApiKey, checkModule } from './src/middleware/auth';
+import { authenticate, authorize, verifyApiKey, verifySystemBot, checkModule } from './src/middleware/auth';
 import { getVentas, createVenta } from './src/controllers/sales.controller';
 
 
@@ -129,12 +129,15 @@ app.set('trust proxy', 1);
 const prisma = new PrismaClient();
 
 // ==========================================
-// --- CREACIÓN DE CARPETA UPLOADS ---
+// --- CREACIÓN DE CARPETA UPLOADS PERSISTENTE ---
 // ==========================================
-const uploadDir = path.join(process.cwd(), 'uploads');
+// Carpeta externa fuera del proyecto para que persista entre deploys en Hostinger/Vercel
+const uploadDir = path.join(process.env.HOME || process.cwd(), 'saas_data_uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
-  console.log('✅ Carpeta de uploads creada:', uploadDir);
+  console.log('✅ Carpeta de uploads persistente creada:', uploadDir);
+} else {
+  console.log('✅ Carpeta de uploads persistente encontrada:', uploadDir);
 }
 
 const storage = multer.diskStorage({
@@ -159,7 +162,7 @@ app.use(cors(corsOptions));
 app.use(timeout('60s'));
 app.use(express.json());
 app.use(haltOnTimedout);
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+app.use('/uploads', express.static(uploadDir));
 
 // ==========================================
 // --- ENDPOINTS DE SUPER ADMIN (EMPRESAS Y USUARIOS) ---
@@ -233,7 +236,7 @@ app.get('/api/stats', authenticate, authorize(['ADMIN']), getStats);
 // --- ENDPOINTS PARA INTEGRACIONES (WEBHOOKS) ---
 // ==========================================
 app.post('/api/integrations/pedidos', externalApiLimiter, verifyApiKey, createExternalPedido);
-app.get('/api/bot/productos/search', externalApiLimiter, verifyApiKey, consultarStock);
+app.get('/api/bot/productos/search', externalApiLimiter, verifySystemBot, consultarStock);
 app.post('/api/webhooks/bunker', express.json(), handleBunkerWebhook);
 
 

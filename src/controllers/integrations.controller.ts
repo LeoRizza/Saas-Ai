@@ -101,41 +101,23 @@ export const createExternalPedido = async (
 
 /**
  * Consulta stock de artículos disponibles para una empresa/tenant
+ * Requiere middleware verifySystemBot para validar x-bot-api-key e inyectar tenantId
  *
- * @param req - Request con x-api-key, x-tenant-id en headers y query param 'q'
+ * @param req - Request con tenantId inyectado por middleware (verificado con x-bot-api-key y x-tenant-id)
  * @param res - Response con datos de artículos
+ * @headers x-bot-api-key - API Key del bot (requerida)
+ * @headers x-tenant-id - ID del tenant (requerida)
+ * @queryParam q - Parámetro de búsqueda (requerido)
  */
 export const consultarStock = async (
     req: Request,
     res: Response
 ): Promise<void> => {
     try {
-        // Extraer y validar headers de seguridad
-        const apiKey = req.headers['x-api-key'] as string;
-        const tenantId = req.headers['x-tenant-id'] as string;
-
-        // Validar x-api-key
-        if (!apiKey || apiKey !== process.env.BOT_API_KEY) {
-            res.status(401).json({
-                success: false,
-                message: 'API Key inválida o no proporcionada',
-            });
-            return;
-        }
-
-        // Validar x-tenant-id
-        if (!tenantId) {
-            res.status(400).json({
-                success: false,
-                message: 'x-tenant-id es obligatorio',
-            });
-            return;
-        }
-
-        // Extraer query param 'q'
+                // El tenantId ya viene validado e inyectado por tu middleware verifySystemBot
+        const tenantId = (req as any).tenantId || (req.headers['x-tenant-id'] as string);
         const q = req.query.q as string;
 
-        // Validar que 'q' esté presente
         if (!q || q.trim() === '') {
             res.status(400).json({
                 success: false,
@@ -144,13 +126,13 @@ export const consultarStock = async (
             return;
         }
 
-                // Buscar artículos que coincidan con el tenant y contengan 'q' en el nombre
+        // Buscar artículos optimizado para el Bot
         const articulos = await prisma.articulo.findMany({
             where: {
                 empresaId: tenantId,
                 nombre: {
                     contains: q.trim(),
-                    mode: 'insensitive', // búsqueda case-insensitive
+                    // Eliminamos mode: 'insensitive' porque MySQL ya lo hace por defecto
                 },
             },
             select: {
@@ -162,13 +144,28 @@ export const consultarStock = async (
                 imagenes: true,
                 categoria: true,
             },
-            take: 3, // Limitar a 3 resultados
+            take: 3,
+        });
+
+        // Convertir las rutas relativas en URLs absolutas para WhatsApp/n8n
+        const articulosMapeados = articulos.map((art: any) => {
+            const imagenesAbsolutas = (art.imagenes || []).map((img: string) => {
+                // Si por alguna razón ya tiene el http, lo dejamos como está
+                if (img.startsWith('http')) return img;
+                // Si no, le pegamos tu dominio oficial
+                return `https://laris.com.ar${img}`;
+            });
+
+            return {
+                ...art,
+                imagenes: imagenesAbsolutas
+            };
         });
 
         // Respuesta exitosa
         res.status(200).json({
             status: 'success',
-            data: articulos,
+            data: articulosMapeados,
         });
     } catch (error: any) {
         console.error('Error al consultar stock:', error);
