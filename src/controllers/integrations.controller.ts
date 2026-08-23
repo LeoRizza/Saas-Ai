@@ -6,14 +6,20 @@ const prisma = new PrismaClient();
 
 /**
  * Rate limiter para endpoints de integración externa
- * Máximo: 10 peticiones cada 15 minutos por IP
+ * Funciona como fail-safe contra loops infinitos de n8n/Make o posibles ataques
+ * Máximo: 300 peticiones por minuto por IP
+ * Se salta el rate limit si la request incluye el header x-bot-api-key (bot interno)
  */
 export const externalApiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 10, // Máximo 10 peticiones por IP
-    message: 'Demasiadas peticiones desde esta IP, por favor intenta de nuevo más tarde',
+        windowMs: 60 * 1000, // 1 minuto
+    max: 300, // Máximo 300 peticiones por minuto por IP
+    message: 'Bloqueo temporal por anomalía de tráfico detectada. Por favor intenta de nuevo en unos momentos',
     standardHeaders: true, // Retorna el rate limit info en el header `RateLimit-*`
     legacyHeaders: false, // Deshabilita los headers `X-RateLimit-*`
+    skip: (req: Request) => {
+        // Si la request incluye el header x-bot-api-key, saltar el rate limit
+        return !!req.headers['x-bot-api-key'];
+    },
 });
 /**
  * Crea un nuevo pedido (Prospecto) desde una integración externa
