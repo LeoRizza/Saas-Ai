@@ -15,7 +15,7 @@ import { getVentas, createVenta } from './src/controllers/sales.controller';
 
 // Controladores
 import { getClientes, createCliente, updateCliente, deleteCliente, bulkImportClientes } from './src/controllers/clients.controller';
-import { getInventory, createArticulo, updateArticulo, deleteArticulo, bulkImportArticulos, transferirStock, exportInventoryCSV } from './src/controllers/inventory.controller';
+import { getInventory, createArticulo, updateArticulo, deleteArticulo, bulkImportArticulos, transferirStock, exportInventoryCSV, ingresarMercaderia } from './src/controllers/inventory.controller';
 import { getInventarios, createInventario, updateInventario, deleteInventario } from './src/controllers/warehouse.controller';
 import { getStats, getAuditLogs } from './src/controllers/stats.controller';
 import { getPublicInventory, catalogoLimiter } from './src/controllers/public.controller';
@@ -185,6 +185,7 @@ app.delete('/api/usuarios/:id', authenticate, authorize(['SUPER_ADMIN']), delete
 app.get('/api/inventory/export', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), exportInventoryCSV);
 app.post('/api/inventory/bulk', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), upload.single('file'), bulkImportArticulos);
 app.post('/api/inventory/transfer', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), transferirStock);
+app.post('/api/inventory/:id/ingreso', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), ingresarMercaderia);
 app.get('/api/inventory', authenticate, authorize(['ADMIN', 'VENDEDOR', 'CAJA', 'OPERARIO']), checkModule('INVENTARIO'), getInventory);
 app.post('/api/inventory', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), upload.array('imagenes', 50), createArticulo);
 app.put('/api/inventory/:id', authenticate, authorize(['ADMIN']), checkModule('INVENTARIO'), upload.array('imagenes', 50), updateArticulo);

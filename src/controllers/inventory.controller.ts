@@ -609,3 +609,79 @@ export async function transferirStock(req: Request, res: Response): Promise<void
     handleError(res, error);
   }
 }
+
+/**
+ * POST /api/inventory/:id/ingreso
+ * Ingresa mercadería sumando unidades y kilos al stock existente
+ */
+export async function ingresarMercaderia(req: Request, res: Response): Promise<void> {
+  try {
+    const user = (req as any).user;
+    const { id } = req.params;
+    const { unidades, kilos } = req.body;
+
+    if (!id) {
+      throw new AppError('ID del artículo es requerido', 400);
+    }
+
+    const unidadesIngreso = parseFloat(unidades) || 0;
+    const kilosIngreso = parseFloat(kilos) || 0;
+
+    if (unidadesIngreso < 0 || kilosIngreso < 0) {
+      throw new AppError('Unidades y kilos no pueden ser negativos', 400);
+    }
+
+    if (unidadesIngreso === 0 && kilosIngreso === 0) {
+      throw new AppError('Debe especificar unidades o kilos a ingresar', 400);
+    }
+
+    const resultado = await prisma.$transaction(async (tx) => {
+      // Obtener artículo
+      const oldArt = await tx.articulo.findUnique({
+        where: { id }
+      });
+
+      if (!oldArt) {
+        throw new AppError('Artículo no encontrado', 404);
+      }
+
+      // Verificar permisos
+      if (oldArt.empresaId !== user.empresaId) {
+        throw new AppError('No tienes permiso para ingresar mercadería a este artículo', 403);
+      }
+
+      // Actualizar artículo sumando stock
+      const updatedArt = await tx.articulo.update({
+        where: { id },
+        data: {
+          stockUnidades: oldArt.stockUnidades + unidadesIngreso,
+          stockKilos: oldArt.stockKilos + kilosIngreso
+        }
+      });
+
+      // ✅ LOG DENTRO DE LA TRANSACCIÓN
+      await tx.auditLog.create({
+        data: {
+          accion: 'INGRESO_COMPRA',
+          tablaAfectada: 'ARTICULO',
+          registroId: updatedArt.id,
+          valorAnterior: oldArt as any,
+          valorNuevo: updatedArt as any,
+          motivo: 'Ingreso de mercadería',
+          usuarioId: user.id,
+          empresaId: user.empresaId
+        }
+      });
+
+      return updatedArt;
+    });
+
+    res.status(200).json({
+      success: true,
+      message: `Ingreso de mercadería completado. Se agregaron ${unidadesIngreso} unidades y ${kilosIngreso} kilos`,
+      data: resultado
+    });
+  } catch (error: any) {
+    handleError(res, error);
+  }
+}

@@ -22,6 +22,7 @@ interface InventoryState {
   updateArticulo: (id: string, data: FormData) => Promise<void>;
   deleteArticulo: (id: string) => Promise<void>;
   fetchHistorialProduccion: () => Promise<void>;
+  ingresarStock: (id: string, data: { unidades: number; kilos: number }) => Promise<void>;
 }
 
 export const useInventoryStore = create<InventoryState>((set, get) => ({
@@ -107,6 +108,18 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       }));
     } catch (error) {
       console.error('Error deleting articulo', error);
+      throw error;
+    }
+  },
+
+  ingresarStock: async (id: string, data: { unidades: number; kilos: number }) => {
+    try {
+      const response = await api.post(`/inventory/${id}/ingreso`, data);
+      set((state) => ({
+        articulos: state.articulos.map(a => a.id === id ? response.data : a)
+      }));
+    } catch (error: any) {
+      console.error('Error ingresando stock', error);
       throw error;
     }
   }

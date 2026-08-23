@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-import { Plus, Search, ImageIcon, Edit, Trash2, Upload, X, Video, Download, Info, FileSpreadsheet, ArrowRightLeft, Trash, ArrowUpDown, ArrowUp, ArrowDown, Filter, PackageSearch, Loader2 } from "lucide-react";
+import { Plus, Search, ImageIcon, Edit, Trash2, Upload, X, Video, Download, Info, FileSpreadsheet, ArrowRightLeft, Trash, ArrowUpDown, ArrowUp, ArrowDown, Filter, PackageSearch, Loader2, PackagePlus } from "lucide-react";
 import { useInventoryStore } from "../../store/useInventoryStore";
 import { useInventariosStore } from "../../store/useInventariosStore";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -37,7 +37,8 @@ export default function Inventory() {
     fetchInventory,
     addArticulo,
     updateArticulo,
-    deleteArticulo
+    deleteArticulo,
+    ingresarStock
   } = useInventoryStore();
 
   const {
@@ -63,6 +64,8 @@ export default function Inventory() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isIngresoModalOpen, setIsIngresoModalOpen] = useState(false);
+  const [ingresoData, setIngresoData] = useState({ unidades: 0, kilos: 0 });
 
   const [formData, setFormData] = useState<any>({});
   const [adjustData, setAdjustData] = useState<any>({});
@@ -352,6 +355,12 @@ export default function Inventory() {
     setIsTransferModalOpen(true);
   };
 
+  const openIngresoModal = (item: any) => {
+    setSelectedItem(item);
+    setIngresoData({ unidades: 0, kilos: 0 });
+    setIsIngresoModalOpen(true);
+  };
+
   const confirmDelete = () => {
     deleteArticulo(selectedItem.id);
     setIsDeleteModalOpen(false);
@@ -441,6 +450,27 @@ export default function Inventory() {
     }
   };
 
+  const handleIngresoStock = async () => {
+    if (!selectedItem?.id) {
+      return toast.error('Error: Artículo no seleccionado');
+    }
+    if (ingresoData.unidades <= 0 && ingresoData.kilos <= 0) {
+      return toast.error("Ingrese una cantidad a agregar");
+    }
+    try {
+      const toastId = toast.loading("Ingresando stock...");
+      await ingresarStock(selectedItem.id, {
+        unidades: Number(ingresoData.unidades),
+        kilos: Number(ingresoData.kilos)
+      });
+      toast.success("Ingreso de compra registrado", { id: toastId });
+      setIsIngresoModalOpen(false);
+      fetchInventory();
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "Error al ingresar stock");
+    }
+  };
+
   const handleInventarioChange = (val: string | null) => {
     setSelectedInventarioId(val || '');
   };
@@ -504,7 +534,7 @@ export default function Inventory() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold tracking-tight">Inventario</h2>
         {!isVendedor && (
@@ -525,7 +555,7 @@ export default function Inventory() {
         )}
       </div>
 
-      <Card>
+      <Card className="w-full overflow-hidden">
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Artículos</CardTitle>
@@ -630,8 +660,9 @@ export default function Inventory() {
               No hay inventarios creados. Por favor, contacte a un administrador.
             </div>
           ) : (
-            <Table>
-              <TableHeader>
+            <div className="w-full max-h-[65vh] overflow-auto rounded-md border shadow-sm">
+            <Table className="w-full min-w-[1100px] relative">
+              <TableHeader className="sticky top-0 z-20 bg-white outline outline-1 outline-slate-200">
                 <TableRow>
                   <TableHead className="w-12">
                     <input
@@ -679,7 +710,7 @@ export default function Inventory() {
                       {sortConfig.key === 'precio' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
                     </div>
                   </TableHead>
-                  <TableHead>Acciones</TableHead>
+                  <TableHead className="whitespace-nowrap w-[200px]">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -712,10 +743,13 @@ export default function Inventory() {
                     <TableCell>{item.stockKilos}</TableCell>
                     <TableCell>{item.unidadesPorCaja}</TableCell>
                     <TableCell>${item.precio || 0}</TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                       <div className="flex space-x-2">
                         {!isVendedor && (
                           <>
+                            <Button variant="ghost" size="sm" onClick={() => openIngresoModal(item)} title="Ingresar Compra">
+                              <PackagePlus className="h-4 w-4 text-green-600" />
+                            </Button>
                             <Button variant="ghost" size="sm" onClick={() => openTransferModal(item)} title="Transferir stock">
                               <ArrowRightLeft className="h-4 w-4 text-blue-500" />
                             </Button>
@@ -750,6 +784,7 @@ export default function Inventory() {
                 )}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -1344,6 +1379,34 @@ export default function Inventory() {
             <Button onClick={handleCsvUpload} disabled={!csvFile || isUploading || !selectedInventarioId} className="min-w-[120px] bg-green-600 hover:bg-green-700">
               {isUploading ? "Importando..." : "Subir Inventario"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Ingreso de Stock */}
+      <Dialog open={isIngresoModalOpen} onOpenChange={setIsIngresoModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Ingresar Compra: {selectedItem?.nombre}</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="bg-slate-50 p-3 rounded text-sm border">
+              Stock actual: <b>{selectedItem?.stockUnidades} u. / {selectedItem?.stockKilos} kg.</b>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label>Unidades a agregar</Label>
+                <Input type="number" min="0" value={ingresoData.unidades} onChange={(e) => setIngresoData({ ...ingresoData, unidades: Number(e.target.value) })} />
+              </div>
+              <div className="grid gap-2">
+                <Label>Kilos a agregar</Label>
+                <Input type="number" step="0.01" min="0" value={ingresoData.kilos} onChange={(e) => setIngresoData({ ...ingresoData, kilos: Number(e.target.value) })} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsIngresoModalOpen(false)}>Cancelar</Button>
+            <Button onClick={handleIngresoStock} className="bg-green-600 hover:bg-green-700">Confirmar Ingreso</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
