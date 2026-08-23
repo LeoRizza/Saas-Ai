@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, Users, Calendar, TrendingUp, Package, Scale, Loader2, FileText, CheckCircle, Calculator } from "lucide-react";
+import { DollarSign, Users, Calendar, TrendingUp, Package, Scale, Loader2, FileText, CheckCircle, Calculator, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuditStore } from "../../store/useAuditStore";
 import { useInventoryStore } from "../../store/useInventoryStore";
 import { useClientStore } from "../../store/useClientStore";
@@ -38,7 +38,7 @@ interface StatsResponse {
 }
 
 export default function Audit() {
-  const { logs, fetchLogs } = useAuditStore();
+  const { logs, meta, fetchLogs } = useAuditStore();
   const { articulos, fetchInventory } = useInventoryStore();
   const { clientes, fetchClientes } = useClientStore();
   const { empresa } = useAuthStore();
@@ -50,6 +50,7 @@ export default function Audit() {
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loadingStats, setLoadingStats] = useState(false);
   const [activePreset, setActivePreset] = useState<string>("mes");
+  const [auditPage, setAuditPage] = useState<number>(1);
 
   // Estados para el control de stock
   const [maxUnidades, setMaxUnidades] = useState<string>("");
@@ -110,7 +111,9 @@ export default function Audit() {
     setStartDate(today);
     setEndDate(today);
     setActivePreset("hoy");
+    setAuditPage(1);
     fetchStats(today, today);
+    fetchLogs({ page: 1, startDate: today, endDate: today });
   };
 
   const handlePresetMes = () => {
@@ -119,7 +122,9 @@ export default function Audit() {
     setStartDate(start);
     setEndDate(end);
     setActivePreset("mes");
+    setAuditPage(1);
     fetchStats(start, end);
+    fetchLogs({ page: 1, startDate: start, endDate: end });
   };
 
   const handlePresetAnio = () => {
@@ -128,27 +133,33 @@ export default function Audit() {
     setStartDate(start);
     setEndDate(end);
     setActivePreset("anio");
+    setAuditPage(1);
     fetchStats(start, end);
+    fetchLogs({ page: 1, startDate: start, endDate: end });
   };
 
   // Handler para cuando el usuario cambia las fechas manualmente
   const handleDateChange = (type: "start" | "end", value: string) => {
     setActivePreset("custom");
+    setAuditPage(1);
     if (type === "start") {
       setStartDate(value);
       if (endDate && value) {
         fetchStats(value, endDate);
+        fetchLogs({ page: 1, startDate: value, endDate: endDate });
       }
     } else {
       setEndDate(value);
       if (startDate && value) {
         fetchStats(startDate, value);
+        fetchLogs({ page: 1, startDate: startDate, endDate: value });
       }
     }
   };
 
   useEffect(() => {
-    fetchLogs();
+    // Cargar audit logs con página inicial
+    fetchLogs({ page: auditPage });
     fetchClientes();
     fetchVentas();
     fetchInventory(); // FIX: Cargar artículos
@@ -851,187 +862,308 @@ export default function Audit() {
         </TabsContent>
 
         <TabsContent value="stock" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Historial de Movimientos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha y Hora</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Acción</TableHead>
-                    <TableHead>Detalle de Movimientos</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {stockLogs.map((log: any) => (
-                    <TableRow key={log.id}>
-                      <TableCell className="whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}</TableCell>
-                      <TableCell>{log.usuario?.nombre || log.usuarioId}</TableCell>
-                      <TableCell><span className="bg-slate-100 px-2 py-1 rounded text-xs font-medium border">{formatAction(log.accion)}</span></TableCell>
-                      <TableCell>{renderDetalle(log)}</TableCell>
-                    </TableRow>
-                  ))}
-                  {stockLogs.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                        No hay registros de stock.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            {stockLogs.length > 0 ? (
+              stockLogs.map((log: any) => {
+                const accionColor = String(log.accion) === 'PRODUCCION' ? 'bg-green-50 border-l-4 border-l-green-500' :
+                                   String(log.accion) === 'VENTA' ? 'bg-blue-50 border-l-4 border-l-blue-500' :
+                                   String(log.accion) === 'IMPORTACION_CSV' ? 'bg-purple-50 border-l-4 border-l-purple-500' :
+                                   'bg-amber-50 border-l-4 border-l-amber-500';
+                const badgeVariant = String(log.accion) === 'PRODUCCION' ? 'default' :
+                                    String(log.accion) === 'VENTA' ? 'secondary' :
+                                    String(log.accion) === 'IMPORTACION_CSV' ? 'outline' :
+                                    'secondary';
+                return (
+                  <Card key={log.id} className={`${accionColor}`}>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}
+                            </span>
+                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full">
+                              {log.usuario?.nombre || log.usuarioId}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="inline-block px-3 py-1 rounded text-xs font-semibold text-white"
+                              style={{
+                                backgroundColor: String(log.accion) === 'PRODUCCION' ? '#10b981' :
+                                                String(log.accion) === 'VENTA' ? '#3b82f6' :
+                                                String(log.accion) === 'IMPORTACION_CSV' ? '#a855f7' :
+                                                '#f59e0b'
+                              }}
+                            >
+                              {formatAction(log.accion)}
+                            </span>
+                          </div>
+                          <div className="mt-3">
+                            {renderDetalle(log)}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <Card className="bg-slate-50">
+                <CardContent className="pt-6 text-center text-muted-foreground">
+                  No hay registros de stock.
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          
+          {meta && meta.totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Página <span className="font-semibold">{meta.page}</span> de <span className="font-semibold">{meta.totalPages}</span> ({meta.total} registros)
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchLogs({ page: meta.page - 1, startDate, endDate })}
+                  disabled={meta.page === 1}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchLogs({ page: meta.page + 1, startDate, endDate })}
+                  disabled={meta.page === meta.totalPages}
+                  className="flex items-center gap-1"
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="clientes" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Historial de Modificaciones (Clientes)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha y Hora</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Cambios Registrados</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {clientLogs.map((log: any) => {
-                    const clienteNombre = log.valorNuevo?.nombre || log.valorAnterior?.nombre || getClientNameFallback(log.registroId);
-                    let cambios = "Sin detalles";
+          <div className="space-y-4">
+            {clientLogs.length > 0 ? (
+              clientLogs.map((log: any) => {
+                const clienteNombre = log.valorNuevo?.nombre || log.valorAnterior?.nombre || getClientNameFallback(log.registroId);
+                let cambios = "Sin detalles";
+                let tipoAccion = 'modificacion';
+                let badgeColor = 'bg-blue-50 border-l-4 border-l-blue-500';
 
-                    if (log.accion === 'CREACION' || (log.accion === 'AJUSTE_MANUAL' && !log.valorAnterior)) {
-                      cambios = "✨ Cliente creado";
-                    } else if (log.accion === 'AJUSTE_MANUAL' && !log.valorNuevo) {
-                      cambios = "🗑️ Cliente eliminado";
-                    } else if (log.valorAnterior && log.valorNuevo) {
-                      const camposAObservar = ['nombre', 'email', 'telefono', 'cuit', 'direccion', 'recordatorio'];
-                      const diferencias: string[] = [];
+                if (log.accion === 'CREACION' || (log.accion === 'AJUSTE_MANUAL' && !log.valorAnterior)) {
+                  cambios = "✨ Cliente creado";
+                  tipoAccion = 'creacion';
+                  badgeColor = 'bg-green-50 border-l-4 border-l-green-500';
+                } else if (log.accion === 'AJUSTE_MANUAL' && !log.valorNuevo) {
+                  cambios = "🗑️ Cliente eliminado";
+                  tipoAccion = 'eliminacion';
+                  badgeColor = 'bg-red-50 border-l-4 border-l-red-500';
+                } else if (log.valorAnterior && log.valorNuevo) {
+                  const camposAObservar = ['nombre', 'email', 'telefono', 'cuit', 'direccion', 'recordatorio'];
+                  const diferencias: string[] = [];
 
-                      camposAObservar.forEach(campo => {
-                        if (log.valorAnterior[campo] !== log.valorNuevo[campo]) {
-                          diferencias.push(`${campo}: ${log.valorAnterior[campo] || 'vacío'} ➔ ${log.valorNuevo[campo] || 'vacío'}`);
-                        }
-                      });
-
-                      if (log.valorAnterior.fechaRecordatorio !== log.valorNuevo.fechaRecordatorio) {
-                        const oldF = log.valorAnterior.fechaRecordatorio ? new Date(log.valorAnterior.fechaRecordatorio).toLocaleDateString('es-AR') : 'Ninguna';
-                        const newF = log.valorNuevo.fechaRecordatorio ? new Date(log.valorNuevo.fechaRecordatorio).toLocaleDateString('es-AR') : 'Ninguna';
-                        diferencias.push(`Fecha aviso: ${oldF} ➔ ${newF}`);
-                      }
-
-                      cambios = diferencias.length > 0 ? diferencias.join(' | ') : "Modificación general";
+                  camposAObservar.forEach(campo => {
+                    if (log.valorAnterior[campo] !== log.valorNuevo[campo]) {
+                      diferencias.push(`${campo}: ${log.valorAnterior[campo] || 'vacío'} ➔ ${log.valorNuevo[campo] || 'vacío'}`);
                     }
+                  });
 
-                    return (
-                      <TableRow key={log.id}>
-                        <TableCell className="whitespace-nowrap">{new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}</TableCell>
-                        <TableCell>{log.usuario?.nombre || log.usuarioId}</TableCell>
-                        <TableCell className="font-medium">{clienteNombre}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{cambios}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {clientLogs.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                        No hay registros de clientes.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  if (log.valorAnterior.fechaRecordatorio !== log.valorNuevo.fechaRecordatorio) {
+                    const oldF = log.valorAnterior.fechaRecordatorio ? new Date(log.valorAnterior.fechaRecordatorio).toLocaleDateString('es-AR') : 'Ninguna';
+                    const newF = log.valorNuevo.fechaRecordatorio ? new Date(log.valorNuevo.fechaRecordatorio).toLocaleDateString('es-AR') : 'Ninguna';
+                    diferencias.push(`Fecha aviso: ${oldF} ➔ ${newF}`);
+                  }
+
+                  cambios = diferencias.length > 0 ? diferencias.join(' | ') : "Modificación general";
+                  tipoAccion = 'modificacion';
+                  badgeColor = 'bg-blue-50 border-l-4 border-l-blue-500';
+                }
+
+                const badgeBgColor = tipoAccion === 'creacion' ? '#10b981' : tipoAccion === 'eliminacion' ? '#ef4444' : '#3b82f6';
+
+                return (
+                  <Card key={log.id} className={badgeColor}>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}
+                            </span>
+                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full">
+                              {log.usuario?.nombre || log.usuarioId}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-base">{clienteNombre}</h3>
+                            <span className="inline-block px-3 py-1 rounded text-xs font-semibold text-white" style={{ backgroundColor: badgeBgColor }}>
+                              {tipoAccion === 'creacion' ? 'Creado' : tipoAccion === 'eliminacion' ? 'Eliminado' : 'Modificado'}
+                            </span>
+                          </div>
+                          <div className="mt-3 text-sm text-muted-foreground">
+                            {cambios}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <Card className="bg-slate-50">
+                <CardContent className="pt-6 text-center text-muted-foreground">
+                  No hay registros de clientes.
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          
+          {meta && meta.totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Página <span className="font-semibold">{meta.page}</span> de <span className="font-semibold">{meta.totalPages}</span> ({meta.total} registros)
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchLogs({ page: meta.page - 1, startDate, endDate })}
+                  disabled={meta.page === 1}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchLogs({ page: meta.page + 1, startDate, endDate })}
+                  disabled={meta.page === meta.totalPages}
+                  className="flex items-center gap-1"
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="pedidos" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Historial de Movimientos (Pedidos y Cotizaciones)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Fecha y Hora</TableHead>
-                    <TableHead>Usuario</TableHead>
-                    <TableHead>Prospecto</TableHead>
-                    <TableHead>Acción</TableHead>
-                    <TableHead>Detalle</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {pedidoLogs.map((log: any) => {
-                    const pedidoNombre = log.valorNuevo?.nombre || log.valorAnterior?.nombre || 'Desconocido';
+          <div className="space-y-4">
+            {pedidoLogs.length > 0 ? (
+              pedidoLogs.map((log: any) => {
+                const pedidoNombre = log.valorNuevo?.nombre || log.valorAnterior?.nombre || 'Desconocido';
+                const referenciaId = log.registroId;
+                let cambios = "Sin detalles";
+                let tipoAccion = 'modificacion';
+                let badgeColor = 'bg-indigo-50 border-l-4 border-l-indigo-500';
 
-                    // SOLUCIÓN AL ERROR: Accedemos al registroId directamente
-                    const referenciaId = log.registroId;
+                if (log.accion === 'CREACION_PEDIDO') {
+                  cambios = "✨ Nueva cotización/pedido generada";
+                  tipoAccion = 'creacion';
+                  badgeColor = 'bg-green-50 border-l-4 border-l-green-500';
+                } else if (log.valorAnterior && log.valorNuevo) {
+                  const campos = ['nombre', 'email', 'telefono', 'tag', 'status', 'mensaje'];
+                  const diffs: string[] = [];
 
-                    let cambios = "Sin detalles";
-
-                    if (log.accion === 'CREACION_PEDIDO') {
-                      cambios = "✨ Nueva cotización/pedido generada";
-                    } else if (log.valorAnterior && log.valorNuevo) {
-                      const campos = ['nombre', 'email', 'telefono', 'tag', 'status', 'mensaje'];
-                      const diffs: string[] = [];
-
-                      campos.forEach(c => {
-                        if (log.valorAnterior[c] !== log.valorNuevo[c]) {
-                          const viejo = log.valorAnterior[c] ? log.valorAnterior[c] : 'vacío';
-                          const nuevo = log.valorNuevo[c] ? log.valorNuevo[c] : 'vacío';
-                          diffs.push(`${c}: ${viejo} ➔ ${nuevo}`);
-                        }
-                      });
-
-                      // 2. COMPARACIÓN INTELIGENTE DE FECHAS (Ignora milisegundos invisibles)
-                      const oR = log.valorAnterior.recordatorio ? new Date(log.valorAnterior.recordatorio).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : 'Ninguno';
-                      const nR = log.valorNuevo.recordatorio ? new Date(log.valorNuevo.recordatorio).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : 'Ninguno';
-
-                      if (oR !== nR) {
-                        diffs.push(`Recordatorio: ${oR} ➔ ${nR}`);
-                      }
-
-                      cambios = diffs.length > 0 ? diffs.join(' | ') : "Modificación general sin cambios visuales";
-                    } else {
-                      // Salvavidas para los logs viejos
-                      cambios = log.motivo || "Modificación de pedido";
+                  campos.forEach(c => {
+                    if (log.valorAnterior[c] !== log.valorNuevo[c]) {
+                      const viejo = log.valorAnterior[c] ? log.valorAnterior[c] : 'vacío';
+                      const nuevo = log.valorNuevo[c] ? log.valorNuevo[c] : 'vacío';
+                      diffs.push(`${c}: ${viejo} ➔ ${nuevo}`);
                     }
+                  });
 
-                    return (
-                      <TableRow key={log.id}>
-                        <TableCell className="whitespace-nowrap">
-                          {new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}
-                        </TableCell>
-                        <TableCell>{log.usuario?.nombre || log.usuarioId}</TableCell>
-                        <TableCell className="font-medium">{pedidoNombre}</TableCell>
-                        <TableCell>
-                          <span className="bg-slate-100 px-2 py-1 rounded text-xs font-medium border">
-                            {String(log.accion).replace(/_/g, ' ')}
-                          </span>
-                        </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{cambios}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                  {pedidoLogs.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                        No hay registros de auditoría de pedidos.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  const oR = log.valorAnterior.recordatorio ? new Date(log.valorAnterior.recordatorio).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : 'Ninguno';
+                  const nR = log.valorNuevo.recordatorio ? new Date(log.valorNuevo.recordatorio).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : 'Ninguno';
+
+                  if (oR !== nR) {
+                    diffs.push(`Recordatorio: ${oR} ➔ ${nR}`);
+                  }
+
+                  cambios = diffs.length > 0 ? diffs.join(' | ') : "Modificación general sin cambios visuales";
+                  tipoAccion = 'modificacion';
+                  badgeColor = 'bg-blue-50 border-l-4 border-l-blue-500';
+                } else {
+                  cambios = log.motivo || "Modificación de pedido";
+                }
+
+                const badgeBgColor = tipoAccion === 'creacion' ? '#10b981' : '#4f46e5';
+                const accionLabel = String(log.accion).replace(/_/g, ' ');
+
+                return (
+                  <Card key={log.id} className={badgeColor}>
+                    <CardContent className="pt-6">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                        <div className="flex-1 space-y-2">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}
+                            </span>
+                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full">
+                              {log.usuario?.nombre || log.usuarioId}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-base">{pedidoNombre}</h3>
+                            <span className="inline-block px-3 py-1 rounded text-xs font-semibold text-white" style={{ backgroundColor: badgeBgColor }}>
+                              {accionLabel}
+                            </span>
+                          </div>
+                          <div className="mt-3 text-sm text-muted-foreground">
+                            {cambios}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <Card className="bg-slate-50">
+                <CardContent className="pt-6 text-center text-muted-foreground">
+                  No hay registros de auditoría de pedidos.
+                </CardContent>
+              </Card>
+            )}
+          </div>
+          
+          {meta && meta.totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                Página <span className="font-semibold">{meta.page}</span> de <span className="font-semibold">{meta.totalPages}</span> ({meta.total} registros)
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchLogs({ page: meta.page - 1, startDate, endDate })}
+                  disabled={meta.page === 1}
+                  className="flex items-center gap-1"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Anterior
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fetchLogs({ page: meta.page + 1, startDate, endDate })}
+                  disabled={meta.page === meta.totalPages}
+                  className="flex items-center gap-1"
+                >
+                  Siguiente
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="conversion" className="space-y-4">

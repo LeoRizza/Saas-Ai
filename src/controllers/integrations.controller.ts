@@ -18,36 +18,20 @@ export const externalApiLimiter = rateLimit({
 /**
  * Crea un nuevo pedido (Prospecto) desde una integración externa
  * (Chatbot, formulario Web, n8n, etc.)
+ * Requiere middleware verifySystemBot para validar x-api-key e inyectar tenantId
  *
- * @param req - Request con x-api-key, x-tenant-id en headers y datos del pedido en req.body
+ * @param req - Request con tenantId inyectado por middleware (verificado con x-api-key y x-tenant-id)
  * @param res - Response para retornar el resultado
+ * @headers x-api-key - API Key del bot (requerida)
+ * @headers x-tenant-id - ID del tenant (requerida)
  */
 export const createExternalPedido = async (
     req: Request,
     res: Response
 ): Promise<void> => {
     try {
-        // Extraer y validar headers de seguridad
-        const apiKey = req.headers['x-api-key'] as string;
-        const tenantId = req.headers['x-tenant-id'] as string;
-
-        // Validar x-api-key
-        if (!apiKey || apiKey !== process.env.BOT_API_KEY) {
-            res.status(401).json({
-                success: false,
-                message: 'API Key inválida o no proporcionada',
-            });
-            return;
-        }
-
-        // Validar x-tenant-id
-        if (!tenantId) {
-            res.status(400).json({
-                success: false,
-                message: 'x-tenant-id es obligatorio',
-            });
-            return;
-        }
+        // El tenantId ya viene validado e inyectado por el middleware verifySystemBot
+        const tenantId = (req as any).tenantId || (req.headers['x-tenant-id'] as string);
 
         // Extraer datos del pedido del cuerpo de la solicitud
         const { nombre, email, telefono, mensaje, tag, recordatorio, producto_confirmado } = req.body;

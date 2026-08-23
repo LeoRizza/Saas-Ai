@@ -91,7 +91,7 @@ export async function getStats(req: Request, res: Response) {
       }),
       // Pedidos filtrados por fechas para cálculo de conversión
       prisma.pedido.findMany({
-        where: { empresaId: user.empresaId },
+        where: pedidosWhereClause,
         include: {
           cliente: { select: { id: true, nombre: true } }
         }
@@ -287,18 +287,65 @@ export async function getStats(req: Request, res: Response) {
 /**
  * GET /api/audit
  * Obtiene el historial de auditoría de la empresa del usuario autenticado
+ * Query params: page (default 1), limit (default 20), accion, startDate, endDate
  */
 export const getAuditLogs = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const logs = await prisma.auditLog.findMany({
-      where: { empresaId: user.empresaId },
-      include: {
-        usuario: { select: { nombre: true } }
-      },
-      orderBy: { createdAt: 'desc' }
+    const { page = '1', limit = '20', accion, startDate, endDate } = req.query;
+
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limitNum = Math.max(1, Math.min(100, parseInt(limit as string) || 20));
+    const skip = (pageNum - 1) * limitNum;
+
+    // Construir filtro dinámico
+    const whereClause: any = {
+      empresaId: user.empresaId
+    };
+
+    if (accion) {
+      whereClause.accion = accion;
+    }
+
+    if (startDate || endDate) {
+      whereClause.createdAt = {};
+      if (startDate) {
+        const start = new Date(startDate as string);
+        start.setUTCHours(0, 0, 0, 0);
+        whereClause.createdAt.gte = start;
+      }
+      if (endDate) {
+        const end = new Date(endDate as string);
+        end.setUTCHours(23, 59, 59, 999);
+        whereClause.createdAt.lte = end;
+      }
+    }
+
+    // Obtener logs y total en paralelo
+    const [logs, total] = await Promise.all([
+      prisma.auditLog.findMany({
+        where: whereClause,
+        include: {
+          usuario: { select: { id: true, nombre: true } }
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limitNum
+      }),
+      prisma.auditLog.count({ where: whereClause })
+    ]);
+
+    const totalPages = Math.ceil(total / limitNum);
+
+    res.json({
+      data: logs,
+      meta: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages
+      }
     });
-    res.json(logs);
   } catch (error: any) {
     console.error('Error al obtener logs de auditoría:', error);
     res.status(500).json({ message: 'Error interno al obtener los registros de auditoría' });

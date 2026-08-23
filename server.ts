@@ -235,7 +235,7 @@ app.get('/api/stats', authenticate, authorize(['ADMIN']), getStats);
 // ==========================================
 // --- ENDPOINTS PARA INTEGRACIONES (WEBHOOKS) ---
 // ==========================================
-app.post('/api/integrations/pedidos', externalApiLimiter, verifyApiKey, createExternalPedido);
+app.post('/api/integrations/pedidos', externalApiLimiter, verifySystemBot, createExternalPedido);
 app.get('/api/bot/productos/search', externalApiLimiter, verifySystemBot, consultarStock);
 app.post('/api/webhooks/bunker', express.json(), handleBunkerWebhook);
 
