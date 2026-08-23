@@ -3,7 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Factory, Plus, Trash2 } from "lucide-react";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { Factory, Plus, Trash2, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useInventoryStore } from "../../store/useInventoryStore";
 import { useInventariosStore } from "../../store/useInventariosStore";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -192,25 +195,52 @@ export default function Production() {
 
               <div className="space-y-2 border p-3 rounded-lg bg-blue-50/50">
                 <label className="text-sm font-semibold text-blue-800">Producto a Fabricar</label>
-                {/* FIX APLICADO: Agregado || "" */}
-                <Select
-                  value={safeProductoDestinoId}
-                  onValueChange={(v) => setProductoDestinoId(v || "")}
-                  disabled={!safeDestinoId}
-                >
-                  <SelectTrigger className="border-blue-200 bg-white">
-                    <SelectValue placeholder={safeDestinoId ? "Seleccione un producto..." : "Seleccione inventario destino primero"}>{safeProductoDestinoId ? articulosDestino.find(a => a.id === safeProductoDestinoId)?.nombre : null}</SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {articulosDestino.length === 0 ? (
-                      <div className="p-3 text-sm text-center text-muted-foreground">No hay productos en este inventario</div>
-                    ) : (
-                      articulosDestino.map(a => (
-                        <SelectItem key={a.id} value={a.id}>{a.nombre}</SelectItem>
-                      ))
-                    )}
-                  </SelectContent>
-                </Select>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      className={cn("w-full justify-between border-blue-200 bg-white", !safeProductoDestinoId && "text-muted-foreground")}
+                      disabled={!safeDestinoId}
+                    >
+                      {safeProductoDestinoId
+                        ? articulosDestino.find(a => a.id === safeProductoDestinoId)?.nombre
+                        : safeDestinoId ? "Seleccione un producto..." : "Seleccione inventario destino primero"}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Buscar producto..." />
+                      <CommandList>
+                        <CommandEmpty>No hay productos disponibles.</CommandEmpty>
+                        <CommandGroup>
+                          {articulosDestino.map(a => (
+                            <CommandItem
+                              key={a.id}
+                              value={a.id}
+                              onSelect={(currentValue) => {
+                                setProductoDestinoId(currentValue === safeProductoDestinoId ? "" : currentValue);
+                              }}
+                            >
+                              <Check
+                                className={cn("mr-2 h-4 w-4", safeProductoDestinoId === a.id ? "opacity-100" : "opacity-0")}
+                              />
+                              <div className="flex flex-col flex-1">
+                                <span className="font-medium">{a.nombre}</span>
+                                {(a.categoria || a.subcategoria) && (
+                                  <span className="text-xs text-muted-foreground">
+                                    {[a.categoria, a.subcategoria].filter(Boolean).join(' • ')}
+                                  </span>
+                                )}
+                              </div>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -255,27 +285,57 @@ export default function Production() {
                         )}
                         <div className="space-y-2">
                           <label className="text-sm font-medium">Insumo</label>
-                          {/* FIX APLICADO: Agregado || "" */}
-                          <Select
-                            value={safeInsumoId}
-                            onValueChange={(val) => handleInsumoChange(index, "articuloId", val || "")}
-                            disabled={!safeOrigenId}
-                          >
-                            <SelectTrigger className="bg-white">
-                              <SelectValue placeholder={safeOrigenId ? "Seleccione un insumo..." : "Seleccione inventario origen primero"}>{safeInsumoId ? articulosOrigen.find(a => a.id === safeInsumoId)?.nombre : null}</SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {articulosOrigen.length === 0 ? (
-                                <div className="p-3 text-sm text-center text-muted-foreground">No hay insumos en este inventario</div>
-                              ) : (
-                                articulosOrigen.map(i => (
-                                  <SelectItem key={i.id} value={i.id}>
-                                    {i.nombre} (Disp: {i.stockKilos.toLocaleString('es-AR')}kg / {i.stockUnidades.toLocaleString('es-AR')}u)
-                                  </SelectItem>
-                                ))
-                              )}
-                            </SelectContent>
-                          </Select>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                className={cn("w-full justify-between bg-white", !safeInsumoId && "text-muted-foreground")}
+                                disabled={!safeOrigenId}
+                              >
+                                {safeInsumoId
+                                  ? articulosOrigen.find(a => a.id === safeInsumoId)?.nombre
+                                  : safeOrigenId ? "Seleccione un insumo..." : "Seleccione inventario origen primero"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-full p-0" align="start">
+                              <Command>
+                                <CommandInput placeholder="Buscar insumo..." />
+                                <CommandList>
+                                  <CommandEmpty>No hay insumos disponibles.</CommandEmpty>
+                                  <CommandGroup>
+                                    {articulosOrigen.map(i => (
+                                      <CommandItem
+                                        key={i.id}
+                                        value={i.id}
+                                        onSelect={(currentValue) => {
+                                          handleInsumoChange(index, "articuloId", currentValue === safeInsumoId ? "" : currentValue);
+                                        }}
+                                      >
+                                        <Check
+                                          className={cn("mr-2 h-4 w-4", safeInsumoId === i.id ? "opacity-100" : "opacity-0")}
+                                        />
+                                        <div className="flex flex-col flex-1">
+                                          <span className="font-medium">{i.nombre}</span>
+                                          <div className="flex items-center justify-between w-full">
+                                            {(i.categoria || i.subcategoria) && (
+                                              <span className="text-xs text-muted-foreground">
+                                                {[i.categoria, i.subcategoria].filter(Boolean).join(' • ')}
+                                              </span>
+                                            )}
+                                            <span className="text-xs text-slate-500 ml-2">
+                                              {i.stockKilos.toLocaleString('es-AR')}kg / {i.stockUnidades.toLocaleString('es-AR')}u
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            </PopoverContent>
+                          </Popover>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
