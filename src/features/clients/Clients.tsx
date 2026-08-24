@@ -610,7 +610,20 @@ export default function Clients() {
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
-                    <TableCell>{cliente.telefono}</TableCell>
+                    <TableCell onClick={(e) => e.stopPropagation()}>
+                      <span
+                        className="cursor-pointer hover:text-blue-600 hover:underline transition-colors"
+                        title="Copiar teléfono"
+                        onClick={() => {
+                          if (cliente.telefono) {
+                            navigator.clipboard.writeText(cliente.telefono);
+                            toast.success('Teléfono copiado');
+                          }
+                        }}
+                      >
+                        {cliente.telefono}
+                      </span>
+                    </TableCell>
                     <TableCell>{cliente.email}</TableCell>
                     <TableCell onClick={(e) => e.stopPropagation()}>
                       {editingRecordatorio === cliente.id ? (
