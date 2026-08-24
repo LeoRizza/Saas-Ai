@@ -69,6 +69,27 @@ export default function Audit() {
   const [filtroVendedor, setFiltroVendedor] = useState<string>("TODOS");
   const [filtroClienteConversion, setFiltroClienteConversion] = useState<string>("TODOS");
 
+  // Estados para filtros de auditoría de clientes
+  const [auditClientStart, setAuditClientStart] = useState<string>("");
+  const [auditClientEnd, setAuditClientEnd] = useState<string>("");
+  const [auditClientId, setAuditClientId] = useState<string>("TODOS");
+  const [searchClienteText, setSearchClienteText] = useState<string>("");
+  const [showClientDropdown, setShowClientDropdown] = useState<boolean>(false);
+
+  // Estados para filtros de auditoría de pedidos
+  const [auditPedidoStart, setAuditPedidoStart] = useState<string>("");
+  const [auditPedidoEnd, setAuditPedidoEnd] = useState<string>("");
+  const [auditPedidoClienteId, setAuditPedidoClienteId] = useState<string>("TODOS");
+  const [searchPedidoText, setSearchPedidoText] = useState<string>("");
+  const [showPedidoDropdown, setShowPedidoDropdown] = useState<boolean>(false);
+
+  // Estados para filtros de auditoría de stock
+  const [auditStockStart, setAuditStockStart] = useState<string>("");
+  const [auditStockEnd, setAuditStockEnd] = useState<string>("");
+  const [auditStockArticuloId, setAuditStockArticuloId] = useState<string>("TODOS");
+  const [searchStockText, setSearchStockText] = useState<string>("");
+  const [showStockDropdown, setShowStockDropdown] = useState<boolean>(false);
+
   // Función para obtener estadísticas del backend
   const fetchStats = useCallback(async (start?: string, end?: string) => {
     setLoadingStats(true);
@@ -664,7 +685,7 @@ export default function Audit() {
                 <CardTitle className="text-base text-center text-muted-foreground">Evolución de Ingresos</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                <div className="flex h-[220px] items-end gap-1 sm:gap-2 px-2 sm:px-4">
+                <div className="flex h-[220px] items-end gap-1 sm:gap-2 px-2 sm:px-2">
                   {ventasChartData.map((d, i) => (
                     // FIX APLICADO: h-full y flex-1 para que crezca correctamente
                     <div key={i} className="flex flex-col justify-end items-center flex-1 h-full group relative">
@@ -695,7 +716,7 @@ export default function Audit() {
                 <CardTitle className="text-base text-center text-muted-foreground">Evolución de Clientes</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                <div className="flex h-[220px] items-end gap-1 sm:gap-2 px-2 sm:px-4">
+                <div className="flex h-[220px] items-end gap-1 sm:gap-2 px-2 sm:px-2">
                   {clientesChartData.map((d, i) => (
                     // FIX APLICADO: h-full y flex-1
                     <div key={i} className="flex flex-col justify-end items-center flex-1 h-full group relative">
@@ -862,20 +883,142 @@ export default function Audit() {
         </TabsContent>
 
         <TabsContent value="stock" className="space-y-4">
+          {/* FILTROS PARA AUDITORÍA DE STOCK */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Filtros de Auditoría</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Fecha Inicio */}
+                <div className="space-y-2">
+                  <Label htmlFor="auditStockStartDate" className="text-sm text-muted-foreground">
+                    Fecha Inicio
+                  </Label>
+                  <Input
+                    id="auditStockStartDate"
+                    type="date"
+                    value={auditStockStart}
+                    onChange={(e) => setAuditStockStart(e.target.value)}
+                    className="bg-white"
+                    max={auditStockEnd || undefined}
+                  />
+                </div>
+
+                {/* Fecha Fin */}
+                <div className="space-y-2">
+                  <Label htmlFor="auditStockEndDate" className="text-sm text-muted-foreground">
+                    Fecha Fin
+                  </Label>
+                  <Input
+                    id="auditStockEndDate"
+                    type="date"
+                    value={auditStockEnd}
+                    onChange={(e) => setAuditStockEnd(e.target.value)}
+                    className="bg-white"
+                    min={auditStockStart || undefined}
+                  />
+                </div>
+
+                {/* Filtro Artículo - Buscador Predictivo */}
+                <div className="space-y-2">
+                  <Label htmlFor="filtro-audit-stock-articulo" className="text-sm text-muted-foreground">
+                    Filtrar por Artículo
+                  </Label>
+                  <div className="relative">
+                    <div className="relative">
+                      <Input
+                        id="filtro-audit-stock-articulo"
+                        type="text"
+                        placeholder="Buscar artículo..."
+                        value={searchStockText}
+                        onChange={(e) => {
+                          setSearchStockText(e.target.value);
+                          setShowStockDropdown(true);
+                          if (!e.target.value) {
+                            setAuditStockArticuloId("TODOS");
+                          }
+                        }}
+                        onFocus={() => setShowStockDropdown(true)}
+                        className="bg-white pr-8"
+                      />
+                      {searchStockText && (
+                        <button
+                          onClick={() => {
+                            setSearchStockText("");
+                            setAuditStockArticuloId("TODOS");
+                            setShowStockDropdown(false);
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-lg"
+                          type="button"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    {showStockDropdown && searchStockText && (
+                      <ul className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
+                        {articulos
+                          .filter((a) => a.nombre.toLowerCase().includes(searchStockText.toLowerCase()))
+                          .slice(0, 10)
+                          .map((articulo) => (
+                            <li
+                              key={articulo.id}
+                              onClick={() => {
+                                setAuditStockArticuloId(articulo.id);
+                                setSearchStockText(articulo.nombre);
+                                setShowStockDropdown(false);
+                              }}
+                              className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm border-b last:border-b-0"
+                            >
+                              {articulo.nombre}
+                            </li>
+                          ))}
+                        {articulos.filter((a) => a.nombre.toLowerCase().includes(searchStockText.toLowerCase())).length === 0 && (
+                          <li className="px-3 py-2 text-xs text-muted-foreground text-center">
+                            No hay resultados
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón Filtrar */}
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    fetchLogs({
+                      page: 1,
+                      startDate: auditStockStart,
+                      endDate: auditStockEnd,
+                      registroId: auditStockArticuloId !== "TODOS" ? auditStockArticuloId : undefined,
+                      tablaAfectada: 'ARTICULO,INVENTARIO'
+                    });
+                  }}
+                  className="gap-2"
+                >
+                  🔍 Filtrar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="space-y-4">
             {stockLogs.length > 0 ? (
               stockLogs.map((log: any) => {
                 const accionColor = String(log.accion) === 'PRODUCCION' ? 'bg-green-50 border-l-4 border-l-green-500' :
-                                   String(log.accion) === 'VENTA' ? 'bg-blue-50 border-l-4 border-l-blue-500' :
-                                   String(log.accion) === 'IMPORTACION_CSV' ? 'bg-purple-50 border-l-4 border-l-purple-500' :
-                                   'bg-amber-50 border-l-4 border-l-amber-500';
+                  String(log.accion) === 'VENTA' ? 'bg-blue-50 border-l-4 border-l-blue-500' :
+                    String(log.accion) === 'IMPORTACION_CSV' ? 'bg-purple-50 border-l-4 border-l-purple-500' :
+                      'bg-amber-50 border-l-4 border-l-amber-500';
                 const badgeVariant = String(log.accion) === 'PRODUCCION' ? 'default' :
-                                    String(log.accion) === 'VENTA' ? 'secondary' :
-                                    String(log.accion) === 'IMPORTACION_CSV' ? 'outline' :
-                                    'secondary';
+                  String(log.accion) === 'VENTA' ? 'secondary' :
+                    String(log.accion) === 'IMPORTACION_CSV' ? 'outline' :
+                      'secondary';
                 return (
                   <Card key={log.id} className={`${accionColor}`}>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-2">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex-1 space-y-2">
                           <div className="flex flex-wrap items-center gap-3">
@@ -890,9 +1033,9 @@ export default function Audit() {
                             <span className="inline-block px-3 py-1 rounded text-xs font-semibold text-white"
                               style={{
                                 backgroundColor: String(log.accion) === 'PRODUCCION' ? '#10b981' :
-                                                String(log.accion) === 'VENTA' ? '#3b82f6' :
-                                                String(log.accion) === 'IMPORTACION_CSV' ? '#a855f7' :
-                                                '#f59e0b'
+                                  String(log.accion) === 'VENTA' ? '#3b82f6' :
+                                    String(log.accion) === 'IMPORTACION_CSV' ? '#a855f7' :
+                                      '#f59e0b'
                               }}
                             >
                               {formatAction(log.accion)}
@@ -909,13 +1052,13 @@ export default function Audit() {
               })
             ) : (
               <Card className="bg-slate-50">
-                <CardContent className="pt-6 text-center text-muted-foreground">
+                <CardContent className="pt-2 text-center text-muted-foreground">
                   No hay registros de stock.
                 </CardContent>
               </Card>
             )}
           </div>
-          
+
           {meta && meta.totalPages > 1 && (
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t">
               <p className="text-sm text-muted-foreground">
@@ -925,7 +1068,13 @@ export default function Audit() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchLogs({ page: meta.page - 1, startDate, endDate })}
+                  onClick={() => fetchLogs({
+                    page: meta.page - 1,
+                    startDate: auditStockStart,
+                    endDate: auditStockEnd,
+                    registroId: auditStockArticuloId !== "TODOS" ? auditStockArticuloId : undefined,
+                    tablaAfectada: 'ARTICULO,INVENTARIO'
+                  })}
                   disabled={meta.page === 1}
                   className="flex items-center gap-1"
                 >
@@ -935,7 +1084,13 @@ export default function Audit() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchLogs({ page: meta.page + 1, startDate, endDate })}
+                  onClick={() => fetchLogs({
+                    page: meta.page + 1,
+                    startDate: auditStockStart,
+                    endDate: auditStockEnd,
+                    registroId: auditStockArticuloId !== "TODOS" ? auditStockArticuloId : undefined,
+                    tablaAfectada: 'ARTICULO,INVENTARIO'
+                  })}
                   disabled={meta.page === meta.totalPages}
                   className="flex items-center gap-1"
                 >
@@ -948,6 +1103,127 @@ export default function Audit() {
         </TabsContent>
 
         <TabsContent value="clientes" className="space-y-4">
+          {/* FILTROS PARA AUDITORíA DE CLIENTES */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Filtros de Auditoría</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Fecha Inicio */}
+                <div className="space-y-2">
+                  <Label htmlFor="auditClientStartDate" className="text-sm text-muted-foreground">
+                    Fecha Inicio
+                  </Label>
+                  <Input
+                    id="auditClientStartDate"
+                    type="date"
+                    value={auditClientStart}
+                    onChange={(e) => setAuditClientStart(e.target.value)}
+                    className="bg-white"
+                    max={auditClientEnd || undefined}
+                  />
+                </div>
+
+                {/* Fecha Fin */}
+                <div className="space-y-2">
+                  <Label htmlFor="auditClientEndDate" className="text-sm text-muted-foreground">
+                    Fecha Fin
+                  </Label>
+                  <Input
+                    id="auditClientEndDate"
+                    type="date"
+                    value={auditClientEnd}
+                    onChange={(e) => setAuditClientEnd(e.target.value)}
+                    className="bg-white"
+                    min={auditClientStart || undefined}
+                  />
+                </div>
+
+                {/* Filtro Cliente - Buscador Predictivo */}
+                <div className="space-y-2">
+                  <Label htmlFor="filtro-audit-cliente" className="text-sm text-muted-foreground">
+                    Filtrar por Cliente
+                  </Label>
+                  <div className="relative">
+                    <div className="relative">
+                      <Input
+                        id="filtro-audit-cliente"
+                        type="text"
+                        placeholder="Buscar cliente..."
+                        value={searchClienteText}
+                        onChange={(e) => {
+                          setSearchClienteText(e.target.value);
+                          setShowClientDropdown(true);
+                          if (!e.target.value) {
+                            setAuditClientId("TODOS");
+                          }
+                        }}
+                        onFocus={() => setShowClientDropdown(true)}
+                        className="bg-white pr-8"
+                      />
+                      {searchClienteText && (
+                        <button
+                          onClick={() => {
+                            setSearchClienteText("");
+                            setAuditClientId("TODOS");
+                            setShowClientDropdown(false);
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-lg"
+                          type="button"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    {showClientDropdown && searchClienteText && (
+                      <ul className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
+                        {filteredClientes
+                          .filter((c) => c.nombre.toLowerCase().includes(searchClienteText.toLowerCase()))
+                          .slice(0, 10)
+                          .map((cliente) => (
+                            <li
+                              key={cliente.id}
+                              onClick={() => {
+                                setAuditClientId(cliente.id);
+                                setSearchClienteText(cliente.nombre);
+                                setShowClientDropdown(false);
+                              }}
+                              className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm border-b last:border-b-0"
+                            >
+                              {cliente.nombre}
+                            </li>
+                          ))}
+                        {filteredClientes.filter((c) => c.nombre.toLowerCase().includes(searchClienteText.toLowerCase())).length === 0 && (
+                          <li className="px-3 py-2 text-xs text-muted-foreground text-center">
+                            No hay resultados
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón Filtrar */}
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    fetchLogs({
+                      page: 1,
+                      startDate: auditClientStart,
+                      endDate: auditClientEnd,
+                      registroId: auditClientId !== "TODOS" ? auditClientId : undefined
+                    });
+                  }}
+                  className="gap-2"
+                >
+                  🔍 Filtrar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="space-y-4">
             {clientLogs.length > 0 ? (
               clientLogs.map((log: any) => {
@@ -989,7 +1265,7 @@ export default function Audit() {
 
                 return (
                   <Card key={log.id} className={badgeColor}>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-2">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex-1 space-y-2">
                           <div className="flex flex-wrap items-center gap-3">
@@ -1017,13 +1293,13 @@ export default function Audit() {
               })
             ) : (
               <Card className="bg-slate-50">
-                <CardContent className="pt-6 text-center text-muted-foreground">
+                <CardContent className="pt-2 text-center text-muted-foreground">
                   No hay registros de clientes.
                 </CardContent>
               </Card>
             )}
           </div>
-          
+
           {meta && meta.totalPages > 1 && (
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t">
               <p className="text-sm text-muted-foreground">
@@ -1033,7 +1309,12 @@ export default function Audit() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchLogs({ page: meta.page - 1, startDate, endDate })}
+                  onClick={() => fetchLogs({
+                    page: meta.page - 1,
+                    startDate: auditClientStart,
+                    endDate: auditClientEnd,
+                    registroId: auditClientId !== "TODOS" ? auditClientId : undefined
+                  })}
                   disabled={meta.page === 1}
                   className="flex items-center gap-1"
                 >
@@ -1043,7 +1324,12 @@ export default function Audit() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchLogs({ page: meta.page + 1, startDate, endDate })}
+                  onClick={() => fetchLogs({
+                    page: meta.page + 1,
+                    startDate: auditClientStart,
+                    endDate: auditClientEnd,
+                    registroId: auditClientId !== "TODOS" ? auditClientId : undefined
+                  })}
                   disabled={meta.page === meta.totalPages}
                   className="flex items-center gap-1"
                 >
@@ -1056,6 +1342,128 @@ export default function Audit() {
         </TabsContent>
 
         <TabsContent value="pedidos" className="space-y-4">
+          {/* FILTROS PARA AUDITORÍA DE PEDIDOS */}
+          <Card className="border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">Filtros de Auditoría</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-3">
+                {/* Fecha Inicio */}
+                <div className="space-y-2">
+                  <Label htmlFor="auditPedidoStartDate" className="text-sm text-muted-foreground">
+                    Fecha Inicio
+                  </Label>
+                  <Input
+                    id="auditPedidoStartDate"
+                    type="date"
+                    value={auditPedidoStart}
+                    onChange={(e) => setAuditPedidoStart(e.target.value)}
+                    className="bg-white"
+                    max={auditPedidoEnd || undefined}
+                  />
+                </div>
+
+                {/* Fecha Fin */}
+                <div className="space-y-2">
+                  <Label htmlFor="auditPedidoEndDate" className="text-sm text-muted-foreground">
+                    Fecha Fin
+                  </Label>
+                  <Input
+                    id="auditPedidoEndDate"
+                    type="date"
+                    value={auditPedidoEnd}
+                    onChange={(e) => setAuditPedidoEnd(e.target.value)}
+                    className="bg-white"
+                    min={auditPedidoStart || undefined}
+                  />
+                </div>
+
+                {/* Filtro Cliente - Buscador Predictivo */}
+                <div className="space-y-2">
+                  <Label htmlFor="filtro-audit-pedido-cliente" className="text-sm text-muted-foreground">
+                    Filtrar por Cliente
+                  </Label>
+                  <div className="relative">
+                    <div className="relative">
+                      <Input
+                        id="filtro-audit-pedido-cliente"
+                        type="text"
+                        placeholder="Buscar cliente..."
+                        value={searchPedidoText}
+                        onChange={(e) => {
+                          setSearchPedidoText(e.target.value);
+                          setShowPedidoDropdown(true);
+                          if (!e.target.value) {
+                            setAuditPedidoClienteId("TODOS");
+                          }
+                        }}
+                        onFocus={() => setShowPedidoDropdown(true)}
+                        className="bg-white pr-8"
+                      />
+                      {searchPedidoText && (
+                        <button
+                          onClick={() => {
+                            setSearchPedidoText("");
+                            setAuditPedidoClienteId("TODOS");
+                            setShowPedidoDropdown(false);
+                          }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground text-lg"
+                          type="button"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                    {showPedidoDropdown && searchPedidoText && (
+                      <ul className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-64 overflow-y-auto">
+                        {filteredClientes
+                          .filter((c) => c.nombre.toLowerCase().includes(searchPedidoText.toLowerCase()))
+                          .slice(0, 10)
+                          .map((cliente) => (
+                            <li
+                              key={cliente.id}
+                              onClick={() => {
+                                setAuditPedidoClienteId(cliente.id);
+                                setSearchPedidoText(cliente.nombre);
+                                setShowPedidoDropdown(false);
+                              }}
+                              className="px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm border-b last:border-b-0"
+                            >
+                              {cliente.nombre}
+                            </li>
+                          ))}
+                        {filteredClientes.filter((c) => c.nombre.toLowerCase().includes(searchPedidoText.toLowerCase())).length === 0 && (
+                          <li className="px-3 py-2 text-xs text-muted-foreground text-center">
+                            No hay resultados
+                          </li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Botón Filtrar */}
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    fetchLogs({
+                      page: 1,
+                      startDate: auditPedidoStart,
+                      endDate: auditPedidoEnd,
+                      clienteId: auditPedidoClienteId !== "TODOS" ? auditPedidoClienteId : undefined,
+                      tablaAfectada: 'PEDIDO'
+                    });
+                  }}
+                  className="gap-2"
+                >
+                  🔍 Filtrar
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="space-y-4">
             {pedidoLogs.length > 0 ? (
               pedidoLogs.map((log: any) => {
@@ -1100,7 +1508,7 @@ export default function Audit() {
 
                 return (
                   <Card key={log.id} className={badgeColor}>
-                    <CardContent className="pt-6">
+                    <CardContent className="pt-2">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex-1 space-y-2">
                           <div className="flex flex-wrap items-center gap-3">
@@ -1128,13 +1536,13 @@ export default function Audit() {
               })
             ) : (
               <Card className="bg-slate-50">
-                <CardContent className="pt-6 text-center text-muted-foreground">
+                <CardContent className="pt-2 text-center text-muted-foreground">
                   No hay registros de auditoría de pedidos.
                 </CardContent>
               </Card>
             )}
           </div>
-          
+
           {meta && meta.totalPages > 1 && (
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-4 border-t">
               <p className="text-sm text-muted-foreground">
@@ -1144,7 +1552,13 @@ export default function Audit() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchLogs({ page: meta.page - 1, startDate, endDate })}
+                  onClick={() => fetchLogs({
+                    page: meta.page - 1,
+                    startDate: auditPedidoStart,
+                    endDate: auditPedidoEnd,
+                    clienteId: auditPedidoClienteId !== "TODOS" ? auditPedidoClienteId : undefined,
+                    tablaAfectada: 'PEDIDO'
+                  })}
                   disabled={meta.page === 1}
                   className="flex items-center gap-1"
                 >
@@ -1154,7 +1568,13 @@ export default function Audit() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => fetchLogs({ page: meta.page + 1, startDate, endDate })}
+                  onClick={() => fetchLogs({
+                    page: meta.page + 1,
+                    startDate: auditPedidoStart,
+                    endDate: auditPedidoEnd,
+                    clienteId: auditPedidoClienteId !== "TODOS" ? auditPedidoClienteId : undefined,
+                    tablaAfectada: 'PEDIDO'
+                  })}
                   disabled={meta.page === meta.totalPages}
                   className="flex items-center gap-1"
                 >

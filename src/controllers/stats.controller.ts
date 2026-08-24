@@ -292,7 +292,7 @@ export async function getStats(req: Request, res: Response) {
 export const getAuditLogs = async (req: Request, res: Response) => {
   try {
     const user = (req as any).user;
-    const { page = '1', limit = '20', accion, startDate, endDate } = req.query;
+    const { page = '1', limit = '20', accion, startDate, endDate, registroId, clienteId, tablaAfectada } = req.query;
 
     const pageNum = Math.max(1, parseInt(page as string) || 1);
     const limitNum = Math.max(1, Math.min(100, parseInt(limit as string) || 20));
@@ -305,6 +305,23 @@ export const getAuditLogs = async (req: Request, res: Response) => {
 
     if (accion) {
       whereClause.accion = accion;
+    }
+
+    if (tablaAfectada) {
+      whereClause.tablaAfectada = { in: (tablaAfectada as string).split(',') };
+    }
+
+    if (registroId) {
+      whereClause.registroId = registroId;
+    }
+
+    if (clienteId) {
+      const pedidosCliente = await prisma.pedido.findMany({
+        where: { clienteId: clienteId as string, empresaId: user.empresaId },
+        select: { id: true }
+      });
+      const pedidoIds = pedidosCliente.map(p => p.id);
+      whereClause.registroId = { in: pedidoIds.length > 0 ? pedidoIds : ['sin-resultados'] };
     }
 
     if (startDate || endDate) {

@@ -6,7 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Trash2, ShoppingCart } from "lucide-react";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Plus, Search, Trash2, ShoppingCart, Check, ChevronsUpDown } from "lucide-react";
 import { useSalesStore } from "../../store/useSalesStore";
 import { useClientStore } from "../../store/useClientStore";
 import { useInventoryStore } from "../../store/useInventoryStore";
@@ -66,6 +68,8 @@ export default function Sales() {
   const [selectedVenta, setSelectedVenta] = useState<any>(null);
   const [isSendingTicket, setIsSendingTicket] = useState(false);
   const [isFacturando, setIsFacturando] = useState(false);
+  const [openCliente, setOpenCliente] = useState(false);
+  const [openProducto, setOpenProducto] = useState(false);
 
   // SAFE IDs
   const safeClienteId = clientes.some(c => c.id === clienteId) ? clienteId : undefined;
@@ -407,19 +411,56 @@ export default function Sales() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Cliente</Label>
-                {/* FIX APLICADO: Agregamos || "" para proteger a TypeScript */}
-                <Select value={safeClienteId || ""} onValueChange={(v) => setClienteId(v || "")}>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Seleccionar cliente...">
-                      {safeClienteId ? clientes.find(c => c.id === safeClienteId)?.nombre : undefined}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clientes.filter(c => c.empresaId === empresa?.id).map(c => (
-                      <SelectItem key={c.id} value={c.id}>{c.nombre}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Popover modal={false} open={openCliente} onOpenChange={setOpenCliente}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={openCliente}
+                      className="w-full justify-between bg-white"
+                    >
+                      {safeClienteId
+                        ? clientes.find((c) => c.id === safeClienteId)?.nombre
+                        : "Seleccionar cliente..."}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Buscar cliente..." />
+                      <CommandEmpty>No se encontró cliente.</CommandEmpty>
+                      <CommandList>
+                        <CommandGroup>
+                          {clientes
+                            .filter(c => c.empresaId === empresa?.id)
+                            .map((c) => (
+                              <CommandItem
+                                key={c.id}
+                                value={`${c.nombre} ${c.razonSocial || ""} ${c.id}`.toLowerCase()}
+                                className="cursor-pointer"
+                                onSelect={() => {
+                                  setClienteId(c.id === safeClienteId ? "" : c.id);
+                                  setOpenCliente(false);
+                                }}
+                              >
+                                <Check
+                                  className={`mr-2 h-4 w-4 ${
+                                    safeClienteId === c.id ? "opacity-100" : "opacity-0"
+                                  }`}
+                                />
+                                <div className="flex flex-col">
+                                  <span>{c.nombre}</span>
+                                  {c.razonSocial && (
+                                    <span className="text-xs text-muted-foreground">{c.razonSocial}</span>
+                                  )}
+                                </div>
+                              </CommandItem>
+                            ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="space-y-2">
                 <Label>Nº Remito / Interno (Opcional)</Label>
@@ -509,29 +550,76 @@ export default function Sales() {
 
                 <div className="md:col-span-6 space-y-2">
                   <Label>Artículo (Búsqueda manual)</Label>
-                  {/* FIX APLICADO: Agregamos || "" para proteger a TypeScript */}
-                  <Select
-                    value={safeProductoId || ""}
-                    onValueChange={(v) => setCurrentProductoId(v || "")}
-                    disabled={!safeInventarioId}
-                  >
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder={safeInventarioId ? "Seleccionar artículo..." : "Seleccione inventario primero"}>
-                        {safeProductoId ? articulosDisponibles.find(a => a.id === safeProductoId)?.nombre : undefined}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {articulosDisponibles.length === 0 ? (
-                        <div className="p-3 text-sm text-center text-muted-foreground">No hay productos disponibles</div>
-                      ) : (
-                        articulosDisponibles.map(a => (
-                          <SelectItem key={a.id} value={a.id}>
-                            {a.nombre} (${a.precio} - Disp: {a.stockUnidades}u / {a.stockKilos}kg)
-                          </SelectItem>
-                        ))
-                      )}
-                    </SelectContent>
-                  </Select>
+                  <Popover modal={false} open={openProducto} onOpenChange={setOpenProducto}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openProducto}
+                        className="w-full justify-between bg-white"
+                        disabled={!safeInventarioId}
+                      >
+                        {safeProductoId
+                          ? articulosDisponibles.find((a) => a.id === safeProductoId)?.nombre
+                          : safeInventarioId ? "Seleccionar artículo..." : "Seleccione inventario primero"}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0">
+                      <Command>
+                        <CommandInput placeholder="Buscar artículo..." />
+                        <CommandEmpty>No se encontró artículo.</CommandEmpty>
+                        <CommandList>
+                          {articulosDisponibles.length === 0 ? (
+                            <div className="p-3 text-sm text-center text-muted-foreground">No hay productos disponibles</div>
+                          ) : (
+                            <CommandGroup>
+                              {articulosDisponibles.map((a) => (
+                                <CommandItem
+                                  key={a.id}
+                                  value={`${a.nombre} ${a.categoria || ""} ${a.subcategoria || ""} ${a.id}`.toLowerCase()}
+                                  className="cursor-pointer"
+                                  onSelect={() => {
+                                    setCurrentProductoId(a.id === safeProductoId ? "" : a.id);
+                                    setOpenProducto(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={`mr-2 h-4 w-4 ${
+                                      safeProductoId === a.id ? "opacity-100" : "opacity-0"
+                                    }`}
+                                  />
+                                  <div className="flex flex-col gap-1 flex-1">
+                                    <div className="flex items-center justify-between">
+                                      <span className="font-medium">{a.nombre}</span>
+                                      <span className="text-sm text-primary font-semibold">${a.precio?.toLocaleString('es-AR') || '0'}</span>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      Stock: {a.stockUnidades}u / {a.stockKilos}kg
+                                    </div>
+                                    {(a.categoria || a.subcategoria) && (
+                                      <div className="flex gap-1 items-center mt-1">
+                                        {a.categoria && (
+                                          <span className="inline-block px-2 py-0.5 bg-secondary text-secondary-foreground text-xs rounded">
+                                            {a.categoria}
+                                          </span>
+                                        )}
+                                        {a.subcategoria && (
+                                          <span className="inline-block px-2 py-0.5 bg-muted text-muted-foreground text-xs rounded">
+                                            {a.subcategoria}
+                                          </span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          )}
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="md:col-span-4 space-y-2">

@@ -14,6 +14,10 @@ interface AuditFilters {
   limit?: number;
   startDate?: string;
   endDate?: string;
+  registroId?: string;
+  clienteId?: string;
+  accion?: string;
+  tablaAfectada?: string;
 }
 
 interface AuditState {
@@ -39,6 +43,10 @@ export const useAuditStore = create<AuditState>((set) => ({
       if (filters?.limit) params.append('limit', filters.limit.toString());
       if (filters?.startDate) params.append('startDate', filters.startDate);
       if (filters?.endDate) params.append('endDate', filters.endDate);
+      if (filters?.registroId) params.append('registroId', filters.registroId);
+      if (filters?.clienteId) params.append('clienteId', filters.clienteId);
+      if (filters?.accion) params.append('accion', filters.accion);
+      if (filters?.tablaAfectada) params.append('tablaAfectada', filters.tablaAfectada);
 
       const queryString = params.toString();
       const url = queryString ? `/audit?${queryString}` : '/audit';

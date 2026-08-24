@@ -128,3 +128,21 @@
     @apply font-sans;
     }
 }
+
+/* FIX CANÓNICO: Popover dentro de Dialog */
+/* Permite que los clics del mouse funcionen en items de cmdk dentro de Dialog */
+[data-radix-dialog-content] [data-radix-popover-content] {
+  pointer-events: auto;
+}
+
+/* Asegura que los items del combobox reciban eventos de mouse */
+[data-radix-dialog-content] [data-radix-popover-content] [role="option"],
+[data-radix-dialog-content] [data-radix-popover-content] [cmdk-item] {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Protege la entrada de búsqueda del Command */
+[data-radix-dialog-content] [data-radix-popover-content] [cmdk-input] {
+  pointer-events: auto;
+}
