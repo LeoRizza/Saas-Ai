@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
  * Se salta el rate limit si la request incluye el header x-bot-api-key (bot interno)
  */
 export const externalApiLimiter = rateLimit({
-        windowMs: 60 * 1000, // 1 minuto
+    windowMs: 60 * 1000, // 1 minuto
     max: 300, // Máximo 300 peticiones por minuto por IP
     message: 'Bloqueo temporal por anomalía de tráfico detectada. Por favor intenta de nuevo en unos momentos',
     standardHeaders: true, // Retorna el rate limit info en el header `RateLimit-*`
@@ -40,6 +40,7 @@ export const createExternalPedido = async (
         const tenantId = (req as any).tenantId || (req.headers['x-tenant-id'] as string);
 
         // Extraer datos del pedido del cuerpo de la solicitud
+        // NOTA: NO incluimos subtotal, impuestos, total del body - se calculan en el backend
         const {
             nombre,
             email,
@@ -49,9 +50,6 @@ export const createExternalPedido = async (
             recordatorio,
             producto_confirmado,
             items = [],
-            subtotal,
-            impuestos,
-            total,
             moneda = 'ARS',
         } = req.body;
 
@@ -80,24 +78,57 @@ export const createExternalPedido = async (
                     texto: mensajeCompleto,
                     usuario: 'Bot/Integración',
                 },
-              ]
+            ]
             : [];
 
-        // Parsear valores financieros (fallback a 0 si no vienen)
-        const subtotalParsed = Number(subtotal) || 0;
-        const impuestosParsed = Number(impuestos) || 0;
-        const totalParsed = Number(total) || 0;
+                // Paso 1: Extraer IDs únicos de los items para consultar la BD
+        const articuloIds = Array.from(
+            new Set((items || []).map((item: any) => item.articuloId || item.id))
+        ).filter(Boolean) as string[];
 
-        // Mapear items con soporte para articuloId o id
-        const itemsMapeados = (items || []).map((item: any) => ({
-            articuloId: item.articuloId || item.id,
-            cantidad: Number(item.cantidad) || 1,
-            precioUnitario: Number(item.precioUnitario) || 0,
-            descuento: Number(item.descuento) || 0,
-            subtotal:
-                Number(item.subtotal) ||
-                (Number(item.cantidad) || 1) * (Number(item.precioUnitario) || 0),
-        }));
+        // Paso 2: Consultar artículos de la BD para obtener precios reales
+        const articulosDeBD = await prisma.articulo.findMany({
+            where: {
+                id: { in: articuloIds },
+                empresaId: tenantId,
+            },
+            select: {
+                id: true,
+                precio: true,
+            },
+        });
+
+        // Crear un mapa de artículos para búsqueda rápida
+        const articulosMap = new Map(
+            articulosDeBD.map((art) => [art.id, art.precio])
+        );
+
+        // Paso 3: Mapear items cruzando con datos de la BD
+        const itemsMapeados = (items || [])
+            .map((item: any) => {
+                const articuloId = item.articuloId || item.id;
+                const precioUnitario = articulosMap.get(articuloId) || 0; // Precio real de la BD
+                const cantidad = Number(item.cantidad) || 1;
+                const descuento = Number(item.descuento) || 0;
+                const subtotal = cantidad * precioUnitario; // Calculado en el backend
+
+                return {
+                    articuloId,
+                    cantidad,
+                    precioUnitario,
+                    descuento,
+                    subtotal,
+                };
+            })
+            .filter((item: any) => item.articuloId); // Filtrar items sin articuloId válido
+
+        // Paso 4: Calcular totales de forma segura en el backend
+        const subtotalParsed = itemsMapeados.reduce(
+            (sum: number, item: any) => sum + item.subtotal,
+            0
+        );
+        const impuestosParsed = 0; // Por ahora sin impuestos, se puede ajustar según lógica futura
+        const totalParsed = subtotalParsed + impuestosParsed;
 
         // Ejecutar transacción: crear pedido y registrar auditoría
         const [nuevoPedido] = await prisma.$transaction([
@@ -125,9 +156,9 @@ export const createExternalPedido = async (
                 },
             }),
             // Operación B: Registrar en auditoría
-                        prisma.auditLog.create({
+            prisma.auditLog.create({
                 data: {
-                                        accion: 'CREACION_PEDIDO_BOT',
+                    accion: 'CREACION_PEDIDO_BOT',
                     tablaAfectada: 'PEDIDO',
                     registroId: nombre,
                     valorNuevo: { origen: req.headers['user-agent'] || 'desconocido' } as any,
@@ -168,7 +199,7 @@ export const consultarStock = async (
     res: Response
 ): Promise<void> => {
     try {
-                // El tenantId ya viene validado e inyectado por tu middleware verifySystemBot
+        // El tenantId ya viene validado e inyectado por tu middleware verifySystemBot
         const tenantId = (req as any).tenantId || (req.headers['x-tenant-id'] as string);
         const q = req.query.q as string;
 
