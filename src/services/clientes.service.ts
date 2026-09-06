@@ -49,7 +49,7 @@ export async function createCliente(
   try {
     const data = {
       nombre: clienteData.nombre,
-      razonSocial: clienteData.razonSocial || null,
+      razonSocial: clienteData.razonSocial || clienteData.nombre,
       email: clienteData.email || null,
       telefono: clienteData.telefono || null,
       direccion: clienteData.direccion || null,

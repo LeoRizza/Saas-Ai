@@ -184,7 +184,10 @@ export function SuperAdminPanel() {
       return;
     }
     try {
-      const dataToSave = { ...usuarioForm };
+      const dataToSave: Omit<typeof usuarioForm, 'id' | 'createdAt' | 'updatedAt'> & { activo?: boolean } = { 
+        ...usuarioForm,
+        activo: true
+      };
       if (dataToSave.rol === RolUsuario.SUPER_ADMIN) {
         delete (dataToSave as any).empresaId;
       }

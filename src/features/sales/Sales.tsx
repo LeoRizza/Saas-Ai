@@ -47,6 +47,7 @@ export default function Sales() {
   const [tipoRecargo, setTipoRecargo] = useState<"fijo" | "porcentaje">("fijo");
 
   const [items, setItems] = useState<{
+    articuloId?: string;
     productoId: string;
     productoNombre: string;
     cantidadUnidades: number;

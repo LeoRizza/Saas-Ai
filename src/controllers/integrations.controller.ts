@@ -125,11 +125,11 @@ export const createExternalPedido = async (
                 },
             }),
             // Operación B: Registrar en auditoría
-            prisma.auditLog.create({
+                        prisma.auditLog.create({
                 data: {
                     accion: 'CREACION_PEDIDO_BOT',
-                    tabla: 'PEDIDO',
-                    registro: nombre,
+                    tablaAfectada: 'PEDIDO',
+                    registroId: nombre,
                     detalles: `Pedido creado desde integración bot/externa. Origen: ${req.headers['user-agent'] || 'desconocido'}`,
                     empresaId: tenantId,
                 },
