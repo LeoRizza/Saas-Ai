@@ -184,13 +184,16 @@ export function SuperAdminPanel() {
       return;
     }
     try {
-      const dataToSave: Omit<typeof usuarioForm, 'id' | 'createdAt' | 'updatedAt'> & { activo?: boolean } = { 
+      let dataToSave: any = { 
         ...usuarioForm,
         activo: true
       };
+      
       if (dataToSave.rol === RolUsuario.SUPER_ADMIN) {
-        delete (dataToSave as any).empresaId;
+        const { empresaId, ...dataWithoutEmpresa } = dataToSave;
+        dataToSave = dataWithoutEmpresa;
       }
+      
       if (editingUsuarioId) {
         const { password, ...updateData } = dataToSave;
         await updateUsuario(editingUsuarioId, updateData);

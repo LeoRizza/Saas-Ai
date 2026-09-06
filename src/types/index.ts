@@ -179,10 +179,10 @@ export interface ProduccionLogFrontend {
 }
 
 export interface VentaItem {
-  id: string;
-  ventaId: string;
+  id?: string;
+  ventaId?: string;
   productoId?: string;
-  articuloId: string;
+  articuloId?: string;
   productoNombre?: string;
   articulo?: { nombre: string;[key: string]: any };
   cantidadUnidades: number;
@@ -198,20 +198,20 @@ export interface Venta {
   numeroFactura?: string;
   montoFactura?: number;
   montoTotal?: number;
-  descuento: number;
+  descuento?: number;
   puntoVenta?: number;
   tipoComprobante?: string;
-  estadoFiscal: EstadoFiscal;
+  estadoFiscal?: EstadoFiscal;
   fiscalData?: any;
-  recargo: number;
+  recargo?: number;
   clienteId: string;
   clienteNombre?: string;
   cliente?: { nombre: string;[key: string]: any };
-  fecha: string;
+  fecha?: string;
   createdAt?: string;
   facturada?: boolean;
   cae?: string;
-  items: VentaItem[];
+  items?: VentaItem[];
   usuarioId: string;
   empresaId: string;
   metadata?: any;

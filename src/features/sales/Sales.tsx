@@ -274,7 +274,7 @@ export default function Sales() {
         items: items,
         usuarioId: user?.id || "unknown",
         empresaId: empresa?.id || 'empresa-1'
-      });
+      }); 
 
       fetchVentas();
       fetchInventory();
@@ -674,7 +674,7 @@ export default function Sales() {
                           <TableCell className="font-medium">{item.productoNombre}</TableCell>
                           <TableCell className="text-right">${item.precioUnitario.toLocaleString('es-AR')}</TableCell>
                           <TableCell className="text-right">
-                            {item.cantidadUnidades > 0 ? `${item.cantidadUnidades}u` : `${item.cantidadKilos}kg`}
+                            {item.cantidadUnidades > 0 ? `${item.cantidadUnidades}u` : `${item.cantidadKilos ?? 0}kg`}
                           </TableCell>
                           <TableCell className="text-right font-semibold">${item.subtotal.toLocaleString('es-AR')}</TableCell>
                           <TableCell>
