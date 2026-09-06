@@ -144,6 +144,8 @@ export function SuperAdminPanel() {
       } else {
         await addEmpresa(payload);
       }
+      toast.success(editingEmpresaId ? 'Empresa actualizada' : 'Empresa creada');
+      await fetchData();
       setIsEmpresaModalOpen(false);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error al guardar la empresa');
@@ -200,6 +202,8 @@ export function SuperAdminPanel() {
       } else {
         await addUsuario(dataToSave);
       }
+      toast.success(editingUsuarioId ? 'Usuario actualizado' : 'Usuario creado');
+      await fetchData();
       setIsUsuarioModalOpen(false);
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error al guardar el usuario');
@@ -215,6 +219,8 @@ export function SuperAdminPanel() {
   const handleSavePassword = async () => {
     if (editingUsuarioId && newPassword) {
       await updateUsuario(editingUsuarioId, { password: newPassword });
+      toast.success('Contraseña actualizada correctamente');
+      await fetchData();
       setIsPasswordModalOpen(false);
     }
   };
@@ -238,6 +244,8 @@ export function SuperAdminPanel() {
       } else {
         await addInventario(inventarioForm.nombre, selectedEmpresaForInventarios.id);
       }
+      toast.success(inventarioForm.id ? 'Inventario actualizado' : 'Inventario creado');
+      await fetchInventarios();
       setInventarioForm({ id: '', nombre: '' });
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Error al guardar el inventario');
