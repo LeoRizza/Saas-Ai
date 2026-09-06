@@ -40,7 +40,20 @@ export const createExternalPedido = async (
         const tenantId = (req as any).tenantId || (req.headers['x-tenant-id'] as string);
 
         // Extraer datos del pedido del cuerpo de la solicitud
-        const { nombre, email, telefono, mensaje, tag, recordatorio, producto_confirmado } = req.body;
+        const {
+            nombre,
+            email,
+            telefono,
+            mensaje,
+            tag,
+            recordatorio,
+            producto_confirmado,
+            items = [],
+            subtotal,
+            impuestos,
+            total,
+            moneda = 'ARS',
+        } = req.body;
 
         // Validación: nombre es obligatorio
         if (!nombre || nombre.trim() === '') {
@@ -59,19 +72,69 @@ export const createExternalPedido = async (
                 : `Producto: ${producto_confirmado}`;
         }
 
-        // Crear el nuevo pedido en la base de datos
-        const nuevoPedido = await prisma.pedido.create({
-            data: {
-                nombre: nombre.trim(),
-                email: email?.trim() || null,
-                telefono: telefono?.trim() || null,
-                mensaje: mensajeCompleto || null,
-                tag: tag?.trim() || null,
-                recordatorio: recordatorio ? new Date(recordatorio).toISOString() : null,
-                empresaId: tenantId,
-                status: 'PENDIENTE',
-            },
-        });
+        // Preparar notas con formato de auditoría
+        const notas = mensajeCompleto
+            ? [
+                {
+                    fecha: new Date().toISOString(),
+                    texto: mensajeCompleto,
+                    usuario: 'Bot/Integración',
+                },
+              ]
+            : [];
+
+        // Parsear valores financieros (fallback a 0 si no vienen)
+        const subtotalParsed = Number(subtotal) || 0;
+        const impuestosParsed = Number(impuestos) || 0;
+        const totalParsed = Number(total) || 0;
+
+        // Mapear items con soporte para articuloId o id
+        const itemsMapeados = (items || []).map((item: any) => ({
+            articuloId: item.articuloId || item.id,
+            cantidad: Number(item.cantidad) || 1,
+            precioUnitario: Number(item.precioUnitario) || 0,
+            descuento: Number(item.descuento) || 0,
+            subtotal:
+                Number(item.subtotal) ||
+                (Number(item.cantidad) || 1) * (Number(item.precioUnitario) || 0),
+        }));
+
+        // Ejecutar transacción: crear pedido y registrar auditoría
+        const [nuevoPedido] = await prisma.$transaction([
+            // Operación A: Crear el pedido con items
+            prisma.pedido.create({
+                data: {
+                    nombre: nombre.trim(),
+                    email: email?.trim() || null,
+                    telefono: telefono?.trim() || null,
+                    tag: tag?.trim() || null,
+                    recordatorio: recordatorio ? new Date(recordatorio).toISOString() : null,
+                    empresaId: tenantId,
+                    status: 'PENDIENTE',
+                    notas,
+                    subtotal: subtotalParsed,
+                    impuestos: impuestosParsed,
+                    total: totalParsed,
+                    moneda,
+                    items: {
+                        create: itemsMapeados,
+                    },
+                },
+                include: {
+                    items: true,
+                },
+            }),
+            // Operación B: Registrar en auditoría
+            prisma.auditLog.create({
+                data: {
+                    accion: 'CREACION_PEDIDO_BOT',
+                    tabla: 'PEDIDO',
+                    registro: nombre,
+                    detalles: `Pedido creado desde integración bot/externa. Origen: ${req.headers['user-agent'] || 'desconocido'}`,
+                    empresaId: tenantId,
+                },
+            }),
+        ]);
 
         // Respuesta exitosa
         res.status(201).json({

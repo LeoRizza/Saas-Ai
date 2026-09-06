@@ -14,6 +14,7 @@ export enum AccionAudit {
   AJUSTE_MANUAL = 'AJUSTE_MANUAL',
   MODIFICACION_CLIENTE = 'MODIFICACION_CLIENTE',
   IMPORTACION_CSV = 'IMPORTACION_CSV',
+  ACTUALIZACION_MASIVA_CSV = 'ACTUALIZACION_MASIVA_CSV',
   CREACION_PEDIDO = 'CREACION_PEDIDO',
   ACTUALIZACION_PEDIDO = 'ACTUALIZACION_PEDIDO',
   CREACION_ARTICULO = 'CREACION_ARTICULO',
@@ -21,7 +22,9 @@ export enum AccionAudit {
   CREACION_USUARIO = 'CREACION_USUARIO',
   ACTUALIZACION_USUARIO = 'ACTUALIZACION_USUARIO',
   CREACION_EMPRESA = 'CREACION_EMPRESA',
-  ACTUALIZACION_EMPRESA = 'ACTUALIZACION_EMPRESA'
+  ACTUALIZACION_EMPRESA = 'ACTUALIZACION_EMPRESA',
+  INGRESO_COMPRA = 'INGRESO_COMPRA',
+  CREACION_PEDIDO_BOT = 'CREACION_PEDIDO_BOT'
 }
 
 export enum TablaAudit {
@@ -34,12 +37,27 @@ export enum TablaAudit {
   VENTA = 'VENTA'
 }
 
+export enum EstadoFiscal {
+  NO_ENVIADO = 'NO_ENVIADO',
+  PENDIENTE = 'PENDIENTE',
+  APROBADO = 'APROBADO',
+  RECHAZADO = 'RECHAZADO'
+}
+
 export interface Empresa {
   id: string;
   nombre: string;
   activa: boolean;
   logoUrl?: string;
-  config?: { modules?: string[]; maxImagenes?: number };
+  razonSocial?: string;
+  cuit?: string;
+  condicionIva?: string;
+  emailContacto?: string;
+  telefonoContacto?: string;
+  smtpUser?: string;
+  smtpPass?: string;
+  apiKey?: string;
+  config?: { modules?: string[]; maxImagenes?: number } | any;
   metadata?: any;
   createdAt: string;
   updatedAt: string;
@@ -61,7 +79,10 @@ export interface Usuario {
   rol: RolUsuario;
   empresaId?: string; // Opcional para SUPER_ADMIN
   password?: string;
+  activo: boolean;
   metadata?: any;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Articulo {
@@ -73,14 +94,19 @@ export interface Articulo {
   stockUnidades: number;
   unidadesPorCaja: number;
   updatedAt: string;
-  imagenes?: string[];
+  imagenes?: any;
   precio?: number;
   costo?: number;
   descripcion?: string; 
+  longDescription?: string;
   subcategoria?: string;
+  sku?: string;
+  serie?: string;
+  videoUrl?: string;
   empresaId: string;
   inventarioId: string;
   metadata?: any;
+  createdAt: string;
 }
 
 export interface Cliente {
@@ -96,6 +122,7 @@ export interface Cliente {
   fechaRecordatorio?: string;
   tag?: string;
   empresaId: string;
+  activo: boolean;
   metadata?: any;
   createdAt: string;
   updatedAt: string;
@@ -111,7 +138,7 @@ export interface AuditLog {
   valorAnterior: any;
   valorNuevo: any;
   motivo?: string;
-  fecha: string;
+  createdAt: string;
   metadata?: any;
 }
 
@@ -120,6 +147,19 @@ export interface InsumoConsumidoLog {
   insumoNombre: string;
   kilos: number;
   unidades: number;
+  metadata?: any;
+}
+
+export interface ProduccionLog {
+  id: string;
+  fecha: string;
+  productoNombre: string;
+  unidades: number;
+  peso: number;
+  usuarioNombre: string;
+  empresaId: string;
+  inventarioOrigenId: string;
+  inventarioDestinoId: string;
   metadata?: any;
 }
 
@@ -139,8 +179,10 @@ export interface ProduccionLogFrontend {
 }
 
 export interface VentaItem {
+  id: string;
+  ventaId: string;
   productoId?: string;
-  articuloId?: string;
+  articuloId: string;
   productoNombre?: string;
   articulo?: { nombre: string;[key: string]: any };
   cantidadUnidades: number;
@@ -153,10 +195,15 @@ export interface VentaItem {
 
 export interface Venta {
   id: string;
-  numeroFactura: string;
+  numeroFactura?: string;
   montoFactura?: number;
   montoTotal?: number;
   descuento: number;
+  puntoVenta?: number;
+  tipoComprobante?: string;
+  estadoFiscal: EstadoFiscal;
+  fiscalData?: any;
+  recargo: number;
   clienteId: string;
   clienteNombre?: string;
   cliente?: { nombre: string;[key: string]: any };

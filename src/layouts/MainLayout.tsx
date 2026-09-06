@@ -94,14 +94,14 @@ export default function MainLayout() {
       {/* Mobile sidebar overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-20 bg-black/50 2xl:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transition-transform duration-300 ease-in-out 2xl:static 2xl:translate-x-0 flex flex-col ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
         <div className="flex h-24 items-center justify-center border-b border-slate-800 p-4">
@@ -118,7 +118,7 @@ export default function MainLayout() {
           )}
         </div>
 
-        <nav className="mt-6 flex flex-col gap-2 px-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
+        <nav className="mt-6 flex-1 flex flex-col gap-2 px-4 overflow-y-auto pb-4">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path ||
@@ -141,7 +141,7 @@ export default function MainLayout() {
           })}
         </nav>
 
-        <div className="absolute bottom-0 w-full border-t border-slate-800 p-4 bg-slate-900">
+        <div className="shrink-0 mt-auto w-full border-t border-slate-800 p-4 bg-slate-900">
 
           <div className="mb-4 flex flex-col items-center justify-center border-b border-slate-800 pb-4">
             <span className="text-[10px] uppercase tracking-widest text-slate-500 mb-2">Powered by</span>
@@ -174,10 +174,10 @@ export default function MainLayout() {
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm lg:hidden">
+        <header className="flex h-16 items-center justify-between border-b bg-white px-4 shadow-sm 2xl:hidden">
           <button
             onClick={() => setIsSidebarOpen(true)}
-            className="rounded-md p-2 text-gray-500 hover:bg-gray-100 lg:hidden"
+            className="rounded-md p-2 text-gray-500 hover:bg-gray-100 2xl:hidden"
           >
             <Menu className="h-6 w-6" />
           </button>
@@ -186,7 +186,7 @@ export default function MainLayout() {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 2xl:p-8">
           <Outlet />
         </main>
       </div>

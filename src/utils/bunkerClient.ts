@@ -1,34 +1,43 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosResponse } from 'axios';
 
 /**
- * Cliente Axios dedicado al microservicio de facturación (El Búnker)
- * Configurado con timeout crítico de 8 segundos y manejo de errores de timeout
+ * Cliente Axios aislado para comunicación con El Búnker (ARCA/AFIP)
+ * Preconfigurado con baseURL desde variables de entorno y timeout de 10 segundos
  */
-const bunkerClient = axios.create({
-    timeout: 8000, // 8 segundos máximo (CRÍTICO)
+const bunkerApi = axios.create({
+    baseURL: process.env.BUNKER_API_URL || '',
+    timeout: 10000, // 10 segundos
 });
 
 /**
- * Interceptor de respuesta para capturar y manejar errores de timeout
+ * Emite una factura a través del microservicio El Búnker
+ * @param ventaPayload - Datos de la venta/factura a procesar
+ * @param apiKey - Clave de API para autenticación Bearer
+ * @returns Datos de la respuesta del servicio
+ * @throws Error estructurado si la solicitud falla
  */
-bunkerClient.interceptors.response.use(
-    (response) => response,
-    (error: AxiosError) => {
-        // Verificar si es un error de timeout
-        if (
-            error.code === 'ECONNABORTED' ||
-            error.code === 'ETIMEDOUT'
-        ) {
-            const timeoutError = new Error(
-                'El servicio de AFIP tardó demasiado en responder. La factura quedará en estado pendiente.'
+export async function emitirFacturaBunker(
+    ventaPayload: any,
+    apiKey: string
+): Promise<any> {
+    try {
+        const response: AxiosResponse = await bunkerApi.post(
+            '/api/v1/facturar',
+            ventaPayload,
+            {
+                headers: {
+                    Authorization: `Bearer ${apiKey}`,
+                },
+            }
+        );
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            const axiosError = error as AxiosError;
+            throw new Error(
+                `Error al emitir factura en El Búnker: ${axiosError.message}. Status: ${axiosError.response?.status || 'desconocido'}`
             );
-            timeoutError.name = 'TimeoutError';
-            return Promise.reject(timeoutError);
         }
-
-        // Re-lanzar otros errores sin modificar
-        return Promise.reject(error);
+        throw error;
     }
-);
-
-export default bunkerClient;
+}
