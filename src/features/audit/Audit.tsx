@@ -754,19 +754,19 @@ export default function Audit() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Producto</TableHead>
-                      <TableHead className="text-right">Unidades</TableHead>
-                      <TableHead className="text-right">Kilos</TableHead>
-                      <TableHead className="text-right">Ingresos Totales</TableHead>
+                      <TableHead className="px-3 py-2 text-xs">Producto</TableHead>
+                      <TableHead className="px-3 py-2 text-xs text-right">Unidades</TableHead>
+                      <TableHead className="px-3 py-2 text-xs text-right">Kilos</TableHead>
+                      <TableHead className="px-3 py-2 text-xs text-right">Ingresos Totales</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {stats.topProductos.map((producto, idx) => (
                       <TableRow key={idx}>
-                        <TableCell className="font-medium">{producto.nombre}</TableCell>
-                        <TableCell className="text-right">{producto.unidades.toLocaleString('es-AR')}</TableCell>
-                        <TableCell className="text-right">{producto.kilos.toLocaleString('es-AR', { minimumFractionDigits: 2 })} kg</TableCell>
-                        <TableCell className="text-right text-green-600 font-semibold">${producto.ingresos.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
+                        <TableCell className="font-medium px-3 py-2.5 text-sm max-w-[150px] truncate" title={producto.nombre}>{producto.nombre}</TableCell>
+                        <TableCell className="text-right px-3 py-2.5 text-sm">{producto.unidades.toLocaleString('es-AR')}</TableCell>
+                        <TableCell className="text-right px-3 py-2.5 text-sm">{producto.kilos.toLocaleString('es-AR', { minimumFractionDigits: 2 })} kg</TableCell>
+                        <TableCell className="text-right text-green-600 font-semibold px-3 py-2.5 text-sm">${producto.ingresos.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -848,27 +848,27 @@ export default function Audit() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Nombre</TableHead>
-                      <TableHead className="text-right">Unidades Actuales</TableHead>
-                      <TableHead className="text-right">Kilos Actuales</TableHead>
-                      <TableHead>Categoría</TableHead>
+                      <TableHead className="px-3 py-2 text-xs">Nombre</TableHead>
+                      <TableHead className="px-3 py-2 text-xs text-right">Unidades Actuales</TableHead>
+                      <TableHead className="px-3 py-2 text-xs text-right">Kilos Actuales</TableHead>
+                      <TableHead className="px-3 py-2 text-xs">Categoría</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {articulosBajoStock.map((articulo) => (
                       <TableRow key={articulo.id} className={articulo.stockUnidades === 0 && articulo.stockKilos === 0 ? "bg-red-50" : ""}>
-                        <TableCell className="font-medium">{articulo.nombre}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="font-medium px-3 py-2.5 text-sm max-w-[150px] truncate" title={articulo.nombre}>{articulo.nombre}</TableCell>
+                        <TableCell className="text-right px-3 py-2.5 text-sm">
                           <span className={articulo.stockUnidades === 0 ? "text-red-600 font-semibold" : ""}>
                             {(articulo.stockUnidades || 0).toLocaleString('es-AR')}
                           </span>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-right px-3 py-2.5 text-sm">
                           <span className={articulo.stockKilos === 0 ? "text-red-600 font-semibold" : ""}>
                             {(articulo.stockKilos || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
                           </span>
                         </TableCell>
-                        <TableCell className="text-sm text-muted-foreground">{articulo.categoria || '-'}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground px-3 py-2.5">{articulo.categoria || '-'}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -1025,7 +1025,7 @@ export default function Audit() {
                             <span className="text-sm font-medium text-muted-foreground">
                               {new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}
                             </span>
-                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full">
+                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full max-w-[120px] truncate" title={log.usuario?.nombre || log.usuarioId}>
                               {log.usuario?.nombre || log.usuarioId}
                             </span>
                           </div>
@@ -1272,12 +1272,12 @@ export default function Audit() {
                             <span className="text-sm font-medium text-muted-foreground">
                               {new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}
                             </span>
-                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full">
+                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full max-w-[120px] truncate" title={log.usuario?.nombre || log.usuarioId}>
                               {log.usuario?.nombre || log.usuarioId}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-base">{clienteNombre}</h3>
+                            <h3 className="font-semibold text-base max-w-[150px] sm:max-w-[200px] md:max-w-xs truncate" title={clienteNombre}>{clienteNombre}</h3>
                             <span className="inline-block px-3 py-1 rounded text-xs font-semibold text-white" style={{ backgroundColor: badgeBgColor }}>
                               {tipoAccion === 'creacion' ? 'Creado' : tipoAccion === 'eliminacion' ? 'Eliminado' : 'Modificado'}
                             </span>
@@ -1515,12 +1515,12 @@ export default function Audit() {
                             <span className="text-sm font-medium text-muted-foreground">
                               {new Date(log.createdAt).toLocaleString('es-AR', { hour12: false, dateStyle: 'short', timeStyle: 'medium' })}
                             </span>
-                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full">
+                            <span className="text-xs bg-slate-200 px-2.5 py-1 rounded-full max-w-[120px] truncate" title={log.usuario?.nombre || log.usuarioId}>
                               {log.usuario?.nombre || log.usuarioId}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-base">{pedidoNombre}</h3>
+                            <h3 className="font-semibold text-base max-w-[150px] sm:max-w-[200px] md:max-w-xs truncate" title={pedidoNombre}>{pedidoNombre}</h3>
                             <span className="inline-block px-3 py-1 rounded text-xs font-semibold text-white" style={{ backgroundColor: badgeBgColor }}>
                               {accionLabel}
                             </span>
@@ -1637,9 +1637,9 @@ export default function Audit() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Vendedor</TableHead>
-                        <TableHead className="text-right">Total Pedidos</TableHead>
-                        <TableHead className="text-right">Tasa Conversión</TableHead>
+                        <TableHead className="px-3 py-2 text-xs">Vendedor</TableHead>
+                        <TableHead className="px-3 py-2 text-xs text-right">Total Pedidos</TableHead>
+                        <TableHead className="px-3 py-2 text-xs text-right">Tasa Conversión</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1653,9 +1653,9 @@ export default function Audit() {
 
                           return (
                             <TableRow key={idx}>
-                              <TableCell className="font-medium">{vendedor.nombre}</TableCell>
-                              <TableCell className="text-right">{vendedor.total ?? 0}</TableCell>
-                              <TableCell className="text-right">
+                              <TableCell className="font-medium px-3 py-2.5 text-sm max-w-[150px] truncate" title={vendedor.nombre}>{vendedor.nombre}</TableCell>
+                              <TableCell className="text-right px-3 py-2.5 text-sm">{vendedor.total ?? 0}</TableCell>
+                              <TableCell className="text-right px-3 py-2.5 text-sm">
                                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${badgeColor}`}>
                                   {(tasa ?? 0).toFixed(1)}%
                                 </span>
@@ -1683,9 +1683,9 @@ export default function Audit() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Cliente</TableHead>
-                        <TableHead className="text-right">Total Pedidos</TableHead>
-                        <TableHead className="text-right">Tasa Conversión</TableHead>
+                        <TableHead className="px-3 py-2 text-xs">Cliente</TableHead>
+                        <TableHead className="px-3 py-2 text-xs text-right">Total Pedidos</TableHead>
+                        <TableHead className="px-3 py-2 text-xs text-right">Tasa Conversión</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1700,9 +1700,9 @@ export default function Audit() {
 
                           return (
                             <TableRow key={idx}>
-                              <TableCell className="font-medium">{cliente.nombre}</TableCell>
-                              <TableCell className="text-right">{cliente.total ?? 0}</TableCell>
-                              <TableCell className="text-right">
+                              <TableCell className="font-medium px-3 py-2.5 text-sm max-w-[150px] truncate" title={cliente.nombre}>{cliente.nombre}</TableCell>
+                              <TableCell className="text-right px-3 py-2.5 text-sm">{cliente.total ?? 0}</TableCell>
+                              <TableCell className="text-right px-3 py-2.5 text-sm">
                                 <span className={`px-3 py-1 rounded-full text-sm font-semibold ${badgeColor}`}>
                                   {(tasa ?? 0).toFixed(1)}%
                                 </span>

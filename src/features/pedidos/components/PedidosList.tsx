@@ -74,6 +74,8 @@ interface PedidoData {
   mensaje?: string | null;
   notas?: PedidoNota[];
   fechaRecordatorio?: string;
+  total?: number;
+  moneda?: string;
 }
 
 function RecordatorioBadge({ status }: { status: 'VENCIDO' | 'HOY' | 'PENDIENTE' | 'SIN_FECHA' }) {
@@ -107,8 +109,7 @@ export default function PedidosList() {
   const [sortConfig, setSortConfig] = useState<{ key: 'fecha' | 'recordatorio', direction: 'asc' | 'desc' } | null>(null);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [filterTag, setFilterTag] = useState("TODOS");
-  const [nuevaAnotacion, setNuevaAnotacion] = useState("");
+    const [filterTag, setFilterTag] = useState("TODOS");
   const [isProcessingClientAssignment, setIsProcessingClientAssignment] = useState(false);
   const [activeTab, setActiveTab] = useState("TODOS");
 
@@ -489,9 +490,9 @@ export default function PedidosList() {
         <TabsContent value={activeTab} className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
           {/* Desktop Table */}
           <table className="hidden md:table w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+                        <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => {
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => {
                   if (sortConfig?.key === 'fecha') {
                     setSortConfig(sortConfig.direction === 'asc' ? { key: 'fecha', direction: 'desc' } : null);
                   } else {
@@ -503,16 +504,16 @@ export default function PedidosList() {
                     {sortConfig?.key === 'fecha' && <ArrowUpDown className="ml-1 h-4 w-4 inline-block" />}
                   </span>
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                   Prospecto
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                   Contacto
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                   Tag
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => {
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => {
                   if (sortConfig?.key === 'recordatorio') {
                     setSortConfig(sortConfig.direction === 'asc' ? { key: 'recordatorio', direction: 'desc' } : null);
                   } else {
@@ -524,18 +525,21 @@ export default function PedidosList() {
                     {sortConfig?.key === 'recordatorio' && <ArrowUpDown className="ml-1 h-4 w-4 inline-block" />}
                   </span>
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                   Estado
                 </th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900">
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
+                  Total
+                </th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-gray-900">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-                            {pedidosToRender.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="px-6 py-16 text-center">
+                                                        {pedidosToRender.length === 0 ? (
+                                <tr>
+                  <td colSpan={8} className="px-3 py-16 text-center">
                     <div className="flex flex-col items-center gap-3">
                       <div className="h-14 w-14 rounded-full bg-gray-100 flex items-center justify-center">
                         <Inbox className="h-7 w-7 text-gray-400" />
@@ -549,28 +553,28 @@ export default function PedidosList() {
                 </tr>
               ) : (
                 pedidosToRender.map((pedido) => (
-                  <tr key={pedido.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-700">
+                                    <tr key={pedido.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-3 py-2.5 text-sm text-gray-700">
                       {new Date(pedido.fechaCreacion).toLocaleDateString('es-ES', {
                         year: 'numeric',
                         month: 'short',
                         day: 'numeric',
                       })}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                    <td className="px-3 py-2.5 text-sm font-medium text-gray-900 max-w-[150px] truncate" title={pedido.nombre}>
                       {pedido.nombre || 'Sin nombre'}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-3 py-2.5 text-sm text-gray-600">
                       <div className="space-y-1">
                         {pedido.email && (
-                          <p className="truncate">{pedido.email}</p>
+                          <p className="truncate max-w-[150px]" title={pedido.email}>{pedido.email}</p>
                         )}
                         {pedido.telefono && (
                           <p className="text-xs text-gray-500">{pedido.telefono}</p>
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-2.5">
                       <div className="flex flex-wrap gap-1 max-w-[120px]">
                         {pedido.tag ? (
                           <span className="bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider border border-indigo-100 truncate w-full" title={pedido.tag}>
@@ -581,7 +585,7 @@ export default function PedidosList() {
                         )}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-3 py-2.5 whitespace-nowrap">
                       {editingRecordatorio === pedido.id ? (
                         <input
                           type="datetime-local"
@@ -616,8 +620,8 @@ export default function PedidosList() {
                           )}
                         </div>
                       )}
-                    </td>
-                    <td className="px-6 py-4">
+                                        </td>
+                                        <td className="px-3 py-2.5">
                       <select
                         value={pedido.status}
                         onChange={(e) =>
@@ -636,28 +640,24 @@ export default function PedidosList() {
                                                 ))}
                       </select>
                     </td>
-                                        <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-0.5">
-                        <button
+                    <td className="px-3 py-2.5 text-sm text-gray-700">
+                      {pedido.total ? `${pedido.total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${pedido.moneda || 'ARS'}` : '-'}
+                    </td>
+                                                                                <td className="px-3 py-2.5">
+                                            <div className="flex items-center justify-end gap-0.5">
+                                                <button
                           onClick={() => handleDownloadPDF(pedido.id, pedido.nombre)}
-                          className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all active:scale-95"
+                          className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all active:scale-95"
                           title="Descargar Cotización (PDF)"
                         >
                           <Download className="h-4 w-4" />
                         </button>
                         <button
                           onClick={() => handleWhatsApp(pedido)}
-                          className="p-2 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all active:scale-95"
+                          className="p-1.5 text-slate-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all active:scale-95"
                           title="Enviar por WhatsApp"
                         >
                           <MessageCircle className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => openQuoteModal(pedido)}
-                          className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all active:scale-95"
-                          title="Nueva Cotización"
-                        >
-                          <FileText className="h-4 w-4" />
                         </button>
                         <div className="w-px h-5 bg-slate-200 mx-1.5"></div>
                         <button
@@ -665,8 +665,9 @@ export default function PedidosList() {
                             const editData = { ...pedido };
                             if (editData.recordatorio) editData.recordatorio = getLocalISODateTime(editData.recordatorio);
                             setPedidoToEdit(editData);
+                            setIsCotizadorOpen(true);
                           }}
-                                                    className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all active:scale-95"
+                                                    className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all active:scale-95"
                           title="Ver / Editar Pedido"
                         >
                           <Edit className="h-4 w-4" />
@@ -676,7 +677,7 @@ export default function PedidosList() {
                             setPedidoForClient(pedido);
                             setSelectedExistingClient(pedido.clienteId || null);
                           }}
-                          className="p-2 text-slate-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all active:scale-95"
+                          className="p-1.5 text-slate-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-all active:scale-95"
                           title={pedido.clienteId ? "Reasignar Cliente" : "Asignar o Crear Cliente"}
                         >
                           {pedido.clienteId ? <Users className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
@@ -807,7 +808,7 @@ export default function PedidosList() {
 
                   {/* Separador visual con Estado y Acciones */}
                   <div className="border-t border-gray-100 pt-3 space-y-3">
-                    {/* Select de Estado - ancho completo */}
+                                        {/* Select de Estado - ancho completo */}
                     <select
                       value={pedido.status}
                       onChange={(e) =>
@@ -826,7 +827,12 @@ export default function PedidosList() {
                                               ))}
                     </select>
 
-                                        {/* Botones de acción */}
+                    {/* Total */}
+                    <div className="text-sm text-gray-700 font-medium bg-gray-50 px-3 py-2 rounded-md">
+                      {pedido.total ? `${pedido.total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${pedido.moneda || 'ARS'}` : '-'}
+                    </div>
+
+                                                                                {/* Botones de acción */}
                     <div className="flex items-center justify-center gap-1 bg-gray-50 rounded-lg p-1">
                       <button
                         onClick={() => handleDownloadPDF(pedido.id, pedido.nombre)}
@@ -842,19 +848,13 @@ export default function PedidosList() {
                       >
                         <MessageCircle className="h-5 w-5" />
                       </button>
-                      <button
-                        onClick={() => openQuoteModal(pedido)}
-                        className="p-2.5 text-slate-500 hover:text-blue-600 hover:bg-white rounded-md transition-all active:scale-95"
-                        title="Nueva Cotización"
-                      >
-                        <FileText className="h-5 w-5" />
-                      </button>
                       <div className="w-px h-6 bg-slate-200 mx-1"></div>
-                      <button
+                                            <button
                         onClick={() => {
                           const editData = { ...pedido };
                           if (editData.recordatorio) editData.recordatorio = getLocalISODateTime(editData.recordatorio);
                           setPedidoToEdit(editData);
+                          setIsCotizadorOpen(true);
                         }}
                         className="p-2.5 text-slate-500 hover:text-slate-900 hover:bg-white rounded-md transition-all active:scale-95"
                         title="Ver / Editar Pedido"
@@ -1050,185 +1050,61 @@ export default function PedidosList() {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Editar Pedido */}
-      <Dialog open={!!pedidoToEdit} onOpenChange={(open) => {
-        if (!open) {
-          setPedidoToEdit(null);
-          setNuevaAnotacion('');
-        }
-      }}>
-        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Editar Detalles del Prospecto / Pedido</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4 pr-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                <Label>Nombre / Razón Social *</Label>
-                <Input
-                  value={pedidoToEdit?.nombre || ''}
-                  onChange={e => setPedidoToEdit(pedidoToEdit ? { ...pedidoToEdit, nombre: e.target.value } : null)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>CUIT</Label>
-                <Input
-                  value={pedidoToEdit?.cuit || ''}
-                  onChange={e => setPedidoToEdit(pedidoToEdit ? { ...pedidoToEdit, cuit: e.target.value } : null)}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Email</Label>
-                <Input
-                  type="email"
-                  value={pedidoToEdit?.email || ''}
-                  onChange={e => setPedidoToEdit(pedidoToEdit ? { ...pedidoToEdit, email: e.target.value } : null)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Teléfono</Label>
-                <Input
-                  value={pedidoToEdit?.telefono || ''}
-                  onChange={e => setPedidoToEdit(pedidoToEdit ? { ...pedidoToEdit, telefono: e.target.value } : null)}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label>Etiqueta (Tag)</Label>
-                <Input
-                  value={pedidoToEdit?.tag || ''}
-                  placeholder="Ej: Mayorista, VIP, etc."
-                  onChange={e => setPedidoToEdit(pedidoToEdit ? { ...pedidoToEdit, tag: e.target.value } : null)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label>Recordatorio</Label>
-                <Input
-                  type="datetime-local"
-                  value={pedidoToEdit?.recordatorio || ''}
-                  onChange={e => setPedidoToEdit(pedidoToEdit ? { ...pedidoToEdit, recordatorio: e.target.value } : null)}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2 sm:col-span-2">
-              <Label>Historial de Notas</Label>
-              <div className="flex flex-col gap-2 w-full rounded-md border bg-slate-50 p-3 h-[200px] overflow-y-auto">
-                {(!pedidoToEdit?.notas || !Array.isArray(pedidoToEdit.notas) || pedidoToEdit.notas.length === 0) && (
-                  <div className="text-sm text-slate-400 italic">No hay notas registradas.</div>
-                )}
-                {Array.isArray(pedidoToEdit?.notas) && pedidoToEdit.notas.map((nota: PedidoNota, idx: number) => (
-                  <div key={idx} className="bg-white p-2 rounded border border-slate-200 shadow-sm">
-                    <div className="flex justify-between items-center mb-1">
-                      <span className="text-[10px] font-bold text-blue-600 uppercase">{nota.usuario || 'Sistema'}</span>
-                      <span className="text-[10px] text-slate-400">{new Date(nota.fecha).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' })}</span>
-                    </div>
-                    <p className="text-sm text-slate-700 whitespace-pre-wrap">{nota.texto}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="grid gap-2 sm:col-span-2">
-              <Label>Agregar nueva anotación</Label>
-              <textarea
-                className="flex min-h-[80px] w-full rounded-md border border-input bg-white px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                placeholder="Escribe una nueva nota aquí..."
-                value={nuevaAnotacion}
-                onChange={e => setNuevaAnotacion(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPedidoToEdit(null)}>Cancelar</Button>
-            <Button
-              className="bg-blue-600 hover:bg-blue-700"
-              onClick={async () => {
-                              if (!pedidoToEdit?.nombre) {
-                                toast.error('El nombre es obligatorio');
-                                return;
-                              }
+            {/* Modal de Cotizador */}
+            <CotizadorModal
+              isOpen={isCotizadorOpen}
+                            onClose={() => {
+                setIsCotizadorOpen(false);
+                setSelectedPedidoForQuote(null);
+                setPedidoToEdit(null);
+              }}
+              clientePreseleccionado={selectedPedidoForQuote}
+              pedidoExistente={pedidoToEdit}
+              onSaveQuote={async (data: Record<string, unknown>) => {
+                        try {
+                          const items = data.items as Array<{ cantidad?: number; descuento?: number; articulo?: { precio?: number } }>;
+                          const itemsConSubtotal = items.map((item) => {
+                            const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 0;
+                            const descuento = typeof item.descuento === 'number' ? item.descuento : 0;
+                            const precio = item.articulo?.precio || 0;
+                            const subtotal = (precio * cantidad) * (1 - descuento / 100);
+                            return { ...item, cantidad, descuento, subtotal };
+                          });
 
-                              if (pedidoToEdit.email && !emailRegex.test(pedidoToEdit.email.trim())) {
-                                toast.error('El email no tiene un formato válido');
-                                return;
-                              }
+                          const telefono = data.telefono as string | undefined;
+                          const payload = {
+                            nombre: (data.nombre || data.nombreCliente || 'Sin nombre') as string,
+                            clienteId: (data.clienteId as string) || null,
+                            email: (data.email as string)?.trim() || null,
+                            telefono: telefono ? telefono.replace(/\D/g, '') : null,
+                            cuit: (data.cuit as string)?.trim() || null,
+                            tag: (data.tag as string) || 'COTIZADO',
+                            items: itemsConSubtotal,
+                            subtotal: (data.subtotal as number) || 0,
+                            impuestos: (data.impuestos as number) || 0,
+                            total: (data.total as number) || 0,
+                            moneda: (data.moneda as string) || 'ARS',
+                            mensaje: (data.mensaje as string) || "Cotización guardada en el sistema."
+                          };
 
-                              if (pedidoToEdit.telefono && !phoneRegex.test(pedidoToEdit.telefono.trim())) {
-                                toast.error('El teléfono solo debe contener números (sin espacios, ni letras, ni símbolos)');
-                                return;
-                              }
-
-                              try {
-                                const payloadUpdate: Record<string, unknown> = { ...pedidoToEdit };
-                                if (nuevaAnotacion.trim()) {
-                                  payloadUpdate.nuevaNota = nuevaAnotacion.trim();
-                                }
-
-                                await api.patch(`/pedidos/${pedidoToEdit.id}`, payloadUpdate);
-                                fetchPedidos();
-                                setPedidoToEdit(null);
-                                setNuevaAnotacion('');
-                                toast.success('Pedido actualizado correctamente');
-                              } catch (error) {
-                                console.error(error);
-                                toast.error('Error al actualizar el pedido');
-                              }
-                            }}
-            >
-              Guardar Cambios
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Modal de Cotizador */}
-      <CotizadorModal
-        isOpen={isCotizadorOpen}
-        onClose={() => {
-          setIsCotizadorOpen(false);
-          setSelectedPedidoForQuote(null);
-        }}
-        clientePreseleccionado={selectedPedidoForQuote}
-        onSaveQuote={async (data: Record<string, unknown>) => {
-                  try {
-                    const items = data.items as Array<{ cantidad?: number; descuento?: number; articulo?: { precio?: number } }>;
-                    const itemsConSubtotal = items.map((item) => {
-                      const cantidad = typeof item.cantidad === 'number' ? item.cantidad : 0;
-                      const descuento = typeof item.descuento === 'number' ? item.descuento : 0;
-                      const precio = item.articulo?.precio || 0;
-                      const subtotal = (precio * cantidad) * (1 - descuento / 100);
-                      return { ...item, cantidad, descuento, subtotal };
-                    });
-
-                    const telefono = data.telefono as string | undefined;
-                    const payload = {
-                      nombre: (data.nombre || data.nombreCliente || 'Sin nombre') as string,
-                      clienteId: (data.clienteId as string) || null,
-                      email: (data.email as string)?.trim() || null,
-                      telefono: telefono ? telefono.replace(/\D/g, '') : null,
-                      cuit: (data.cuit as string)?.trim() || null,
-                      tag: (data.tag as string) || 'COTIZADO',
-                      items: itemsConSubtotal,
-                      subtotal: (data.subtotal as number) || 0,
-                      impuestos: (data.impuestos as number) || 0,
-                      total: (data.total as number) || 0,
-                      moneda: (data.moneda as string) || 'ARS',
-                      mensaje: (data.mensaje as string) || "Cotización guardada en el sistema."
-                    };
-
-                    await api.post('/pedidos', payload);
-                    fetchPedidos();
-                    setIsCotizadorOpen(false);
-                  } catch (error: unknown) {
-                    const axiosError = error as { response?: { data?: { error?: string } } };
-                    console.error('Error guardando pedido:', axiosError.response?.data || error);
-                    toast.error(axiosError.response?.data?.error || 'Error al guardar el pedido');
-                    throw error;
-                  }
-                }}
-      />
+                          // Si existe pedidoToEdit.id, es una edición (PATCH). Si no, es nuevo (POST)
+                          if (pedidoToEdit && pedidoToEdit.id) {
+                            await api.patch(`/pedidos/${pedidoToEdit.id}`, payload);
+                          } else {
+                            await api.post('/pedidos', payload);
+                          }
+                    
+                                                    fetchPedidos();
+                          setIsCotizadorOpen(false);
+                          setPedidoToEdit(null);
+                        } catch (error: unknown) {
+                          const axiosError = error as { response?: { data?: { error?: string } } };
+                          console.error('Error guardando pedido:', axiosError.response?.data || error);
+                          toast.error(axiosError.response?.data?.error || 'Error al guardar el pedido');
+                          throw error;
+                        }
+                      }}
+            />
     </div>
   );
 }

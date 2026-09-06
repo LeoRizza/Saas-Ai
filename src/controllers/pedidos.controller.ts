@@ -427,7 +427,7 @@ export const updatePedidoStatus = async (req: Request, res: Response) => {
 export const updatePedido = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { nombre, razonSocial, email, telefono, tag, cuit, recordatorio, clienteId } = req.body;
+        const { nombre, razonSocial, email, telefono, tag, cuit, recordatorio, clienteId, items, subtotal, impuestos, total, moneda } = req.body;
         const user = (req as any).user;
         if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return res.status(400).json({ error: 'Formato de email inválido' });
         if (telefono && !/^\d+$/.test(telefono.trim())) return res.status(400).json({ error: 'Formato de teléfono inválido' });
@@ -440,9 +440,27 @@ export const updatePedido = async (req: Request, res: Response) => {
         if (cuit !== undefined) updateData.cuit = cuit;
         if (clienteId !== undefined) updateData.clienteId = clienteId;
         if (recordatorio !== undefined) updateData.recordatorio = recordatorio ? new Date(recordatorio).toISOString() : null;
+        if (subtotal !== undefined) updateData.subtotal = subtotal;
+        if (impuestos !== undefined) updateData.impuestos = impuestos;
+        if (total !== undefined) updateData.total = total;
+        if (moneda !== undefined) updateData.moneda = moneda;
         const result = await prisma.$transaction(async (tx) => {
             const oldPedido = await tx.pedido.findFirst({ where: { id, empresaId: user.empresaId } });
             if (!oldPedido) throw new Error('Pedido no encontrado');
+            // Limpiar items anteriores si se proporcionan nuevos items
+            if (items && items.length > 0) {
+                await tx.pedidoItem.deleteMany({ where: { pedidoId: id } });
+                updateData.items = {
+                    create: items.map((item: any) => ({
+                        articuloId: item.articulo?.id || item.articuloId,
+                        nombreArticulo: item.articulo?.nombre || item.nombreArticulo || 'Artículo Genérico',
+                        cantidad: Number(item.cantidad) || 1,
+                        precioUnitario: Number(item.articulo?.precio) || 0,
+                        descuento: Number(item.descuento) || 0,
+                        subtotal: Number(item.subtotal) || 0
+                    }))
+                };
+            }
             if (req.body.nuevaNota && req.body.nuevaNota.trim() !== '') {
                 const notasExistentes = Array.isArray(oldPedido.notas) ? oldPedido.notas : [];
                 updateData.notas = [...notasExistentes, { fecha: new Date().toISOString(), texto: req.body.nuevaNota.trim(), usuario: user.nombre || 'Usuario' }];

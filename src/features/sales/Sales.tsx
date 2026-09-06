@@ -354,35 +354,38 @@ export default function Sales() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Nº Factura</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Monto</TableHead>
-                  <TableHead>Descuento</TableHead>
-                  <TableHead>Items</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Fecha</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Nº Factura</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Cliente</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Monto</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Descuento</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Items</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredVentas.map((venta: any) => (
                   <TableRow key={venta.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openViewModal(venta)}>
-                    <TableCell>{new Date(venta.createdAt || venta.fecha || Date.now()).toLocaleDateString('es-AR')}</TableCell>
-                    <TableCell className="font-medium">{venta.numeroFactura}</TableCell>
-                    <TableCell>{venta.cliente?.nombre || venta.clienteNombre}</TableCell>
-                    <TableCell className="font-semibold text-primary">
+                    <TableCell className="px-3 py-2.5 text-sm">{new Date(venta.createdAt || venta.fecha || Date.now()).toLocaleDateString('es-AR')}</TableCell>
+                    <TableCell className="font-medium px-3 py-2.5 text-sm max-w-[120px] truncate" title={venta.numeroFactura}>{venta.numeroFactura}</TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm max-w-[150px] truncate" title={venta.cliente?.nombre || venta.clienteNombre}>{venta.cliente?.nombre || venta.clienteNombre}</TableCell>
+                    <TableCell className="font-semibold text-primary px-3 py-2.5 text-sm">
                       {venta.montoTotal > 0 || venta.montoFactura > 0 ? `$${(venta.montoTotal || venta.montoFactura).toLocaleString('es-AR', { minimumFractionDigits: 2 })}` : '-'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm">
                       {venta.descuento > 0 ? `$${venta.descuento.toLocaleString('es-AR', { minimumFractionDigits: 2 })}` : '-'}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm max-w-[200px]">
                       <ul className="list-disc list-inside text-sm text-muted-foreground">
-                        {venta.items.map((item: any, idx: number) => (
-                          <li key={idx}>
-                            {item.cantidadUnidades > 0 ? `${item.cantidadUnidades}x ` : ''}
-                            {item.articulo?.nombre || item.productoNombre}
-                            {item.cantidadKilos ? ` (${item.cantidadKilos}kg)` : ''}
-                          </li>
-                        ))}
+                        {venta.items.map((item: any, idx: number) => {
+                          const itemName = `${item.cantidadUnidades > 0 ? `${item.cantidadUnidades}x ` : ''}${item.articulo?.nombre || item.productoNombre}${item.cantidadKilos ? ` (${item.cantidadKilos}kg)` : ''}`;
+                          return (
+                            <li key={idx} className="truncate" title={itemName}>
+                              {item.cantidadUnidades > 0 ? `${item.cantidadUnidades}x ` : ''}
+                              {item.articulo?.nombre || item.productoNombre}
+                              {item.cantidadKilos ? ` (${item.cantidadKilos}kg)` : ''}
+                            </li>
+                          );
+                        })}
                       </ul>
                     </TableCell>
                   </TableRow>

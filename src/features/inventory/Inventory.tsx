@@ -661,10 +661,10 @@ export default function Inventory() {
             </div>
           ) : (
             <div className="w-full max-h-[65vh] overflow-auto rounded-md border shadow-sm">
-            <Table className="w-full min-w-[1100px] relative">
+            <Table className="w-full relative">
               <TableHeader className="sticky top-0 z-20 bg-white outline outline-1 outline-slate-200">
                 <TableRow>
-                  <TableHead className="w-12">
+                  <TableHead className="w-12 px-3 py-2 text-xs">
                     <input
                       type="checkbox"
                       checked={selectedIds.length > 0 && selectedIds.length === filteredArticulos.length}
@@ -673,44 +673,44 @@ export default function Inventory() {
                       title="Seleccionar/Deseleccionar todos"
                     />
                   </TableHead>
-                  <TableHead>Imagen</TableHead>
-                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('nombre')}>
+                  <TableHead className="px-3 py-2 text-xs">Imagen</TableHead>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors px-3 py-2 text-xs" onClick={() => requestSort('nombre')}>
                     <div className="flex items-center gap-2">
                       Nombre
                       {sortConfig.key === 'nombre' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
                     </div>
                   </TableHead>
-                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('categoria')}>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors px-3 py-2 text-xs" onClick={() => requestSort('categoria')}>
                     <div className="flex items-center gap-2">
                       Categoría
                       {sortConfig.key === 'categoria' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
                     </div>
                   </TableHead>
-                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('stockUnidades')}>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors px-3 py-2 text-xs" onClick={() => requestSort('stockUnidades')}>
                     <div className="flex items-center gap-2">
                       Stock (Unidades)
                       {sortConfig.key === 'stockUnidades' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
                     </div>
                   </TableHead>
-                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('stockKilos')}>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors px-3 py-2 text-xs" onClick={() => requestSort('stockKilos')}>
                     <div className="flex items-center gap-2">
                       Stock (Kilos)
                       {sortConfig.key === 'stockKilos' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
                     </div>
                   </TableHead>
-                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('unidadesPorCaja')}>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors px-3 py-2 text-xs" onClick={() => requestSort('unidadesPorCaja')}>
                     <div className="flex items-center gap-2">
                       Unidades x Caja
                       {sortConfig.key === 'unidadesPorCaja' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
                     </div>
                   </TableHead>
-                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors" onClick={() => requestSort('precio')}>
+                  <TableHead className="cursor-pointer hover:bg-slate-100 select-none transition-colors px-3 py-2 text-xs" onClick={() => requestSort('precio')}>
                     <div className="flex items-center gap-2">
                       Precio
                       {sortConfig.key === 'precio' ? (sortConfig.direction === 'asc' ? <ArrowUp className="h-4 w-4 text-blue-600" /> : <ArrowDown className="h-4 w-4 text-blue-600" />) : <ArrowUpDown className="h-4 w-4 text-gray-400" />}
                     </div>
                   </TableHead>
-                  <TableHead className="whitespace-nowrap w-[200px]">Acciones</TableHead>
+                  <TableHead className="whitespace-nowrap px-3 py-2 text-xs">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -720,7 +720,7 @@ export default function Inventory() {
                     onClick={() => openViewModal(item)}
                     className="cursor-pointer hover:bg-slate-50"
                   >
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-3 py-2.5 text-sm" onClick={(e) => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={selectedIds.includes(item.id)}
@@ -728,7 +728,7 @@ export default function Inventory() {
                         className="rounded"
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm">
                       {item.imagenes && item.imagenes.length > 0 ? (
                         <img src={item.imagenes[0]} alt={item.nombre} className="w-10 h-10 object-cover rounded border" />
                       ) : (
@@ -737,27 +737,27 @@ export default function Inventory() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-medium">{item.nombre}</TableCell>
-                    <TableCell>{item.categoria}</TableCell>
-                    <TableCell>{item.stockUnidades}</TableCell>
-                    <TableCell>{item.stockKilos}</TableCell>
-                    <TableCell>{item.unidadesPorCaja}</TableCell>
-                    <TableCell>${item.precio || 0}</TableCell>
-                    <TableCell className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex space-x-2">
+                    <TableCell className="font-medium px-3 py-2.5 text-sm max-w-[150px] truncate" title={item.nombre}>{item.nombre}</TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm max-w-[120px] truncate" title={item.categoria}>{item.categoria}</TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm">{item.stockUnidades}</TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm">{item.stockKilos}</TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm">{item.unidadesPorCaja}</TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm">${item.precio || 0}</TableCell>
+                    <TableCell className="whitespace-nowrap px-3 py-2.5 text-sm" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex gap-0.5 justify-end">
                         {!isVendedor && (
                           <>
-                            <Button variant="ghost" size="sm" onClick={() => openIngresoModal(item)} title="Ingresar Compra">
-                              <PackagePlus className="h-4 w-4 text-green-600" />
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openIngresoModal(item)} title="Ingresar Compra">
+                              <PackagePlus className="h-3.5 w-3.5 text-green-600" />
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => openTransferModal(item)} title="Transferir stock">
-                              <ArrowRightLeft className="h-4 w-4 text-blue-500" />
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openTransferModal(item)} title="Transferir stock">
+                              <ArrowRightLeft className="h-3.5 w-3.5 text-blue-500" />
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => openAdjustModal(item)}>
-                              <Edit className="h-4 w-4" />
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openAdjustModal(item)}>
+                              <Edit className="h-3.5 w-3.5" />
                             </Button>
-                            <Button variant="ghost" size="sm" onClick={() => openDeleteModal(item)}>
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openDeleteModal(item)}>
+                              <Trash2 className="h-3.5 w-3.5 text-red-500" />
                             </Button>
                           </>
                         )}

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Edit, Trash2, MessageCircle, FileText, Upload, FileSpreadsheet, Info, Download, ArrowUpDown, Users, UserPlus, BellRing, X } from "lucide-react";
+import { Plus, Search, Edit, Trash2, MessageCircle, Upload, FileSpreadsheet, Info, Download, ArrowUpDown, Users, UserPlus, BellRing, X } from "lucide-react";
 import { useClientStore } from "../../store/useClientStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useInventoryStore } from "../../store/useInventoryStore";
@@ -560,7 +560,7 @@ export default function Clients() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>
+                  <TableHead className="px-3 py-2 text-xs">
                     <button
                       className="flex items-center gap-2 cursor-pointer select-none hover:bg-muted/50 rounded px-2 py-1 transition-colors"
                       onClick={() => requestSort('nombre')}
@@ -574,10 +574,10 @@ export default function Clients() {
                       />
                     </button>
                   </TableHead>
-                  <TableHead>Etiqueta</TableHead>
-                  <TableHead>Teléfono</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Etiqueta</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Teléfono</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">Email</TableHead>
+                  <TableHead className="px-3 py-2 text-xs">
                     <button
                       className="flex items-center gap-2 cursor-pointer select-none hover:bg-muted/50 rounded px-2 py-1 transition-colors"
                       onClick={() => requestSort('fechaRecordatorio')}
@@ -591,14 +591,14 @@ export default function Clients() {
                       />
                     </button>
                   </TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
+                  <TableHead className="px-3 py-2 text-xs text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredClientes.map((cliente) => (
                   <TableRow key={cliente.id} className="cursor-pointer hover:bg-muted/50" onClick={() => openViewModal(cliente)}>
-                    <TableCell className="font-medium">{cliente.nombre}</TableCell>
-                    <TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm font-medium max-w-[150px] truncate" title={cliente.nombre}>{cliente.nombre}</TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm">
                       {cliente.tag ? (() => {
                         const colors = getBadgeColor(cliente.tag);
                         return (
@@ -610,7 +610,7 @@ export default function Clients() {
                         <span className="text-muted-foreground text-xs">-</span>
                       )}
                     </TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-3 py-2.5 text-sm" onClick={(e) => e.stopPropagation()}>
                       <span
                         className="cursor-pointer hover:text-blue-600 hover:underline transition-colors"
                         title="Copiar teléfono"
@@ -624,8 +624,8 @@ export default function Clients() {
                         {cliente.telefono}
                       </span>
                     </TableCell>
-                    <TableCell>{cliente.email}</TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="px-3 py-2.5 text-sm max-w-[150px] truncate" title={cliente.email}>{cliente.email}</TableCell>
+                    <TableCell className="px-3 py-2.5 text-sm" onClick={(e) => e.stopPropagation()}>
                       {editingRecordatorio === cliente.id ? (
                         <Input
                           type="datetime-local"
@@ -659,21 +659,12 @@ export default function Clients() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1">
+                    <TableCell className="px-3 py-2.5 text-sm text-right" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-0.5">
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                          onClick={() => openQuoteModal(cliente)}
-                          title="Crear cotización"
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-8 w-8 hover:text-green-600 hover:bg-green-50 transition-colors"
+                          className="h-7 w-7 hover:text-green-600 hover:bg-green-50 transition-colors"
                           onClick={() => handleWhatsApp(cliente.telefono, cliente.nombre)}
                           title="Enviar WhatsApp"
                         >
@@ -682,7 +673,7 @@ export default function Clients() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 hover:text-amber-600 hover:bg-amber-50 transition-colors"
+                          className="h-7 w-7 hover:text-amber-600 hover:bg-amber-50 transition-colors"
                           onClick={() => openEditModal(cliente)}
                           title="Editar cliente"
                         >
@@ -691,7 +682,7 @@ export default function Clients() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-red-50 transition-colors"
+                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-red-50 transition-colors"
                           onClick={() => openDeleteModal(cliente)}
                           title="Eliminar cliente"
                         >
