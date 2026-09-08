@@ -39,7 +39,7 @@ export const createExternalPedido = async (
         // El tenantId ya viene validado e inyectado por el middleware verifySystemBot
         const tenantId = (req as any).tenantId || (req.headers['x-tenant-id'] as string);
 
-        // Extraer datos del pedido del cuerpo de la solicitud
+                // Extraer datos del pedido del cuerpo de la solicitud
         // NOTA: NO incluimos subtotal, impuestos, total del body - se calculan en el backend
         const {
             nombre,
@@ -51,13 +51,23 @@ export const createExternalPedido = async (
             producto_confirmado,
             items = [],
             moneda = 'ARS',
+            usuarioId,
         } = req.body;
 
-        // Validación: nombre es obligatorio
+                // Validación: nombre es obligatorio
         if (!nombre || nombre.trim() === '') {
             res.status(400).json({
                 success: false,
                 message: 'El campo "nombre" es obligatorio',
+            });
+            return;
+        }
+
+        // Validación: usuarioId es obligatorio
+        if (!usuarioId || usuarioId.trim() === '') {
+            res.status(400).json({
+                success: false,
+                message: 'usuarioId es obligatorio para el registro de auditoría',
             });
             return;
         }
@@ -86,7 +96,7 @@ export const createExternalPedido = async (
             new Set((items || []).map((item: any) => item.articuloId || item.id))
         ).filter(Boolean) as string[];
 
-        // Paso 2: Consultar artículos de la BD para obtener precios reales
+                // Paso 2: Consultar artículos de la BD para obtener precios reales
         const articulosDeBD = await prisma.articulo.findMany({
             where: {
                 id: { in: articuloIds },
@@ -94,26 +104,30 @@ export const createExternalPedido = async (
             },
             select: {
                 id: true,
+                nombre: true,
                 precio: true,
             },
         });
 
-        // Crear un mapa de artículos para búsqueda rápida
+                // Crear un mapa de artículos para búsqueda rápida
         const articulosMap = new Map(
-            articulosDeBD.map((art) => [art.id, art.precio])
+            articulosDeBD.map((art) => [art.id, { precio: art.precio, nombre: art.nombre }])
         );
 
-        // Paso 3: Mapear items cruzando con datos de la BD
+                // Paso 3: Mapear items cruzando con datos de la BD
         const itemsMapeados = (items || [])
             .map((item: any) => {
                 const articuloId = item.articuloId || item.id;
-                const precioUnitario = articulosMap.get(articuloId) || 0; // Precio real de la BD
+                const articuloInfo = articulosMap.get(articuloId) || { precio: 0, nombre: 'Artículo sin nombre' };
+                const precioUnitario = articuloInfo.precio; // Precio real de la BD
+                const nombreArticulo = articuloInfo.nombre || 'Artículo sin nombre'; // Nombre del artículo
                 const cantidad = Number(item.cantidad) || 1;
                 const descuento = Number(item.descuento) || 0;
                 const subtotal = cantidad * precioUnitario; // Calculado en el backend
 
                 return {
                     articuloId,
+                    nombreArticulo,
                     cantidad,
                     precioUnitario,
                     descuento,
@@ -155,14 +169,14 @@ export const createExternalPedido = async (
                     items: true,
                 },
             }),
-            // Operación B: Registrar en auditoría
+                        // Operación B: Registrar en auditoría
             prisma.auditLog.create({
                 data: {
                     accion: 'CREACION_PEDIDO_BOT',
                     tablaAfectada: 'PEDIDO',
                     registroId: nombre,
                     valorNuevo: { origen: req.headers['user-agent'] || 'desconocido' } as any,
-                    usuarioId: 'bot-sistema',
+                    usuarioId: usuarioId,
                     empresaId: tenantId,
                 },
             }),

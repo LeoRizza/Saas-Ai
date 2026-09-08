@@ -212,16 +212,41 @@ export function SuperAdminPanel() {
 
   const openPasswordModal = (usuario: any) => {
     setEditingUsuarioId(usuario.id);
+    setUsuarioForm({
+      nombre: usuario.nombre,
+      email: usuario.email,
+      password: '',
+      rol: usuario.rol,
+      empresaId: usuario.empresaId || ''
+    });
     setNewPassword('');
     setIsPasswordModalOpen(true);
   };
 
   const handleSavePassword = async () => {
     if (editingUsuarioId && newPassword) {
-      await updateUsuario(editingUsuarioId, { password: newPassword });
-      toast.success('Contraseña actualizada correctamente');
-      await fetchData();
-      setIsPasswordModalOpen(false);
+      try {
+        const updatePayload: any = {
+          ...usuarioForm,
+          activo: true,
+          password: newPassword
+        };
+        
+        if (updatePayload.rol === RolUsuario.SUPER_ADMIN) {
+          const { empresaId, ...dataWithoutEmpresa } = updatePayload;
+          const { password, ...updateData } = dataWithoutEmpresa;
+          await updateUsuario(editingUsuarioId, { ...updateData, password: newPassword });
+        } else {
+          const { password, ...updateData } = updatePayload;
+          await updateUsuario(editingUsuarioId, { ...updateData, password: newPassword });
+        }
+        
+        toast.success('Contraseña actualizada correctamente');
+        await fetchData();
+        setIsPasswordModalOpen(false);
+      } catch (error: any) {
+        toast.error(error.response?.data?.message || 'Error al actualizar contraseña');
+      }
     }
   };
 
